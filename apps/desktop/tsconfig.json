@@ -1,0 +1,32 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["node", "vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@keryx/core": ["../../packages/core/src/index.ts"],
+      "@keryx/core/*": ["../../packages/core/src/*"],
+      "@keryx/sword": ["../../packages/sword/src/index.ts"],
+      "@keryx/db": ["../../packages/db/src/index.ts"],
+      "@keryx/editor": ["../../packages/editor/src/index.ts"],
+      "@keryx/templates": ["../../packages/templates/src/index.ts"],
+      "@keryx/ui": ["../../packages/ui/src/index.ts"],
+      "@keryx/ui/*": ["../../packages/ui/src/*"],
+      "@keryx/i18n": ["../../packages/i18n/src/index.ts"],
+      "@renderer/*": ["src/renderer/src/*"]
+    },
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*",
+    "../../packages/core/src/**/*",
+    "../../packages/sword/src/**/*",
+    "../../packages/db/src/**/*",
+    "../../packages/editor/src/**/*",
+    "../../packages/templates/src/**/*",
+    "../../packages/ui/src/**/*",
+    "../../packages/i18n/src/**/*"
+  ]
+}

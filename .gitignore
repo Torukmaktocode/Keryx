@@ -1,0 +1,25 @@
+node_modules/
+dist/
+out/
+build/
+release/
+*.log
+.DS_Store
+.env
+.env.local
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Modulos y datos descargados (grandes / con derechos)
+sword/
+esword/
+Enciclopeia Champlin/
+*.dctx
+*.bbli
+*.bblx
+*.dcti
+*.dctx
+*.cmti
+*.cmtx
+*.lexi

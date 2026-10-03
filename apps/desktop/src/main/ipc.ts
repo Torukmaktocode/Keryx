@@ -1,0 +1,119 @@
+import { app, ipcMain } from 'electron'
+import { join } from 'node:path'
+import {
+  IPC,
+  chapterRequestSchema,
+  compareRequestSchema,
+  dictLookupSchema,
+  documentCreateSchema,
+  documentIdSchema,
+  documentSaveSchema,
+  installModuleSchema,
+  searchRequestSchema,
+  settingsPatchSchema,
+  uninstallModuleSchema,
+  verseRequestSchema,
+  type CompareColumn,
+  type EngineInfo,
+  type Result
+} from '@keryx/core'
+import { SwordService } from '@keryx/sword'
+import { JsonStore } from '@keryx/db'
+
+type Handler = (args: unknown[]) => Promise<unknown> | unknown
+
+function register(channel: string, handler: Handler): void {
+  ipcMain.handle(channel, async (_event, ...args: unknown[]): Promise<Result<unknown>> => {
+    try {
+      const data = await handler(args)
+      return { ok: true, data }
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : String(error)
+      }
+    }
+  })
+}
+
+export async function registerIpc(dataPath?: string, eswordPath?: string): Promise<void> {
+  const store = new JsonStore(join(app.getPath('userData'), 'keryx-store.json'))
+  const sword = await SwordService.create(dataPath, eswordPath)
+
+  register(IPC.appVersion, () => app.getVersion())
+  register(IPC.appPlatform, () => process.platform)
+  register(
+    IPC.appEngine,
+    (): EngineInfo => ({ kind: sword.providerKind, native: sword.usingNative })
+  )
+
+  register(IPC.modulesList, () => sword.listLocalModules())
+  register(IPC.modulesRefresh, () => sword.listLocalModules())
+  register(IPC.modulesRemote, (args) => sword.listRemoteModules(args[0] as string | undefined))
+  register(IPC.modulesRepositories, () => sword.repositories())
+  register(IPC.modulesSyncRepos, () => sword.repositories())
+  register(IPC.modulesInstall, async (args) => {
+    const input = installModuleSchema.parse(args[0])
+    await sword.installModule(input.name, input.repository)
+    return null
+  })
+  register(IPC.modulesUninstall, async (args) => {
+    const input = uninstallModuleSchema.parse(args[0])
+    await sword.uninstallModule(input.name)
+    return null
+  })
+
+  register(IPC.bibleBooks, (args) => sword.getBooks(args[0] as string | undefined))
+  register(IPC.bibleChapter, (args) => {
+    const req = chapterRequestSchema.parse(args[0])
+    return sword.getChapter(req.module, req.book, req.chapter)
+  })
+  register(IPC.bibleVerse, (args) => {
+    const req = verseRequestSchema.parse(args[0])
+    return sword.getVerse(req.module, req.book, req.chapter, req.verse)
+  })
+  register(IPC.bibleSearch, (args) => {
+    const req = searchRequestSchema.parse(args[0])
+    return sword.search(req)
+  })
+  register(IPC.bibleCompare, async (args) => {
+    const req = compareRequestSchema.parse(args[0])
+    const columns: CompareColumn[] = []
+    for (const module of req.modules) {
+      const verses = await sword.getChapter(module, req.book, req.chapter)
+      columns.push({ module, verses })
+    }
+    return columns
+  })
+
+  register(IPC.dictLookup, (args) => {
+    const req = dictLookupSchema.parse(args[0])
+    return sword.lookupDict(req.module, req.key)
+  })
+  register(IPC.dictStrongs, (args) => sword.strongs(String(args[0])))
+
+  register(IPC.documentsList, () => store.listDocuments())
+  register(IPC.documentsGet, (args) => {
+    const { id } = documentIdSchema.parse(args[0])
+    return store.getDocument(id)
+  })
+  register(IPC.documentsCreate, (args) => {
+    const input = documentCreateSchema.parse(args[0])
+    return store.createDocument(input)
+  })
+  register(IPC.documentsSave, (args) => {
+    const input = documentSaveSchema.parse(args[0])
+    return store.saveDocument(input.id, input.content, input.title)
+  })
+  register(IPC.documentsRemove, (args) => {
+    const { id } = documentIdSchema.parse(args[0])
+    store.removeDocument(id)
+    return null
+  })
+
+  register(IPC.settingsGet, () => store.getSettings())
+  register(IPC.settingsSet, (args) => {
+    const patch = settingsPatchSchema.parse(args[0])
+    return store.setSettings(patch)
+  })
+}

@@ -1,0 +1,34 @@
+{
+  "name": "keryx",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Keryx - estudio biblico y escritura con motor SWORD",
+  "license": "GPL-3.0-or-later",
+  "author": "Keryx",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @keryx/desktop",
+    "build": "npm run build --workspace @keryx/desktop",
+    "build:win": "npm run build:win --workspace @keryx/desktop",
+    "build:mac": "npm run build:mac --workspace @keryx/desktop",
+    "build:linux": "npm run build:linux --workspace @keryx/desktop",
+    "typecheck": "npm run typecheck --workspace @keryx/desktop",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "convert:esword": "python scripts/pdf_to_esword.py",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "prettier": "^3.9.9",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,60 @@
+import { LOCALES, useI18n } from '@keryx/i18n'
+import { useAppStore, type View } from '../store/appStore'
+import { Icon, type IconName } from './Icon'
+
+const ITEMS: { id: View; icon: IconName }[] = [
+  { id: 'reader', icon: 'reader' },
+  { id: 'study', icon: 'study' },
+  { id: 'library', icon: 'library' },
+  { id: 'write', icon: 'write' },
+  { id: 'templates', icon: 'templates' },
+  { id: 'modules', icon: 'modules' },
+  { id: 'settings', icon: 'settings' }
+]
+
+export function Sidebar() {
+  const { t } = useI18n()
+  const view = useAppStore((s) => s.view)
+  const setView = useAppStore((s) => s.setView)
+  const engine = useAppStore((s) => s.engine)
+  const locale = useAppStore((s) => s.settings.uiLocale)
+  const updateSettings = useAppStore((s) => s.updateSettings)
+
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-brand">
+        <strong>Keryx</strong>
+        <span>{t('brand.tagline')}</span>
+      </div>
+      <nav className="nav">
+        {ITEMS.map((item) => (
+          <button
+            key={item.id}
+            className={`nav-item ${view === item.id ? 'active' : ''}`}
+            onClick={() => setView(item.id)}
+          >
+            <Icon name={item.icon} />
+            {t(`nav.${item.id}`)}
+          </button>
+        ))}
+      </nav>
+      <div className="sidebar-footer">
+        <div className="lang-switch" title={t('settings.language')}>
+          {LOCALES.map((code) => (
+            <button
+              key={code}
+              className={locale === code ? 'active' : ''}
+              onClick={() => void updateSettings({ uiLocale: code })}
+            >
+              {code.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <span>
+          {engine ? (engine.native ? t('engine.native') : t('engine.demo')) : t('engine.starting')}
+        </span>
+        <span className="muted">v0.1.0</span>
+      </div>
+    </aside>
+  )
+}

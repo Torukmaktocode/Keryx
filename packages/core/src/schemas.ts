@@ -1,0 +1,91 @@
+import { z } from 'zod'
+
+export const moduleCategorySchema = z.enum([
+  'Bible',
+  'Commentary',
+  'Lexicon',
+  'Dictionary',
+  'GenBook',
+  'Devotional',
+  'Unknown'
+])
+
+export const installModuleSchema = z.object({
+  name: z.string().min(1),
+  repository: z.string().optional()
+})
+
+export const uninstallModuleSchema = z.object({
+  name: z.string().min(1)
+})
+
+export const chapterRequestSchema = z.object({
+  module: z.string().min(1),
+  book: z.string().min(1),
+  chapter: z.number().int().positive()
+})
+
+export const verseRequestSchema = chapterRequestSchema.extend({
+  verse: z.number().int().positive()
+})
+
+export const searchRequestSchema = z.object({
+  query: z.string().min(1),
+  scope: z.enum(['all', 'ot', 'nt']).optional(),
+  caseSensitive: z.boolean().optional(),
+  wholeWord: z.boolean().optional(),
+  modules: z.array(z.string()).optional(),
+  limit: z.number().int().positive().optional()
+})
+
+export const compareRequestSchema = z.object({
+  book: z.string().min(1),
+  chapter: z.number().int().positive(),
+  modules: z.array(z.string().min(1)).min(1)
+})
+
+export const dictLookupSchema = z.object({
+  module: z.string().min(1),
+  key: z.string().min(1)
+})
+
+export const strongsSchema = z.object({
+  key: z.string().min(1)
+})
+
+export const documentIdSchema = z.object({
+  id: z.string().min(1)
+})
+
+export const documentCreateSchema = z.object({
+  title: z.string().min(1),
+  kind: z.enum(['free', 'sermon', 'study', 'devotional']).default('free'),
+  content: z.string().optional()
+})
+
+export const documentSaveSchema = z.object({
+  id: z.string().min(1),
+  content: z.string(),
+  title: z.string().optional()
+})
+
+export const settingsPatchSchema = z.object({
+  theme: z.enum(['light', 'dark', 'sepia']).optional(),
+  uiLocale: z.string().optional(),
+  readingFont: z.string().optional(),
+  writingFont: z.string().optional(),
+  measure: z.number().int().positive().optional(),
+  focusMode: z.enum(['off', 'sentence', 'paragraph']).optional(),
+  typewriter: z.boolean().optional(),
+  fontSize: z.number().positive().optional(),
+  lineHeight: z.number().positive().optional(),
+  priorityModules: z.array(z.string()).optional()
+})
+
+export type InstallModuleInput = z.infer<typeof installModuleSchema>
+export type ChapterRequest = z.infer<typeof chapterRequestSchema>
+export type VerseRequest = z.infer<typeof verseRequestSchema>
+export type SearchRequest = z.infer<typeof searchRequestSchema>
+export type CompareRequest = z.infer<typeof compareRequestSchema>
+export type DictLookupInput = z.infer<typeof dictLookupSchema>
+export type SettingsPatch = z.infer<typeof settingsPatchSchema>
