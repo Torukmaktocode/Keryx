@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useI18n } from '@keryx/i18n'
 import { bookName, CANONICAL_BOOKS, type Verse } from '@keryx/core'
 import { api } from '../lib/api'
 import { languageLabel } from '../lib/languages'
+import { parseReference } from '../lib/reference'
 import { useAppStore } from '../store/appStore'
+
+const stripTags = (value: string): string => value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
 
 export function StudyView() {
   const { t, locale } = useI18n()
@@ -11,6 +14,7 @@ export function StudyView() {
   const selectedModule = useAppStore((s) => s.selectedModule)
   const setSelectedModule = useAppStore((s) => s.setSelectedModule)
   const priorities = useAppStore((s) => s.settings.priorityModules)
+  const sendToWriting = useAppStore((s) => s.sendToWriting)
 
   const rank = (name: string): number => (priorities.includes(name) ? 0 : 1)
   const sortBy = <T extends { name: string }>(list: T[]): T[] =>
@@ -44,11 +48,38 @@ export function StudyView() {
   const [dictModule, setDictModule] = useState('')
   const [dictKey, setDictKey] = useState('')
   const [dictResult, setDictResult] = useState<string | null>(null)
+  const [refInput, setRefInput] = useState('')
 
+  const paneRef = useRef<HTMLDivElement>(null)
   const currentBook = useMemo(
     () => CANONICAL_BOOKS.find((b) => b.code === book) ?? CANONICAL_BOOKS[0],
     [book]
   )
+
+  const goChapter = (delta: number): void => {
+    const index = CANONICAL_BOOKS.findIndex((b) => b.code === book)
+    if (delta > 0) {
+      if (chapter < currentBook.chapters) setChapter(chapter + 1)
+      else if (CANONICAL_BOOKS[index + 1]) {
+        setBook(CANONICAL_BOOKS[index + 1].code)
+        setChapter(1)
+      }
+    } else if (chapter > 1) setChapter(chapter - 1)
+    else if (CANONICAL_BOOKS[index - 1]) {
+      const prev = CANONICAL_BOOKS[index - 1]
+      setBook(prev.code)
+      setChapter(prev.chapters)
+    }
+  }
+
+  const jump = (): void => {
+    const parsed = parseReference(refInput)
+    if (!parsed) return
+    setBook(parsed.book)
+    setChapter(parsed.chapter)
+    if (parsed.verse) setSelectedVerse(parsed.verse)
+    setRefInput('')
+  }
 
   useEffect(() => {
     if (!commentaryModule && commentaryOptions.length) {
@@ -98,6 +129,33 @@ export function StudyView() {
     }
   }, [commentaryModule, book, chapter, selectedVerse, modules, currentBook])
 
+  useEffect(() => {
+    const el = paneRef.current?.querySelector('.verse.selected')
+    el?.scrollIntoView({ block: 'nearest' })
+  }, [selectedVerse, verses])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent): void => {
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setSelectedVerse((v) => Math.min(v + 1, verses.length ? verses[verses.length - 1].verse : v))
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setSelectedVerse((v) => Math.max(1, v - 1))
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        goChapter(1)
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goChapter(-1)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  })
+
   const lookup = async (): Promise<void> => {
     if (!dictModule || !dictKey.trim()) return
     try {
@@ -108,36 +166,45 @@ export function StudyView() {
     }
   }
 
+  const sendPassage = (): void => {
+    const verse = verses.find((v) => v.verse === selectedVerse)
+    const plain = stripTags(verse?.text ?? '')
+    const commentaryText = commentaryHtml
+      ? stripTags(commentaryHtml)
+      : stripTags(commentary?.text ?? '')
+    const parts = [
+      `## ${bookName(currentBook, locale)} ${chapter}:${selectedVerse}`,
+      '',
+      `> ${plain}`
+    ]
+    if (commentaryText) {
+      parts.push('', `**${t('study.commentary')} — ${commentaryModule}**`, '', commentaryText)
+    }
+    void sendToWriting(parts.join('\n'), `${bookName(currentBook, locale)} ${chapter}`)
+  }
+
   return (
     <div className="view">
       <header className="view-header">
         <h1 className="view-title">{t('nav.study')}</h1>
         <div className="spacer" />
-        <select
-          className="select"
-          value={book}
-          onChange={(e) => {
-            setBook(e.target.value)
-            setChapter(1)
-          }}
-        >
-          {CANONICAL_BOOKS.map((b) => (
-            <option key={b.code} value={b.code}>
-              {bookName(b, locale)}
-            </option>
-          ))}
-        </select>
-        <select
-          className="select"
-          value={chapter}
-          onChange={(e) => setChapter(Number(e.target.value))}
-        >
-          {Array.from({ length: currentBook.chapters }, (_, i) => i + 1).map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <input
+          className="input"
+          style={{ width: 180 }}
+          placeholder={t('study.referencePlaceholder')}
+          value={refInput}
+          onChange={(e) => setRefInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && jump()}
+        />
+        <button className="btn small ghost" onClick={() => goChapter(-1)} title={t('study.prevChapter')}>
+          ‹
+        </button>
+        <button className="btn small ghost" onClick={() => goChapter(1)} title={t('study.nextChapter')}>
+          ›
+        </button>
+        <button className="btn primary small" onClick={sendPassage}>
+          {t('study.sendToEditor')}
+        </button>
       </header>
       <div className="view-body">
         <div className="study-panes">
@@ -156,7 +223,7 @@ export function StudyView() {
                 ))}
               </select>
             </div>
-            <div className="pane-body scripture" style={{ fontSize: 17 }}>
+            <div className="pane-body scripture" style={{ fontSize: 17 }} ref={paneRef}>
               {verses.map((verse) => (
                 <div key={verse.verse}>
                   {verse.heading && <div className="verse-heading">{verse.heading}</div>}

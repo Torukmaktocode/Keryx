@@ -27,6 +27,7 @@ interface AppState {
   refreshModules: () => Promise<void>
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
   togglePriority: (name: string) => Promise<void>
+  sendToWriting: (block: string, title?: string) => Promise<void>
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -85,5 +86,21 @@ export const useAppStore = create<AppState>((set, get) => ({
       : [...current, name]
     const settings = await api.settings.set({ priorityModules: next })
     set({ settings })
+  },
+
+  sendToWriting: async (block, title = 'Estudio') => {
+    const id = get().activeDocumentId
+    if (id) {
+      const doc = await api.documents.get(id)
+      if (doc) {
+        await api.documents.save({ id, content: `${doc.content}\n\n${block}` })
+        set({ view: 'write' })
+        get().notify('Enviado al editor')
+        return
+      }
+    }
+    const doc = await api.documents.create({ title, kind: 'study', content: block })
+    set({ activeDocumentId: doc.id, view: 'write' })
+    get().notify('Enviado al editor')
   }
 }))

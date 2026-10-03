@@ -52,6 +52,10 @@ export const es = {
   'study.commentary': 'Comentario',
   'study.dictionary': 'Diccionario',
   'study.noCommentary': 'Sin comentario para este versículo.',
+  'study.referencePlaceholder': 'Ir a… (Juan 3:16)',
+  'study.prevChapter': 'Capítulo anterior',
+  'study.nextChapter': 'Capítulo siguiente',
+  'study.sendToEditor': 'Enviar al editor',
 
   'write.titlePlaceholder': 'Sin título',
   'write.new': 'Nuevo',

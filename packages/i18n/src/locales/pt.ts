@@ -54,6 +54,10 @@ export const pt: Record<TranslationKey, string> = {
   'study.commentary': 'Comentário',
   'study.dictionary': 'Dicionário',
   'study.noCommentary': 'Sem comentário para este versículo.',
+  'study.referencePlaceholder': 'Ir para… (João 3:16)',
+  'study.prevChapter': 'Capítulo anterior',
+  'study.nextChapter': 'Próximo capítulo',
+  'study.sendToEditor': 'Enviar ao editor',
 
   'write.titlePlaceholder': 'Sem título',
   'write.new': 'Novo',
