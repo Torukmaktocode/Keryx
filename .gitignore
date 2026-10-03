@@ -10,6 +10,9 @@ release/
 coverage/
 .vite/
 *.tsbuildinfo
+__pycache__/
+*.pyc
+_*.txt
 
 # Modulos y datos descargados (grandes / con derechos)
 sword/
