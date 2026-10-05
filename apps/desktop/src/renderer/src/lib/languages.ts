@@ -34,6 +34,14 @@ const LANGUAGES: Record<string, Names> = {
   sw: { es: 'suajili', en: 'Swahili', pt: 'suaíli' }
 }
 
+export function isSpanish(lang: string): boolean {
+  return (lang || '').toLowerCase().split(/[-_]/)[0] === 'es'
+}
+
+export function languageRank(lang: string): number {
+  return isSpanish(lang) ? 0 : 1
+}
+
 export function languageLabel(lang: string, locale: string): string {
   const code = (lang || '').toLowerCase().split(/[-_]/)[0]
   const entry = LANGUAGES[code]

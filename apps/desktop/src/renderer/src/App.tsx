@@ -1,14 +1,18 @@
 import { useEffect } from 'react'
 import { I18nProvider, useI18n } from '@keryx/i18n'
 import { useAppStore } from './store/appStore'
+import { api } from './lib/api'
 import { Sidebar } from './components/Sidebar'
 import { ReaderView } from './views/ReaderView'
 import { StudyView } from './views/StudyView'
+import { SearchView } from './views/SearchView'
 import { LibraryView } from './views/LibraryView'
 import { WritingView } from './views/WritingView'
 import { TemplatesView } from './views/TemplatesView'
+import { AssistantView } from './views/AssistantView'
 import { ModulesView } from './views/ModulesView'
 import { SettingsView } from './views/SettingsView'
+import { Icon } from './components/Icon'
 
 function Shell() {
   const { t } = useI18n()
@@ -17,6 +21,11 @@ function Shell() {
   const error = useAppStore((s) => s.error)
   const toast = useAppStore((s) => s.toast)
   const notify = useAppStore((s) => s.notify)
+  const sidebarHidden = useAppStore((s) => s.sidebarHidden)
+  const toggleSidebar = useAppStore((s) => s.toggleSidebar)
+  const toggleFullscreen = useAppStore((s) => s.toggleFullscreen)
+  const fullscreen = useAppStore((s) => s.fullscreen)
+  const setFullscreen = useAppStore((s) => s.setFullscreen)
 
   useEffect(() => {
     if (!toast) return
@@ -24,10 +33,62 @@ function Shell() {
     return () => clearTimeout(timer)
   }, [toast, notify])
 
+  // Estado real de pantalla completa (p. ej. F11 nativo o el usuario maximiza).
+  useEffect(() => {
+    let cancelled = false
+    void api.window
+      .isFullscreen()
+      .then((value) => {
+        if (!cancelled) setFullscreen(value)
+      })
+      .catch(() => {
+        // ignorar
+      })
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'F11') {
+        e.preventDefault()
+        void toggleFullscreen()
+      } else if (e.key.toLowerCase() === 'b' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault()
+        void toggleSidebar()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      cancelled = true
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [toggleFullscreen, toggleSidebar, setFullscreen])
+
   return (
-    <div className="app">
-      <Sidebar />
+    <div className={`app ${sidebarHidden ? 'sidebar-hidden' : ''}`}>
+      {!sidebarHidden && <Sidebar />}
+      {sidebarHidden && (
+        <button
+          className="sidebar-reveal"
+          onClick={() => void toggleSidebar()}
+          title={t('app.showMenu')}
+        >
+          <Icon name="menu" size={16} />
+        </button>
+      )}
       <main className="content">
+        <div className="window-controls">
+          <button
+            className="btn ghost small"
+            onClick={() => void toggleSidebar()}
+            title={t('app.toggleMenu')}
+          >
+            <Icon name="menu" size={16} />
+          </button>
+          <button
+            className={`btn ghost small ${fullscreen ? 'primary' : ''}`}
+            onClick={() => void toggleFullscreen()}
+            title={t('app.toggleFullscreen')}
+          >
+            <Icon name={fullscreen ? 'fullscreen-exit' : 'fullscreen'} size={16} />
+          </button>
+        </div>
         {!ready ? (
           <div className="empty">
             <span className="spinner" />
@@ -39,9 +100,11 @@ function Shell() {
           <>
             {view === 'reader' && <ReaderView />}
             {view === 'study' && <StudyView />}
+            {view === 'search' && <SearchView />}
             {view === 'library' && <LibraryView />}
             {view === 'write' && <WritingView />}
             {view === 'templates' && <TemplatesView />}
+            {view === 'assistant' && <AssistantView />}
             {view === 'modules' && <ModulesView />}
             {view === 'settings' && <SettingsView />}
           </>

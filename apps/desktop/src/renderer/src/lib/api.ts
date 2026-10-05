@@ -1,4 +1,7 @@
 import type {
+  AiChatRequest,
+  AiChatResult,
+  AiStatus,
   AppSettings,
   Document,
   Result,
@@ -27,6 +30,12 @@ export const api = {
   engine: (): Promise<EngineInfo> => unwrap(raw.app.engine()),
   version: (): Promise<string> => unwrap(raw.app.version()),
   platform: (): Promise<string> => unwrap(raw.app.platform()),
+  window: {
+    setFullscreen: (value: boolean): Promise<boolean> => unwrap(raw.window.setFullscreen(value)),
+    isFullscreen: (): Promise<boolean> => unwrap(raw.window.isFullscreen()),
+    toggleFullscreen: (): Promise<boolean> => unwrap(raw.window.toggleFullscreen()),
+    setZoom: (value: number): Promise<number> => unwrap(raw.window.setZoom(value))
+  },
   modules: {
     list: (): Promise<SwordModule[]> => unwrap(raw.modules.list()),
     remote: (repository?: string): Promise<SwordModule[]> => unwrap(raw.modules.remote(repository)),
@@ -72,5 +81,9 @@ export const api = {
   settings: {
     get: (): Promise<AppSettings> => unwrap(raw.settings.get()),
     set: (patch: Partial<AppSettings>): Promise<AppSettings> => unwrap(raw.settings.set(patch))
+  },
+  ai: {
+    chat: (req: AiChatRequest): Promise<AiChatResult> => unwrap(raw.ai.chat(req)),
+    status: (): Promise<AiStatus> => unwrap(raw.ai.status())
   }
 }

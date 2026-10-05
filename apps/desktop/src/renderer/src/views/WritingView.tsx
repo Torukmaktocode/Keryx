@@ -13,6 +13,7 @@ export function WritingView() {
   const activeDocumentId = useAppStore((s) => s.activeDocumentId)
   const setActiveDocumentId = useAppStore((s) => s.setActiveDocumentId)
   const notify = useAppStore((s) => s.notify)
+  const toggleSidebar = useAppStore((s) => s.toggleSidebar)
 
   const mountRef = useRef<HTMLDivElement>(null)
   const editorRef = useRef<KeryxEditor | null>(null)
@@ -26,6 +27,12 @@ export function WritingView() {
   const [title, setTitle] = useState('')
   const [stats, setStats] = useState<EditorStats>({ words: 0, characters: 0, readingMinutes: 0 })
   const [saving, setSaving] = useState(false)
+  const [zen, setZen] = useState(false)
+
+  const writingFont =
+    settings.writingFont && settings.writingFont !== 'iA Writer Quattro'
+      ? `'${settings.writingFont}', var(--font-writing)`
+      : 'var(--font-writing)'
 
   const refreshDocs = useCallback(async () => {
     setDocs(await api.documents.list())
@@ -64,7 +71,7 @@ export function WritingView() {
       initialValue: '',
       focusMode: settings.focusMode,
       typewriter: settings.typewriter,
-      fontFamily: 'var(--font-writing)',
+      fontFamily: writingFont,
       fontSize: settings.fontSize,
       lineHeight: settings.lineHeight,
       measure: settings.measure,
@@ -90,12 +97,12 @@ export function WritingView() {
 
   useEffect(() => {
     editorRef.current?.setTypography({
-      fontFamily: 'var(--font-writing)',
+      fontFamily: writingFont,
       fontSize: settings.fontSize,
       lineHeight: settings.lineHeight,
       measure: settings.measure
     })
-  }, [settings.fontSize, settings.lineHeight, settings.measure])
+  }, [settings.fontSize, settings.lineHeight, settings.measure, writingFont])
 
   useEffect(() => {
     if (!activeDocumentId || !editorRef.current) return
@@ -167,8 +174,13 @@ export function WritingView() {
     void updateSettings({ focusMode: next })
   }
 
+  const toggleZen = (): void => {
+    setZen((value) => !value)
+    void toggleSidebar()
+  }
+
   return (
-    <div className="writing">
+    <div className={`writing ${zen ? 'zen' : ''}`}>
       <aside className="docs">
         <button className="btn small" onClick={() => void createDocument()}>
           <Icon name="plus" size={14} /> {t('write.new')}
@@ -207,7 +219,11 @@ export function WritingView() {
           <span className="stat">{saving ? t('write.saving') : t('write.saved')}</span>
           <span className="stat">{t('write.words', { count: stats.words })}</span>
           <span className="stat">{t('write.minutes', { count: stats.readingMinutes })}</span>
-          <button className="btn ghost small" onClick={cycleFocus}>
+          <button
+            className={`btn ghost small ${settings.focusMode !== 'off' ? 'primary' : ''}`}
+            onClick={cycleFocus}
+            title={t('settings.focusHint')}
+          >
             {focusLabel}
           </button>
           <button
@@ -215,6 +231,13 @@ export function WritingView() {
             onClick={() => void updateSettings({ typewriter: !settings.typewriter })}
           >
             {t('write.typewriter')}
+          </button>
+          <button
+            className={`btn ghost small ${zen ? 'primary' : ''}`}
+            onClick={toggleZen}
+            title={t('write.zenHint')}
+          >
+            {t('write.zen')}
           </button>
           <button className="btn ghost small" onClick={() => exportDocument('md')}>
             MD

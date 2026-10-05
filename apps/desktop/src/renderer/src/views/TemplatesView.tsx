@@ -11,36 +11,40 @@ import {
 import { api } from '../lib/api'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
+import { ResourceLibrary } from '../components/ResourceLibrary'
 
 const EMPTY_ANSWERS: SermonAnswers = {
   topic: '',
   emphasis: '',
   audience: '',
-  aim: ''
+  aim: '',
+  genre: '',
+  delivery: ''
 }
-
-const AIM_OPTIONS: TranslationKey[] = [
-  'consulta.aim.teach',
-  'consulta.aim.exhort',
-  'consulta.aim.evangelize',
-  'consulta.aim.console',
-  'consulta.aim.confront',
-  'consulta.aim.worship'
-]
 
 export function TemplatesView() {
   const { t } = useI18n()
   const setActiveDocumentId = useAppStore((s) => s.setActiveDocumentId)
   const setView = useAppStore((s) => s.setView)
   const notify = useAppStore((s) => s.notify)
+  const settings = useAppStore((s) => s.settings)
+  const sendToWriting = useAppStore((s) => s.sendToWriting)
 
   const [mode, setMode] = useState<'gallery' | 'consulta'>('gallery')
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<SermonAnswers>(EMPTY_ANSWERS)
   const [generating, setGenerating] = useState(false)
 
-  const kindFor = (id: TemplateId): 'free' | 'sermon' | 'study' | 'devotional' =>
-    id === 'sermon' || id === 'study' || id === 'devotional' ? id : 'free'
+  const kindFor = (id: TemplateId): 'free' | 'sermon' | 'study' | 'devotional' => {
+    if (id === 'expositive') return 'sermon'
+    if (id === 'hermeneuticStudy') return 'study'
+    if (id === 'sermon' || id === 'study' || id === 'devotional') return id
+    return 'free'
+  }
+
+  const insertIntoEditor = (markdown: string, title: string): void => {
+    void sendToWriting(markdown, title)
+  }
 
   const useTemplate = async (id: TemplateId): Promise<void> => {
     const template = TEMPLATES.find((item) => item.id === id)
@@ -55,7 +59,9 @@ export function TemplatesView() {
   const generate = async (): Promise<void> => {
     setGenerating(true)
     try {
-      const generator = createOutlineGenerator('guided')
+      const generator = settings.aiEnabled
+        ? createOutlineGenerator('ai', (req) => api.ai.chat(req))
+        : createOutlineGenerator('guided')
       const outline = await generator.generate(answers)
 
       const refs = new Set<string>()
@@ -110,8 +116,8 @@ export function TemplatesView() {
 
             {question.type === 'choice' ? (
               <div className="choice-grid">
-                {AIM_OPTIONS.map((optionKey) => {
-                  const label = t(optionKey)
+                {(question.options ?? []).map((optionKey) => {
+                  const label = t(optionKey as TranslationKey)
                   return (
                     <button
                       key={optionKey}
@@ -189,6 +195,8 @@ export function TemplatesView() {
             </div>
           ))}
         </div>
+        <h3 className="settings-heading">{t('preacher.title')}</h3>
+        <ResourceLibrary onInsert={insertIntoEditor} />
       </div>
     </div>
   )

@@ -1,24 +1,28 @@
-import { app, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'node:path'
 import {
   IPC,
+  aiChatSchema,
   chapterRequestSchema,
   compareRequestSchema,
   dictLookupSchema,
   documentCreateSchema,
   documentIdSchema,
   documentSaveSchema,
+  fullscreenSchema,
   installModuleSchema,
   searchRequestSchema,
   settingsPatchSchema,
   uninstallModuleSchema,
   verseRequestSchema,
+  zoomSchema,
   type CompareColumn,
   type EngineInfo,
   type Result
 } from '@keryx/core'
 import { SwordService } from '@keryx/sword'
 import { JsonStore } from '@keryx/db'
+import { aiChat, aiStatus } from './ai'
 
 type Handler = (args: unknown[]) => Promise<unknown> | unknown
 
@@ -36,9 +40,15 @@ function register(channel: string, handler: Handler): void {
   })
 }
 
-export async function registerIpc(dataPath?: string, eswordPath?: string): Promise<void> {
+export async function registerIpc(
+  dataPath?: string,
+  eswordPath?: string
+): Promise<JsonStore | undefined> {
   const store = new JsonStore(join(app.getPath('userData'), 'keryx-store.json'))
   const sword = await SwordService.create(dataPath, eswordPath)
+
+  const currentWindow = (): BrowserWindow | null =>
+    BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0] ?? null
 
   register(IPC.appVersion, () => app.getVersion())
   register(IPC.appPlatform, () => process.platform)
@@ -46,6 +56,29 @@ export async function registerIpc(dataPath?: string, eswordPath?: string): Promi
     IPC.appEngine,
     (): EngineInfo => ({ kind: sword.providerKind, native: sword.usingNative })
   )
+
+  register(IPC.windowSetFullscreen, (args) => {
+    const { value } = fullscreenSchema.parse(args[0] ?? {})
+    const window = currentWindow()
+    if (!window) return false
+    window.setFullScreen(Boolean(value))
+    return window.isFullScreen()
+  })
+  register(IPC.windowIsFullscreen, () => currentWindow()?.isFullScreen() ?? false)
+  register(IPC.windowToggleFullscreen, () => {
+    const window = currentWindow()
+    if (!window) return false
+    window.setFullScreen(!window.isFullScreen())
+    return window.isFullScreen()
+  })
+  register(IPC.windowSetZoom, (args) => {
+    const { value } = zoomSchema.parse(args[0] ?? {})
+    const window = currentWindow()
+    if (!window) return 1
+    const zoom = value ?? 1
+    window.webContents.setZoomFactor(zoom)
+    return zoom
+  })
 
   register(IPC.modulesList, () => sword.listLocalModules())
   register(IPC.modulesRefresh, () => sword.listLocalModules())
@@ -116,4 +149,12 @@ export async function registerIpc(dataPath?: string, eswordPath?: string): Promi
     const patch = settingsPatchSchema.parse(args[0])
     return store.setSettings(patch)
   })
+
+  register(IPC.aiChat, (args) => {
+    const req = aiChatSchema.parse(args[0])
+    return aiChat(store.getSettings(), req)
+  })
+  register(IPC.aiStatus, () => aiStatus(store.getSettings()))
+
+  return store
 }

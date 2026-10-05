@@ -100,6 +100,38 @@ export interface AppSettings {
   fontSize: number
   lineHeight: number
   priorityModules: string[]
+  sidebarHidden: boolean
+  aiEnabled: boolean
+  aiBaseUrl: string
+  aiModel: string
+  aiApiKey: string
+}
+
+export type AiRole = 'system' | 'user' | 'assistant'
+
+export interface AiMessage {
+  role: AiRole
+  content: string
+}
+
+export interface AiChatRequest {
+  messages: AiMessage[]
+  temperature?: number
+  maxTokens?: number
+}
+
+export interface AiChatResult {
+  text: string
+  model: string
+}
+
+export interface AiStatus {
+  configured: boolean
+  source: 'settings' | 'opencode' | 'env' | 'none'
+  baseUrl: string
+  model: string
+  models: string[]
+  error?: string
 }
 
 export interface Result<T> {
@@ -118,5 +150,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   typewriter: false,
   fontSize: 19,
   lineHeight: 1.7,
-  priorityModules: []
+  priorityModules: [],
+  sidebarHidden: false,
+  aiEnabled: true,
+  aiBaseUrl: 'https://api.openai.com/v1',
+  aiModel: 'gpt-4o-mini',
+  aiApiKey: ''
 }

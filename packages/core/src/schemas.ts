@@ -53,6 +53,14 @@ export const strongsSchema = z.object({
   key: z.string().min(1)
 })
 
+export const fullscreenSchema = z.object({
+  value: z.boolean().optional()
+})
+
+export const zoomSchema = z.object({
+  value: z.number().min(0.5).max(3).optional()
+})
+
 export const documentIdSchema = z.object({
   id: z.string().min(1)
 })
@@ -79,7 +87,25 @@ export const settingsPatchSchema = z.object({
   typewriter: z.boolean().optional(),
   fontSize: z.number().positive().optional(),
   lineHeight: z.number().positive().optional(),
-  priorityModules: z.array(z.string()).optional()
+  priorityModules: z.array(z.string()).optional(),
+  sidebarHidden: z.boolean().optional(),
+  aiEnabled: z.boolean().optional(),
+  aiBaseUrl: z.string().optional(),
+  aiModel: z.string().optional(),
+  aiApiKey: z.string().optional()
+})
+
+export const aiChatSchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(['system', 'user', 'assistant']),
+        content: z.string()
+      })
+    )
+    .min(1),
+  temperature: z.number().min(0).max(2).optional(),
+  maxTokens: z.number().int().positive().optional()
 })
 
 export type InstallModuleInput = z.infer<typeof installModuleSchema>
@@ -89,3 +115,6 @@ export type SearchRequest = z.infer<typeof searchRequestSchema>
 export type CompareRequest = z.infer<typeof compareRequestSchema>
 export type DictLookupInput = z.infer<typeof dictLookupSchema>
 export type SettingsPatch = z.infer<typeof settingsPatchSchema>
+export type AiChatInput = z.infer<typeof aiChatSchema>
+export type FullscreenInput = z.infer<typeof fullscreenSchema>
+export type ZoomInput = z.infer<typeof zoomSchema>

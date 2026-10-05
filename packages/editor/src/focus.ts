@@ -34,7 +34,9 @@ function paragraphRange(view: EditorView, lineNumber: number): [number, number] 
 }
 
 const dimLine = Decoration.line({ class: 'cm-dim' })
+const focusLine = Decoration.line({ class: 'cm-focus-line' })
 const focusMark = Decoration.mark({ class: 'cm-focus' })
+const dimMark = Decoration.mark({ class: 'cm-dim' })
 
 class FocusPlugin {
   decorations: DecorationSet
@@ -68,6 +70,7 @@ class FocusPlugin {
       to = line.from + e
     }
 
+    const highlightParagraph = mode === 'paragraph'
     const ranges: Range<Decoration>[] = []
     for (const visible of view.visibleRanges) {
       let pos = visible.from
@@ -75,12 +78,17 @@ class FocusPlugin {
         const l = view.state.doc.lineAt(pos)
         if (l.to < from || l.from > to) {
           ranges.push(dimLine.range(l.from))
+        } else if (highlightParagraph) {
+          ranges.push(focusLine.range(l.from))
+        } else {
+          if (from > l.from) ranges.push(dimMark.range(l.from, from))
+          if (to < l.to) ranges.push(dimMark.range(to, l.to))
         }
         if (l.to >= view.state.doc.length) break
         pos = l.to + 1
       }
     }
-    ranges.push(focusMark.range(from, to))
+    if (to > from) ranges.push(focusMark.range(from, to))
     return Decoration.set(ranges, true)
   }
 }

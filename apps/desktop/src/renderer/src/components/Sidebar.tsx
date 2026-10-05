@@ -5,6 +5,8 @@ import { Icon, type IconName } from './Icon'
 const ITEMS: { id: View; icon: IconName }[] = [
   { id: 'reader', icon: 'reader' },
   { id: 'study', icon: 'study' },
+  { id: 'search', icon: 'search' },
+  { id: 'assistant', icon: 'spark' },
   { id: 'library', icon: 'library' },
   { id: 'write', icon: 'write' },
   { id: 'templates', icon: 'templates' },
@@ -19,6 +21,8 @@ export function Sidebar() {
   const engine = useAppStore((s) => s.engine)
   const locale = useAppStore((s) => s.settings.uiLocale)
   const updateSettings = useAppStore((s) => s.updateSettings)
+  const version = useAppStore((s) => s.version)
+  const toggleSidebar = useAppStore((s) => s.toggleSidebar)
 
   return (
     <aside className="sidebar">
@@ -37,6 +41,10 @@ export function Sidebar() {
             {t(`nav.${item.id}`)}
           </button>
         ))}
+        <button className="nav-item" onClick={() => void toggleSidebar()}>
+          <Icon name="menu" />
+          {t('app.hideMenu')}
+        </button>
       </nav>
       <div className="sidebar-footer">
         <div className="lang-switch" title={t('settings.language')}>
@@ -53,7 +61,7 @@ export function Sidebar() {
         <span>
           {engine ? (engine.native ? t('engine.native') : t('engine.demo')) : t('engine.starting')}
         </span>
-        <span className="muted">v0.1.0</span>
+        <span className="muted">{version}</span>
       </div>
     </aside>
   )

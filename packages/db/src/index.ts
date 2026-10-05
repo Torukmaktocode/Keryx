@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync, existsSync, renameSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DEFAULT_SETTINGS, type AppSettings, type Document, type DocumentMeta } from '@keryx/core'
 
@@ -40,9 +40,15 @@ function toMeta(doc: Document): DocumentMeta {
 
 export class JsonStore implements Store {
   private data: StoreShape
+  private saveTimer: NodeJS.Timeout | null = null
+  private readonly debounceMs: number
 
-  constructor(private readonly filePath: string) {
+  constructor(
+    private readonly filePath: string,
+    debounceMs = 250
+  ) {
     this.data = this.load()
+    this.debounceMs = debounceMs
   }
 
   private load(): StoreShape {
@@ -63,8 +69,26 @@ export class JsonStore implements Store {
   }
 
   private persist(): void {
-    mkdirSync(dirname(this.filePath), { recursive: true })
-    writeFileSync(this.filePath, JSON.stringify(this.data, null, 2), 'utf-8')
+    if (this.saveTimer) clearTimeout(this.saveTimer)
+    this.saveTimer = setTimeout(() => this.flush(), this.debounceMs)
+  }
+
+  /** Escribe a disco de inmediato (atomico), destruyendo el debounce. */
+  flush(): void {
+    if (this.saveTimer) clearTimeout(this.saveTimer)
+    this.flushNow()
+  }
+
+  private flushNow(): void {
+    this.saveTimer = null
+    try {
+      mkdirSync(dirname(this.filePath), { recursive: true })
+      const tmp = `${this.filePath}.tmp`
+      writeFileSync(tmp, JSON.stringify(this.data, null, 2), 'utf-8')
+      renameSync(tmp, this.filePath)
+    } catch {
+      // disco lleno u otra IO: se reintenta en el proximo persist
+    }
   }
 
   getSettings(): AppSettings {

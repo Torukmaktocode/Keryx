@@ -7,6 +7,8 @@ release/
 .DS_Store
 .env
 .env.local
+ai.local.json
+*.local.json
 coverage/
 .vite/
 *.tsbuildinfo
@@ -15,14 +17,16 @@ __pycache__/
 _*.txt
 
 # Modulos y datos descargados (grandes / con derechos)
-sword/
-esword/
-Enciclopeia Champlin/
+# (sin "/" inicial: solo carpetas de datos en la raiz, no el package packages/sword)
+/sword/
+/esword/
+/Enciclopeia Champlin/
+.cache-probe/
+dev.log
 *.dctx
 *.bbli
 *.bblx
 *.dcti
-*.dctx
 *.cmti
 *.cmtx
 *.lexi

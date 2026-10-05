@@ -2,13 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { CONSULTA_QUESTIONS, GuidedGenerator } from './generator'
 
 describe('GuidedGenerator', () => {
-  it('expone 4 preguntas calibradas', () => {
-    expect(CONSULTA_QUESTIONS).toHaveLength(4)
+  it('expone las preguntas calibradas (6 con genero y entrega)', () => {
+    expect(CONSULTA_QUESTIONS).toHaveLength(6)
     expect(CONSULTA_QUESTIONS.map((q) => q.id)).toEqual([
       'topic',
       'emphasis',
       'audience',
-      'aim'
+      'aim',
+      'genre',
+      'delivery'
     ])
   })
 

@@ -54,6 +54,11 @@ export function keryxTheme(): ReturnType<typeof EditorView.theme> {
     '.cm-activeLine': { backgroundColor: 'transparent' },
     '.cm-gutters': { display: 'none' },
     '.cm-dim': { opacity: '0.22', transition: 'opacity 220ms ease' },
-    '.cm-focus': { opacity: '1', transition: 'opacity 220ms ease' }
+    '.cm-focus': { opacity: '1', transition: 'opacity 220ms ease' },
+    '.cm-focus-line': {
+      backgroundColor: 'var(--accent-soft)',
+      boxShadow: 'inset 2px 0 0 var(--accent)',
+      transition: 'background-color 220ms ease'
+    }
   })
 }

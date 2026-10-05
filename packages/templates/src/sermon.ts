@@ -4,7 +4,7 @@ export interface TemplateSection {
   hint?: string
 }
 
-export type TemplateId = 'free' | 'sermon' | 'study' | 'devotional'
+export type TemplateId = 'free' | 'sermon' | 'study' | 'devotional' | 'expositive' | 'hermeneuticStudy'
 
 export interface DocumentTemplate {
   id: TemplateId
@@ -27,24 +27,55 @@ export const SERMON_SECTIONS: TemplateSection[] = [
   { id: 'notes', heading: 'Notas y referencias', hint: 'Fuentes, comentarios, lexicos' }
 ]
 
+import { HERMENEUTIC_STEPS, SERMON_FRAMEWORK } from './library'
+
+const EXPOSITIVE_SECTIONS: TemplateSection[] = SERMON_FRAMEWORK.map((step) => ({
+  id: step.id,
+  heading: step.heading,
+  hint: step.description
+}))
+
+const HERMENEUTIC_SECTIONS: TemplateSection[] = [
+  ...HERMENEUTIC_STEPS.map((step) => ({
+    id: step.id,
+    heading: step.heading,
+    hint: step.help
+  })),
+  { id: 'bigIdea', heading: 'Gran idea', hint: 'Formula en una frase que afirma y exige el texto hoy' }
+]
+
 export function buildSermonSkeleton(title = 'Nueva predicacion'): string {
   const blocks = SERMON_SECTIONS.map((section) => {
     if (section.id === 'title') return `# ${title}\n`
+    const suggestion = section.hint ? `> _Sugerencia: ${section.hint}_\n` : ''
     if (section.id === 'points') {
-      return `## Puntos principales\n\n### I. \n- \n- \n\n### II. \n- \n- \n\n### III. \n- \n- \n`
+      return `## ${section.heading}\n\n${suggestion}\n### I. \n- \n- \n\n### II. \n- \n- \n\n### III. \n- \n- \n`
     }
-    if (section.id === 'text') return `## Texto base\n\n> \n`
-    return `## ${section.heading}\n\n`
+    if (section.id === 'text') return `## ${section.heading}\n\n${suggestion}\n> \n`
+    return `## ${section.heading}\n\n${suggestion}\n`
   })
   return blocks.join('\n')
 }
 
 export function buildStudySkeleton(title = 'Nuevo estudio'): string {
-  return `# ${title}\n\n## Pasaje\n\n> \n\n## Observacion\n\n## Interpretacion\n\n## Aplicacion\n\n## Preguntas\n\n- \n`
+  return `# ${title}\n\n## Pasaje\n\n> _Sugerencia: referencia biblica principal_\n\n> \n\n## Observacion\n\n> _Sugerencia: que dice el texto? Detalles, palabras clave, contexto_\n\n## Interpretacion\n\n> _Sugerencia: que significa? Compara con otros pasajes_\n\n## Aplicacion\n\n> _Sugerencia: como lo vivo esta semana?_\n\n## Preguntas\n\n> _Sugerencia: preguntas para profundizar_\n\n- \n`
 }
 
 export function buildDevotionalSkeleton(title = 'Nuevo devocional'): string {
-  return `# ${title}\n\n## Versiculo\n\n> \n\n## Reflexion\n\n## Oracion\n\n`
+  return `# ${title}\n\n## Versiculo\n\n> _Sugerencia: elige un versiculo clave_\n\n> \n\n## Reflexion\n\n> _Sugerencia: que te dice Dios a traves de este texto?_\n\n## Oracion\n\n> _Sugerencia: responde a Dios en tus palabras_\n\n`
+}
+
+/** Marco persuasivo: Gancho -> Concepto -> Ejemplo -> Desafio. */
+export function buildExpositiveSkeleton(title = 'Predicacion expositiva'): string {
+  return `# ${title}\n\n## Texto base\n\n> \n\n## Gancho\n\n> Conecta con una necesidad humana del auditorio\n\n- Necesidad: \n- Transicion: \n\n## Concepto (exegesis)\n\n> Extrae la gran idea del texto en su contexto original\n\n- Genero y contexto: \n- Termino clave (originales): \n- **Gran idea: **\n\n## Ejemplo\n\n> Aplica la verdad a la vida moderna\n\n- Caso cotidiano: \n- Analogia: \n\n## Desafio\n\n> Llamado a la accion claro y verificable\n\n- Accion esta semana: \n- Señal de cumplimiento: \n\n## Oracion\n\n## Notas y referencias\n\n> _Sugerencia: fee la checklist hermeneutica en Estudio para llenar el Concepto_\n`
+}
+
+/** Checklist hermeneutica en cinco pasos + gran idea. */
+export function buildHermeneuticStudySkeleton(title = 'Estudio hermeneutico'): string {
+  const steps = HERMENEUTIC_STEPS.map(
+    (step) => `## ${step.heading}\n\n> ${step.help}\n\n\n`
+  ).join('\n')
+  return `# ${title}\n\n## Pasaje\n\n> \n\n${steps}## Gran idea\n\n> Formula en una frase que afirma y exige el texto hoy\n\n\n## Aplicacion\n\n- \n`
 }
 
 export const TEMPLATES: DocumentTemplate[] = [
@@ -75,6 +106,20 @@ export const TEMPLATES: DocumentTemplate[] = [
     description: 'Versiculo, reflexion y oracion.',
     sections: [],
     build: buildDevotionalSkeleton
+  },
+  {
+    id: 'expositive',
+    name: 'Predicación expositiva',
+    description: 'Gancho → Concepto → Ejemplo → Desafío.',
+    sections: EXPOSITIVE_SECTIONS,
+    build: buildExpositiveSkeleton
+  },
+  {
+    id: 'hermeneuticStudy',
+    name: 'Estudio hermenéutico',
+    description: 'Checklist de interpretación en cinco pasos.',
+    sections: HERMENEUTIC_SECTIONS,
+    build: buildHermeneuticStudySkeleton
   }
 ]
 

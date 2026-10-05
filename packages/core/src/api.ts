@@ -1,4 +1,7 @@
 import type {
+  AiChatRequest,
+  AiChatResult,
+  AiStatus,
   AppSettings,
   BookInfo,
   Document,
@@ -27,6 +30,12 @@ export interface KeryxApi {
     version(): Promise<Result<string>>
     platform(): Promise<Result<string>>
     engine(): Promise<Result<EngineInfo>>
+  }
+  window: {
+    setFullscreen(value: boolean): Promise<Result<boolean>>
+    isFullscreen(): Promise<Result<boolean>>
+    toggleFullscreen(): Promise<Result<boolean>>
+    setZoom(value: number): Promise<Result<number>>
   }
   modules: {
     list(): Promise<Result<SwordModule[]>>
@@ -71,5 +80,9 @@ export interface KeryxApi {
   settings: {
     get(): Promise<Result<AppSettings>>
     set(patch: Partial<AppSettings>): Promise<Result<AppSettings>>
+  }
+  ai: {
+    chat(req: AiChatRequest): Promise<Result<AiChatResult>>
+    status(): Promise<Result<AiStatus>>
   }
 }

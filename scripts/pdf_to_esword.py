@@ -23,9 +23,9 @@ SRC = ROOT / "Enciclopeia Champlin"
 OUT = ROOT / "esword"
 
 MODULES = {
-    "Comentario AT": ("ChamplinAT", "Champlin - Antigo Testamento Interpretado"),
-    "Comentario NV": ("ChamplinNT", "Champlin - Novo Testamento Interpretado"),
-    "teologia e filosofia": ("ChamplinEnc", "Champlin - Enciclopedia de Biblia, Teologia e Filosofia"),
+    "Comentario AT": ("ChamplinAT", "Champlin - Antiguo Testamento Interpretado"),
+    "Comentario NV": ("ChamplinNT", "Champlin - Nuevo Testamento Interpretado"),
+    "teologia e filosofia": ("ChamplinEnc", "Champlin - Enciclopedia de Biblia, Teología y Filosofía"),
 }
 
 

@@ -3,6 +3,11 @@ export const IPC = {
   appPlatform: 'app:platform',
   appEngine: 'app:engine',
 
+  windowSetFullscreen: 'window:set-fullscreen',
+  windowIsFullscreen: 'window:is-fullscreen',
+  windowToggleFullscreen: 'window:toggle-fullscreen',
+  windowSetZoom: 'window:set-zoom',
+
   modulesList: 'modules:list',
   modulesRemote: 'modules:remote',
   modulesRefresh: 'modules:refresh',
@@ -27,7 +32,10 @@ export const IPC = {
   documentsRemove: 'documents:remove',
 
   settingsGet: 'settings:get',
-  settingsSet: 'settings:set'
+  settingsSet: 'settings:set',
+
+  aiChat: 'ai:chat',
+  aiStatus: 'ai:status'
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]

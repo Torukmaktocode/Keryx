@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useI18n, LOCALES, type Locale } from '@keryx/i18n'
-import type { AppSettings } from '@keryx/core'
+import type { AiStatus, AppSettings } from '@keryx/core'
+import { api } from '../lib/api'
 import { useAppStore } from '../store/appStore'
 
 const THEMES: AppSettings['theme'][] = ['light', 'sepia', 'dark']
@@ -11,6 +13,19 @@ export function SettingsView() {
   const { t } = useI18n()
   const settings = useAppStore((s) => s.settings)
   const update = useAppStore((s) => s.updateSettings)
+  const [testing, setTesting] = useState(false)
+  const [status, setStatus] = useState<AiStatus | null>(null)
+
+  const testAi = async (): Promise<void> => {
+    setTesting(true)
+    try {
+      setStatus(await api.ai.status())
+    } catch {
+      setStatus(null)
+    } finally {
+      setTesting(false)
+    }
+  }
 
   return (
     <div className="view">
@@ -153,6 +168,82 @@ export function SettingsView() {
               value={settings.lineHeight}
               onChange={(e) => void update({ lineHeight: Number(e.target.value) })}
             />
+          </div>
+
+          <h3 className="settings-heading">{t('settings.ai.title')}</h3>
+
+          <div className="settings-row">
+            <label>
+              {t('settings.ai.enable')}
+              <span className="hint">{t('settings.ai.enableHint')}</span>
+            </label>
+            <input
+              type="checkbox"
+              checked={settings.aiEnabled}
+              onChange={(e) => void update({ aiEnabled: e.target.checked })}
+            />
+          </div>
+
+          <div className="settings-row">
+            <label>
+              {t('settings.ai.baseUrl')}
+              <span className="hint">{t('settings.ai.baseUrlHint')}</span>
+            </label>
+            <input
+              className="input"
+              style={{ width: 260 }}
+              value={settings.aiBaseUrl}
+              onChange={(e) => void update({ aiBaseUrl: e.target.value })}
+            />
+          </div>
+
+          <div className="settings-row">
+            <label>{t('settings.ai.model')}</label>
+            <input
+              className="input"
+              style={{ width: 200 }}
+              value={settings.aiModel}
+              list="ai-models"
+              onChange={(e) => void update({ aiModel: e.target.value })}
+            />
+            <datalist id="ai-models">
+              {(status?.models ?? []).map((model) => (
+                <option key={model} value={model} />
+              ))}
+            </datalist>
+          </div>
+
+          <div className="settings-row">
+            <label>
+              {t('settings.ai.apiKey')}
+              <span className="hint">{t('settings.ai.apiKeyHint')}</span>
+            </label>
+            <input
+              className="input"
+              type="password"
+              style={{ width: 260 }}
+              placeholder="sk-…"
+              value={settings.aiApiKey}
+              onChange={(e) => void update({ aiApiKey: e.target.value })}
+            />
+          </div>
+
+          <div className="settings-row">
+            <label>
+              {t('settings.ai.test')}
+              {status && (
+                <span className="hint">
+                  {status.error
+                    ? `${t('settings.ai.error')}: ${status.error}`
+                    : status.configured
+                      ? t('settings.ai.connected', { count: status.models.length })
+                      : t('settings.ai.noKey')}
+                </span>
+              )}
+            </label>
+            <button className="btn small" onClick={() => void testAi()} disabled={testing}>
+              {testing ? t('settings.ai.testing') : t('settings.ai.test')}
+            </button>
           </div>
         </div>
       </div>

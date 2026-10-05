@@ -14,6 +14,11 @@ export type IconName =
   | 'book'
   | 'star'
   | 'library'
+  | 'spark'
+  | 'columns'
+  | 'menu'
+  | 'fullscreen'
+  | 'fullscreen-exit'
 
 const PATHS: Record<IconName, JSX.Element> = {
   reader: (
@@ -88,6 +93,41 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d="M4 4h4v16H4z" />
       <path d="M10 4h4v16h-4z" />
       <path d="M16.5 4.6l3.2 15.4" />
+    </>
+  ),
+  spark: (
+    <>
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
+      <path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
+    </>
+  ),
+  columns: (
+    <>
+      <rect x="3" y="4" width="7.5" height="16" rx="1.5" />
+      <rect x="13.5" y="4" width="7.5" height="16" rx="1.5" />
+    </>
+  ),
+  menu: (
+    <>
+      <path d="M4 7h16" />
+      <path d="M4 12h16" />
+      <path d="M4 17h16" />
+    </>
+  ),
+  fullscreen: (
+    <>
+      <path d="M4 9V4h5" />
+      <path d="M20 9V4h-5" />
+      <path d="M4 15v5h5" />
+      <path d="M20 15v5h-5" />
+    </>
+  ),
+  'fullscreen-exit': (
+    <>
+      <path d="M9 4v5H4" />
+      <path d="M15 4v5h5" />
+      <path d="M9 20v-5H4" />
+      <path d="M15 20v-5h5" />
     </>
   )
 }

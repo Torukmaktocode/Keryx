@@ -11,6 +11,12 @@ const api: KeryxApi = {
     platform: () => invoke(IPC.appPlatform),
     engine: () => invoke(IPC.appEngine)
   },
+  window: {
+    setFullscreen: (value) => invoke(IPC.windowSetFullscreen, { value }),
+    isFullscreen: () => invoke(IPC.windowIsFullscreen),
+    toggleFullscreen: () => invoke(IPC.windowToggleFullscreen),
+    setZoom: (value) => invoke(IPC.windowSetZoom, { value })
+  },
   modules: {
     list: () => invoke(IPC.modulesList),
     remote: (repository) => invoke(IPC.modulesRemote, repository),
@@ -41,6 +47,10 @@ const api: KeryxApi = {
   settings: {
     get: () => invoke(IPC.settingsGet),
     set: (patch) => invoke(IPC.settingsSet, patch)
+  },
+  ai: {
+    chat: (req) => invoke(IPC.aiChat, req),
+    status: () => invoke(IPC.aiStatus)
   }
 }
 

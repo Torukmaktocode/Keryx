@@ -71,7 +71,8 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  await registerIpc(resolveSwordPath(), resolveEswordPath())
+  const store = await registerIpc(resolveSwordPath(), resolveEswordPath())
+  window_all_closed_flush = (): void => store?.flush()
   createWindow()
 
   app.on('activate', () => {
@@ -79,6 +80,9 @@ app.whenReady().then(async () => {
   })
 })
 
+let window_all_closed_flush: (() => void) | undefined
+
 app.on('window-all-closed', () => {
+  window_all_closed_flush?.()
   if (process.platform !== 'darwin') app.quit()
 })

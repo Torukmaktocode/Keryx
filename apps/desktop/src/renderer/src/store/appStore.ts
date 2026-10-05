@@ -7,7 +7,16 @@ import {
 } from '@keryx/core'
 import { api } from '../lib/api'
 
-export type View = 'reader' | 'study' | 'library' | 'write' | 'templates' | 'modules' | 'settings'
+export type View =
+  | 'reader'
+  | 'study'
+  | 'search'
+  | 'library'
+  | 'write'
+  | 'templates'
+  | 'assistant'
+  | 'modules'
+  | 'settings'
 
 interface AppState {
   view: View
@@ -19,10 +28,21 @@ interface AppState {
   selectedModule: string
   activeDocumentId: string | null
   toast: string | null
+  fullscreen: boolean
+  sidebarHidden: boolean
+  version: string
+  navBook: string
+  navChapter: number
+  navVerse: number | null
   setView: (view: View) => void
   setSelectedModule: (name: string) => void
   setActiveDocumentId: (id: string | null) => void
   notify: (message: string | null) => void
+  setFullscreen: (value: boolean) => void
+  toggleFullscreen: () => Promise<void>
+  setSidebarHidden: (value: boolean) => void
+  toggleSidebar: () => Promise<void>
+  setNav: (book: string, chapter: number, verse?: number) => void
   bootstrap: () => Promise<void>
   refreshModules: () => Promise<void>
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
@@ -40,18 +60,50 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectedModule: '',
   activeDocumentId: null,
   toast: null,
+  fullscreen: false,
+  sidebarHidden: false,
+  version: '0.1.0',
+  navBook: 'John',
+  navChapter: 3,
+  navVerse: null,
 
   setView: (view) => set({ view }),
   setSelectedModule: (selectedModule) => set({ selectedModule }),
   setActiveDocumentId: (activeDocumentId) => set({ activeDocumentId }),
   notify: (toast) => set({ toast }),
+  setNav: (navBook, navChapter, navVerse) =>
+    set({ navBook, navChapter, navVerse: navVerse ?? null }),
+  setFullscreen: (fullscreen) => set({ fullscreen }),
+
+  toggleFullscreen: async () => {
+    try {
+      const value = await api.window.toggleFullscreen()
+      set({ fullscreen: value })
+    } catch {
+      // ignorar: entorno sin control de ventana
+    }
+  },
+
+  toggleSidebar: async () => {
+    const next = !get().sidebarHidden
+    set({ sidebarHidden: next })
+    try {
+      const settings = await api.settings.set({ sidebarHidden: next })
+      set({ settings })
+    } catch {
+      // persistencia opcional
+    }
+  },
+
+  setSidebarHidden: (value) => set({ sidebarHidden: value }),
 
   bootstrap: async () => {
     try {
-      const [engine, settings, modules] = await Promise.all([
+      const [engine, settings, modules, version] = await Promise.all([
         api.engine(),
         api.settings.get(),
-        api.modules.list()
+        api.modules.list(),
+        api.version().catch(() => '0.1.0')
       ])
       const bibleModules = modules.filter((m) => m.category === 'Bible')
       set({
@@ -59,6 +111,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         settings,
         modules,
         selectedModule: get().selectedModule || bibleModules[0]?.name || modules[0]?.name || '',
+        sidebarHidden: settings.sidebarHidden ?? false,
+        version,
         ready: true
       })
     } catch (error) {
