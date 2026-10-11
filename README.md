@@ -1,43 +1,107 @@
 # Keryx
 
 Aplicación de escritorio para **estudio bíblico y escritura**, con motor de módulos
-**SWORD** y **e-Sword**, modo escritura minimalista (tipo iA Writer) y preparación de
-predicaciones.
+**SWORD** y **e-Sword**, estudio avanzado con paneles sincronizados (estilo e-Sword,
+pero más limpio y en español) y modo escritura minimalista tipo iA Writer.
 
-> κῆρυξ (keryx) = heraldo.
+> κήρυξ (keryx) = heraldo.
 
-## Características
+## Qué trae hoy (resumen)
 
-- **Lector**: navegación libro/capítulo/versículo, filtro por idioma, cada Biblia muestra
-  su idioma entre paréntesis.
-- **Estudio** (tres paneles sincronizados): Biblia · Comentario · Diccionario.
-  - Salto por referencia (`Juan 3:16`).
-  - Navegación con teclado (`↑/↓` versículo, `←/→` capítulo).
-  - Auto-scroll al versículo seleccionado.
-- **Enciclopedia / Recursos**: busca texto completo en diccionarios y enciclopedias y abre
-  la entrada completa.
-- **Escritura**: editor Markdown minimalista (CodeMirror 6) con modo enfoque, typewriter,
-  conteo de palabras/tiempo de lectura, autoguardado y export MD/HTML.
-- **Plantillas y modo consulta**: plantilla de predicación (10 secciones), estudio,
-  devocional, y un asistente de 4 preguntas que genera un bosquejo.
-- **Flujo investigación → predicación**: envía el pasaje + comentario al editor.
-- **Módulos**:
-  - SWORD (`zText`, `zCom`, `RawLD`, `RawLD4`, `zLD`), incluye descifrado (`CipherKey`).
-  - e-Sword (`.bblx/.bbli`, `.dctx/.dcti`, `.cmtx/.cmti`, `.devx`, `.topx`) vía SQLite.
-  - Instalación desde el repositorio CrossWire.
-  - Prioridad (⭐) para destacar recursos.
-- **Idioma de la interfaz**: español / inglés / portugués (conmutador ES | EN | PT).
+### Biblioteca de recursos reales
+- Escaneo directo de la carpeta `biblioteca/` (recursivo, sin copiar ni convertir):
+  **717 módulos e-Sword** en español:
+  - **96 Biblias** (`.bbli`/`.bblx`) — RV1960, RV1909, BHS hebrea, interlineales griegas,
+    Jerusalén, NTV, NVI, etc.
+  - **79 Comentarios** (`.cmti`) — Biblia Comentada, MacArthur, Adventista, Guzik,
+    Pearlman, Beacon, Wiersbe, etc.
+  - **120 Diccionarios y léxicos** (`.dcti`/`.lexi`/`.dctx`) — Lockward, Thompson,
+    Strong en español, concordancias, nombres, etc.
+  - **422 Libros** (`.refi`) — Bosquejos, enciclopedias, teología, sermones.
+- La vista **Biblioteca** organiza con pestañas `Todos | Biblias | Comentarios |
+  Diccionarios | Libros` (con contador), búsqueda por nombre/descripción y botones
+  **Abrir en Estudio / Abrir en Lector** y coloca el recurso directo en el flujo.
+- Otras carpetas de módulos siguen soportadas: `esword/` (principal) y `sword/`
+  (formato SWORD/CrossWire opcional).
+
+### Estudio (modo avanzado)
+- **Plantillas de layout**: `Estudio completo` (Biblia + Comentario + Diccionario),
+  `Lectura`, `Libros`, `Investigación` y `Personalizado` (se activa con cambios manuales).
+- **Paneles ajustables**: separadores arrastrables entre columnas (los anchos se
+  guardan), doble clic restaura el peso, layout apilado responsivo ≤ 1100 px.
+- **Menú completo por panel** (☰): selector de módulo de su categoría, cambio de tipo
+  de panel (Biblia / Comentario / Diccionario / Libro), fijar-soltar la sincronía del
+  versículo y cerrar/abrir paneles (botón `+` para volver a añadirlos).
+- **Sincronía del versículo** (única fuente de verdad, `Estudio`): el versículo
+  activo en la Biblia gobierna los demás paneles:
+  - El **Comentario** es un acordeón verse-por-verse sobre los comentarios
+    e-Sword reales (`.cmti`), respetando rangos como e-Sword (una entrada por
+    `VerseBegin`; `getVerse` devuelve la entrada que *cubre* el versículo).
+  - El **Diccionario** muestra la entrada del término y una fila de chips
+    "ℹ Diccionarios con 'X'" para saltar al recurso que sí la tiene;
+    busqueda con un **clic sobre cualquier palabra** del texto bíblico,
+    doble clic también, y las marcas **Strong#** (clicables) si el módulo las trae
+    (control en Ajustes → *Marcas Strong#*). Claves `G26/H430` sin entrada en el
+    módulo activo caen a los módulos Strong de la biblioteca (como e-Sword).
+  - La barra de **"ℹ Habla de {Libro} {capítulo}"** marca los comentarios que
+    cubren el capítulo actual (con la cantidad de versos) y **"Diccionarios con
+    '{término}'"** los recursos que tienen el término; clic en el chip abre allí
+    esa entrada.
+- **Hermenéutica**: pestaña con guía interactiva de estudio (observación,
+  interpretación, aplicación) que se envía al editor.
+- Salto por referencia, navegación de teclado (`↑/↓` versículo, `←/→` capítulo)
+  y envío del pasaje + comentario al editor.
+
+### Escritura
+- Editor Markdown (CodeMirror 6) minimalista: modo enfoque por oración/párrafo,
+  typewriter, conteo de palabras y lectura, autoguardado atómico, export MD/HTML.
+- El botón **Enviar al editor** desde Lector/Estudio inserta el pasaje + comentario
+  en el documento activo (o crea uno nuevo para el sermón).
+
+### Plantillas y consulta
+- Plantilla de predicación (10 secciones), estudio devocional y guía de 10 pasos.
+- Asistente de consulta guiado (4 preguntas) que genera el bosquejo inicial.
+- Biblioteca del predicador: anécdotas e ilustraciones de los Libros (.refi).
+
+### Módulos y motor
+- **SWORD** completo vía lector local (`zText`, `zCom`, `RawLD`, `RawLD4`, `zLD`,
+  descifrado `CipherKey`, Strong, marcado `<w data-strong>`), instalación desde
+  repositorios CrossWire y descarga con `scripts/download-sword.mjs`.
+- **e-Sword** vía SQLite (`node:sqlite`): Bibles (tabla `Bible`), comentarios
+  e-Sword 2009 (`VerseCommentary` con rangos `ChapterBegin/VerseBegin..End`,
+  `ChapterCommentary`, `BookCommentary`), diccionarios (`Dictionary(Topic, Definition)`,
+  `Reference(Chapter, Content)` para libros), resolución tolerante de temas
+  (acentos, numeración inicial, prefijos `\b`) y nombres únicos ante la
+  interfaz cuando un mismo título existe en varias categorías.
+
+## Flujo de la aplicación
+
+```
+Biblioteca ──abrir──▶ Estudio ──(plantilla, paneles, versículo)──▶ ℹ marcas
+     │                     │
+     │                     ├─ enviar pasaje + comentario ──▶ Escritura
+     └──abrir en Lector ───┘                                ├─ plantillas/consulta
+                                                            └─ exportar MD/HTML
+```
+
+1. **Biblioteca**: encuentra el recurso (biblia, comentario, diccionario, libro)
+   y ábrelo en Estudio o Lector.
+2. **Estudio**: eligen plantilla según la tarea (leer, investigar, consultar
+   libros); navegan el versículo — cada panel se marca y sincroniza; los chips ℹ
+   muestrean que módulos tienen contenido del versículo/tema y saltan directo.
+3. **Escritura**: building del sermón/estudio con el material enviado; exportación
+   final.
 
 ## Requisitos
 
-- Node.js 20+ (probado con Node 24)
-- Python 3.10+ (solo para el conversor de PDF)
+- Node.js 20+ (probado con Node 24) y npm 10+.
+- (Opcional) Python 3.10+ con PyMuPDF para los scripts auxiliares de `scripts/`.
 
 ## Instalación y uso
 
 ```bash
 npm install
-npm run dev        # desarrollo
+npm run dev        # desarrollo (electron-vite)
 npm run build      # compilar
 npm run build:win  # instalador Windows (electron-builder)
 ```
@@ -47,50 +111,30 @@ npm run build:win  # instalador Windows (electron-builder)
 ```bash
 npm run typecheck
 npm run lint
-npm run test
+npm run test      # vitest (motor SWORD/e-Sword, búsqueda, i18n, fixtures)
 ```
-
-## Módulos
-
-La app busca módulos en estas carpetas (en la raíz del proyecto o en `userData`):
-
-- `sword/` — módulos SWORD (`mods.d/*.conf` + `modules/...`)
-- `esword/` — módulos e-Sword (`.bblx`, `.dctx`, `.cmtx`, …)
-
-### Descargar módulos SWORD libres (CrossWire)
-
-```bash
-node scripts/download-sword.mjs            # set inicial (biblias multilingües + diccionarios + comentarios)
-node scripts/download-sword.mjs --all      # todo el catálogo libre
-node scripts/download-sword.mjs --all-bibles
-```
-
-### Convertir PDFs a módulos e-Sword (determinista, sin IA)
-
-```bash
-npm run convert:esword
-```
-
-Lee los PDFs de `Enciclopeia Champlin/` (o el directorio configurado) y genera módulos
-`.dctx` en `esword/` con una entrada por página. Usa PyMuPDF + SQLite; **no usa IA ni OCR**.
 
 ## Estructura
 
 ```
-apps/desktop/          # Electron (main + preload + renderer React)
+apps/desktop/            # Electron (main + preload + renderer React)
 packages/
-  core/                # tipos, canales IPC, schemas Zod, libros canónicos
-  sword/               # lectores SWORD/e-Sword (zText, zLD, RawLD, e-Sword, cifrado)
-  db/                  # persistencia (documentos + ajustes)
-  ui/                  # design tokens y temas
-  editor/              # CodeMirror 6 (enfoque, typewriter, markdown)
-  i18n/                # interfaz es / en / pt
-  templates/           # plantillas + generador de bosquejos
-scripts/               # descargador SWORD + conversor PDF→e-Sword
+  core/                  # tipos, IPC queries, schemas Zod, biblias canónicas, layouts
+  sword/                 # lectores SWORD/e-Sword (providers, búsqueda, Strong, cifrado)
+  db/                    # persistencia (documentos + ajustes/estudios layout)
+  ui/                    # design tokens y temas
+  editor/                # CodeMirror 6 (enfoque, typewriter, markdown)
+  i18n/                  # interfaz es / en / pt
+  templates/             # plantillas + generador de bosquejos
+biblioteca/              # módulos e-Sword reales (BIBLIAS/COMENTARIOS/DICCIONARIOS/LIBROS)
+esword/                  # módulos e-Sword principales (opcional, vacío por defecto)
+sword/                   # módulos SWORD CrossWire (opcional)
+scripts/                 # download-sword.mjs, pdf_to_esword.py, traductores opcionales
+docs/                    # plan y resumen (incluye docs/resumen-app.md)
 ```
 
 ## Licencia
 
-GPL-3.0-or-later. El motor SWORD/libsword y los módulos de terceros conservan sus
-propias licencias. Los módulos descargados y los PDFs convertidos son responsabilidad del
-usuario; verifica sus derechos antes de usarlos o distribuirlos.
+GPL-3.0-or-later. El motor SWORD/libsword y los módulos de tercero conservan sus
+propias licencias. Los módulos descargados y los contenidos de `biblioteca/` son
+responsabilidad del usuario: verificar sus derechos antes de usarlos o distribuirlos.
