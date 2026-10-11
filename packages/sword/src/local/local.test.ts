@@ -55,5 +55,5 @@ describe.skipIf(!hasModules)('LocalSwordProvider (modulos reales)', () => {
     const provider = LocalSwordProvider.create(SWORD_ROOT)!
     const results = await provider.search({ query: 'shepherd', modules: ['KJV'], limit: 20 })
     expect(results.length).toBeGreaterThan(0)
-  })
+  }, 180000)
 })

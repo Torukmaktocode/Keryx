@@ -45,6 +45,28 @@ describe('matchesQuery', () => {
     expect(matchesQuery('ando', tokenizeQuery('anda'), { caseSensitive: false, wholeWord: true })).toBe(false)
     expect(matchesQuery('ando', tokenizeQuery('ando'), { caseSensitive: false, wholeWord: true })).toBe(true)
   })
+  it('wholeWord: "amor" no empata "JAMOR" ni "Amorrheo" (regresion)', () => {
+    expect(
+      matchesQuery('Y el jamor era de carga', tokenizeQuery('amor'), { caseSensitive: false, wholeWord: true })
+    ).toBe(false)
+    expect(
+      matchesQuery('Y al Jebuseo, y al Amorrheo', tokenizeQuery('amor'), { caseSensitive: false, wholeWord: true })
+    ).toBe(false)
+    expect(
+      matchesQuery('Dios es amor', tokenizeQuery('amor'), { caseSensitive: false, wholeWord: true })
+    ).toBe(true)
+    expect(
+      matchesQuery('Dios es amor', tokenizeQuery('amor'), { caseSensitive: false, wholeWord: false })
+    ).toBe(true)
+  })
+  it('wholeWord con acentos: "amor" encuentra "amór"', () => {
+    expect(
+      matchesQuery('el amór de Cristo', tokenizeQuery('amor'), { caseSensitive: false, wholeWord: true })
+    ).toBe(true)
+  })
+  it('tokens ideograficos (CJK) se buscan por subcadena aunque wholeWord este activo', () => {
+    expect(matchesQuery('神爱世人', tokenizeQuery('爱'), { caseSensitive: false, wholeWord: true })).toBe(true)
+  })
 })
 
 describe('snippet y resaltado', () => {

@@ -11,7 +11,6 @@ import {
 import { api } from '../lib/api'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
-import { ResourceLibrary } from '../components/ResourceLibrary'
 
 const EMPTY_ANSWERS: SermonAnswers = {
   topic: '',
@@ -28,7 +27,6 @@ export function TemplatesView() {
   const setView = useAppStore((s) => s.setView)
   const notify = useAppStore((s) => s.notify)
   const settings = useAppStore((s) => s.settings)
-  const sendToWriting = useAppStore((s) => s.sendToWriting)
 
   const [mode, setMode] = useState<'gallery' | 'consulta'>('gallery')
   const [step, setStep] = useState(0)
@@ -40,10 +38,6 @@ export function TemplatesView() {
     if (id === 'hermeneuticStudy') return 'study'
     if (id === 'sermon' || id === 'study' || id === 'devotional') return id
     return 'free'
-  }
-
-  const insertIntoEditor = (markdown: string, title: string): void => {
-    void sendToWriting(markdown, title)
   }
 
   const useTemplate = async (id: TemplateId): Promise<void> => {
@@ -195,8 +189,6 @@ export function TemplatesView() {
             </div>
           ))}
         </div>
-        <h3 className="settings-heading">{t('preacher.title')}</h3>
-        <ResourceLibrary onInsert={insertIntoEditor} />
       </div>
     </div>
   )

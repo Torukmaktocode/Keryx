@@ -6,10 +6,9 @@ import { languageLabel } from '../lib/languages'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
 
-type SourceFilter = 'all' | 'sword' | 'esword' | 'champlin'
+type SourceFilter = 'all' | 'sword' | 'esword'
 
 const isEsword = (m: SwordModule): boolean => (m.driver || '').startsWith('e-Sword')
-const isChamplin = (m: SwordModule): boolean => m.name.toLowerCase().startsWith('champlin')
 
 export function ModulesView() {
   const { t, locale } = useI18n()
@@ -33,7 +32,6 @@ export function ModulesView() {
       .filter((m) => {
         if (sourceFilter === 'sword' && isEsword(m)) return false
         if (sourceFilter === 'esword' && !isEsword(m)) return false
-        if (sourceFilter === 'champlin' && !isChamplin(m)) return false
         if (needle && !m.name.toLowerCase().includes(needle) && !m.description.toLowerCase().includes(needle)) {
           return false
         }
@@ -91,8 +89,6 @@ export function ModulesView() {
     }
   }
 
-  const champlinCount = modules.filter(isChamplin).length
-
   return (
     <div className="view">
       <header className="view-header">
@@ -108,13 +104,13 @@ export function ModulesView() {
       <div className="view-body">
         <div className="filters">
           <div className="segmented">
-            {(['all', 'sword', 'esword', 'champlin'] as SourceFilter[]).map((id) => (
+            {(['all', 'sword', 'esword'] as SourceFilter[]).map((id) => (
               <button
                 key={id}
                 className={sourceFilter === id ? 'active' : ''}
                 onClick={() => setSourceFilter(id)}
               >
-                {id === 'champlin' ? `Champlin (${champlinCount})` : t(`modules.filter.${id}`)}
+                {t(`modules.filter.${id}`)}
               </button>
             ))}
           </div>
@@ -130,9 +126,8 @@ export function ModulesView() {
         <div className="list">
           {filtered.map((m) => {
             const esword = isEsword(m)
-            const champlin = isChamplin(m)
             return (
-              <div className={`list-item ${champlin ? 'featured' : ''}`} key={`${m.driver}-${m.name}`}>
+              <div className="list-item" key={`${m.driver}-${m.name}`}>
                 <div className="meta">
                   <strong>{m.name}</strong>
                   <small>
@@ -141,7 +136,6 @@ export function ModulesView() {
                     {m.hasStrongs ? ' - Strongs' : ''}
                   </small>
                 </div>
-                {champlin && <span className="badge champlin">Champlin</span>}
                 <span className={`badge ${esword ? 'esword' : 'muted'}`}>
                   {esword ? 'e-Sword' : 'SWORD'}
                 </span>

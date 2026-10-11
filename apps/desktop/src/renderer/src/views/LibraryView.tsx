@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '@keryx/i18n'
 import type { SearchResult } from '@keryx/core'
 import { api } from '../lib/api'
-import { languageLabel } from '../lib/languages'
+import { moduleOptionLabel } from '../lib/modules'
 import { useAppStore } from '../store/appStore'
 
 export function LibraryView() {
@@ -78,7 +78,7 @@ export function LibraryView() {
         <select className="select" value={selected} onChange={(e) => setSelected(e.target.value)}>
           {resources.map((m) => (
             <option key={`${m.driver}-${m.name}`} value={m.name}>
-              {m.name} ({languageLabel(m.lang, locale)})
+              {moduleOptionLabel(m, locale)}
             </option>
           ))}
         </select>
@@ -122,7 +122,7 @@ export function LibraryView() {
             ) : entry ? (
               <>
                 <div className="library-read-head">
-                  {selected} · {entry.title}
+                  {selected} Â· {entry.title}
                 </div>
                 <div className="scripture" dangerouslySetInnerHTML={{ __html: entry.html }} />
               </>

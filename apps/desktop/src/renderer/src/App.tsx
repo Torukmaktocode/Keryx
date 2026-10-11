@@ -10,6 +10,7 @@ import { LibraryView } from './views/LibraryView'
 import { WritingView } from './views/WritingView'
 import { TemplatesView } from './views/TemplatesView'
 import { AssistantView } from './views/AssistantView'
+import { InspirationView } from './views/InspirationView'
 import { ModulesView } from './views/ModulesView'
 import { SettingsView } from './views/SettingsView'
 import { Icon } from './components/Icon'
@@ -105,6 +106,7 @@ function Shell() {
             {view === 'write' && <WritingView />}
             {view === 'templates' && <TemplatesView />}
             {view === 'assistant' && <AssistantView />}
+            {view === 'inspiration' && <InspirationView />}
             {view === 'modules' && <ModulesView />}
             {view === 'settings' && <SettingsView />}
           </>

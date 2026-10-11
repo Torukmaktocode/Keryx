@@ -13,49 +13,102 @@
   --space-7: 48px;
   --space-8: 64px;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
 
-  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
-  --shadow-pop: 0 12px 40px rgba(0, 0, 0, 0.16);
+  /* Liquid glass: material translucido con borde especular y luz interna */
+  --glass: rgba(255, 255, 255, 0.42);
+  --glass-strong: rgba(255, 255, 255, 0.62);
+  --glass-soft: rgba(255, 255, 255, 0.26);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-border-soft: rgba(255, 255, 255, 0.35);
+  --glass-highlight:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.18);
+  --glass-highlight-soft: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  --glass-filter: saturate(160%) blur(20px);
+  --glass-filter-strong: saturate(180%) blur(28px);
+  --glass-filter-soft: saturate(140%) blur(14px);
 
-  --bg: #fbfaf7;
+  /* Aurora viva detrás del cristal (claro: pergaminos al amanecer) */
+  --aurora-1: rgba(214, 226, 250, 0.9);
+  --aurora-2: rgba(250, 226, 205, 0.85);
+  --aurora-3: rgba(222, 244, 228, 0.8);
+  --aurora-base: #f4f2ec;
+
+  --shadow-soft: 0 2px 6px rgba(31, 26, 20, 0.05), 0 18px 44px rgba(31, 26, 20, 0.1);
+  --shadow-pop: 0 12px 40px rgba(31, 26, 20, 0.22), 0 2px 8px rgba(31, 26, 20, 0.12);
+  --shadow-glass: 0 1px 2px rgba(31, 26, 20, 0.05), 0 14px 40px rgba(31, 26, 20, 0.09);
+
+  --bg: #f7f5ef;
   --bg-elevated: #ffffff;
-  --bg-sunken: #f2efe8;
-  --fg: #23201c;
+  --bg-sunken: #caccd7;
+  --fg: #26211b;
   --fg-soft: #4b453c;
-  --muted: #8a8378;
-  --border: #e7e2d8;
+  --muted: #77808d;
+  --border: rgba(60, 68, 92, 0.14);
   --accent: #b25a34;
-  --accent-soft: rgba(178, 90, 52, 0.12);
+  --accent-bright: #cf6d42;
+  --accent-soft: rgba(178, 90, 52, 0.14);
   --selection: rgba(178, 90, 52, 0.18);
   --danger: #b23b3b;
 }
 
 [data-theme='dark'] {
-  --bg: #14110f;
-  --bg-elevated: #1d1916;
-  --bg-sunken: #100e0c;
-  --fg: #ece7de;
+  --glass: rgba(44, 48, 58, 0.44);
+  --glass-strong: rgba(54, 58, 70, 0.6);
+  --glass-soft: rgba(40, 44, 54, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-border-soft: rgba(255, 255, 255, 0.1);
+  --glass-highlight:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  --glass-highlight-soft: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  /* Aurora nocturna: brasa bajo vidrio oscuro */
+  --aurora-1: rgba(83, 106, 148, 0.32);
+  --aurora-2: rgba(148, 92, 70, 0.3);
+  --aurora-3: rgba(66, 118, 96, 0.26);
+  --aurora-base: #131419;
+
+  --bg: #17181d;
+  --bg-elevated: #212329;
+  --bg-sunken: #101116;
+  --fg: #eae6de;
   --fg-soft: #cbc3b6;
-  --muted: #948d80;
-  --border: #2c2823;
+  --muted: #8c93a0;
+  --border: rgba(255, 255, 255, 0.1);
   --accent: #d98a63;
+  --accent-bright: #e89b73;
   --accent-soft: rgba(217, 138, 99, 0.16);
   --selection: rgba(217, 138, 99, 0.24);
   --danger: #e06c6c;
 }
 
 [data-theme='sepia'] {
-  --bg: #f4ecd8;
+  --glass: rgba(255, 248, 230, 0.46);
+  --glass-strong: rgba(255, 250, 238, 0.64);
+  --glass-soft: rgba(255, 246, 224, 0.3);
+  --glass-border: rgba(120, 92, 48, 0.22);
+  --glass-border-soft: rgba(120, 92, 48, 0.14);
+  --glass-highlight:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.14);
+  --glass-highlight-soft: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+
+  --aurora-1: rgba(238, 214, 168, 0.85);
+  --aurora-2: rgba(242, 196, 160, 0.8);
+  --aurora-3: rgba(222, 226, 180, 0.75);
+  --aurora-base: #f2e8d2;
+
+  --bg: #f2e9d4;
   --bg-elevated: #fbf6e9;
-  --bg-sunken: #ece0c4;
+  --bg-sunken: #d9c8a2;
   --fg: #4a3f2f;
   --fg-soft: #6a5c46;
   --muted: #8a7a5c;
-  --border: #e0d3b4;
+  --border: rgba(110, 84, 44, 0.18);
   --accent: #a56a3a;
+  --accent-bright: #bd7d4a;
   --accent-soft: rgba(165, 106, 58, 0.14);
   --selection: rgba(165, 106, 58, 0.22);
   --danger: #a5453a;
@@ -74,10 +127,25 @@ body,
 
 body {
   font-family: var(--font-ui);
-  background: var(--bg);
-  color: var(--fg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  color: var(--fg);
+  position: relative;
+  background: var(--aurora-base);
+}
+
+/* Aurora: campos de luz fijos que atraviesan todo el vidrio */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(42% 38% at 12% 10%, var(--aurora-1) 0%, transparent 70%),
+    radial-gradient(38% 34% at 88% 14%, var(--aurora-2) 0%, transparent 72%),
+    radial-gradient(46% 42% at 62% 92%, var(--aurora-3) 0%, transparent 70%);
+  transition: background 300ms ease;
 }
 
 button {
@@ -89,12 +157,46 @@ button {
   background: var(--selection);
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* Sin blur, el cristal se vuelve mas solido para seguir siendo legible */
+@supports not (backdrop-filter: blur(1px)) {
+  :root {
+    --glass: var(--bg-elevated);
+    --glass-strong: var(--bg-elevated);
+    --glass-soft: var(--bg-elevated);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

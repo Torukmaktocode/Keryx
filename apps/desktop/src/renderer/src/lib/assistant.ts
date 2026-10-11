@@ -1,9 +1,19 @@
-import { bookName, CANONICAL_BOOKS, findBook, type AppSettings, type SwordModule } from '@keryx/core'
+﻿import { bookName, CANONICAL_BOOKS, findBook, type AppSettings, type SwordModule } from '@keryx/core'
 import { api } from './api'
 import { moduleLabel } from './modules'
 import { parseReference } from './reference'
+import { runCreator } from './creator'
 
-export type AssistantMode = 'verse' | 'chapter' | 'topic' | 'word' | 'concept' | 'hermeneutica'
+export type AssistantMode =
+  | 'verse'
+  | 'chapter'
+  | 'topic'
+  | 'word'
+  | 'concept'
+  | 'hermeneutica'
+  | 'crearsermon'
+  | 'crearestudio'
+  | 'creardevocional'
 
 export interface AssistantPassage {
   ref: string
@@ -23,9 +33,13 @@ export interface AssistantContext {
   settings: AppSettings
   modules: SwordModule[]
   selectedModule: string
+  personaId?: string
 }
 
 export const ASSISTANT_MODES: AssistantMode[] = [
+  'crearsermon',
+  'crearestudio',
+  'creardevocional',
   'verse',
   'chapter',
   'topic',
@@ -34,7 +48,7 @@ export const ASSISTANT_MODES: AssistantMode[] = [
   'hermeneutica'
 ]
 
-const stripTags = (value: string): string =>
+export const stripTags = (value: string): string =>
   value
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
@@ -42,7 +56,7 @@ const stripTags = (value: string): string =>
     .replace(/\s+/g, ' ')
     .trim()
 
-function pickBible(ctx: AssistantContext): string {
+export function pickBible(ctx: AssistantContext): string {
   const bibles = ctx.modules.filter((m) => m.category === 'Bible')
   if (ctx.selectedModule && bibles.some((m) => m.name === ctx.selectedModule)) {
     return ctx.selectedModule
@@ -51,25 +65,23 @@ function pickBible(ctx: AssistantContext): string {
   return (spanish ?? bibles[0])?.name ?? ''
 }
 
-function dictModules(ctx: AssistantContext): SwordModule[] {
+export function dictModules(ctx: AssistantContext): SwordModule[] {
   return ctx.modules.filter(
     (m) => m.category === 'Lexicon' || m.category === 'Dictionary' || m.category === 'GenBook'
   )
 }
 
-function commentaryModules(ctx: AssistantContext): SwordModule[] {
-  return ctx.modules.filter(
-    (m) => m.category === 'Commentary' || m.name.toLowerCase().startsWith('champlin')
-  )
+export function commentaryModules(ctx: AssistantContext): SwordModule[] {
+  return ctx.modules.filter((m) => m.category === 'Commentary')
 }
 
-function refLabel(ctx: AssistantContext, code: string, chapter: number, verse?: number): string {
+export function refLabel(ctx: AssistantContext, code: string, chapter: number, verse?: number): string {
   const book = findBook(code)
   const name = book ? bookName(book, ctx.locale) : code
   return `${name} ${chapter}${verse ? `:${verse}` : ''}`
 }
 
-async function safe<T>(promise: Promise<T>, fallback: T): Promise<T> {
+export async function safe<T>(promise: Promise<T>, fallback: T): Promise<T> {
   try {
     return await promise
   } catch {
@@ -119,7 +131,7 @@ async function localVerse(ctx: AssistantContext, query: string): Promise<LocalRe
     )
     const plain = comment?.text ? stripTags(comment.text) : ''
     if (plain) {
-      lines.push(`### Comentario · ${moduleLabel(commentary)}`, '', plain.slice(0, 1600), '')
+      lines.push(`### Comentario Â· ${moduleLabel(commentary)}`, '', plain.slice(0, 1600), '')
     }
   }
   return { markdown: lines.join('\n'), passages }
@@ -143,7 +155,7 @@ async function localChapter(ctx: AssistantContext, query: string): Promise<Local
     'the','and','of','to','in','that','he','shall','unto','for','with','his','they','them','was'
   ])
   const freq = new Map<string, number>()
-  for (const word of plain.toLowerCase().match(/[a-záéíóúñü]{4,}/gi) ?? []) {
+  for (const word of plain.toLowerCase().match(/[a-zÃ¡Ã©Ã­Ã³ÃºÃ±Ã¼]{4,}/gi) ?? []) {
     if (stop.has(word)) continue
     freq.set(word, (freq.get(word) ?? 0) + 1)
   }
@@ -189,7 +201,7 @@ async function localTopic(ctx: AssistantContext, query: string): Promise<LocalRe
     text: stripTags(hit.text)
   }))
   const lines = [`## Tema: ${query}`, '', `Encontre **${hits.length}** pasajes relacionados:`, '']
-  for (const p of passages) lines.push(`- **${p.ref}** — ${p.text}`)
+  for (const p of passages) lines.push(`- **${p.ref}** â€” ${p.text}`)
   return { markdown: lines.join('\n'), passages }
 }
 
@@ -202,7 +214,7 @@ async function localWord(ctx: AssistantContext, query: string): Promise<LocalRes
     const strongs = await safe(api.dict.strongs(term.toUpperCase()), null)
     if (strongs) {
       lines.push(
-        `### Strong ${strongs.key} · ${strongs.language}`,
+        `### Strong ${strongs.key} Â· ${strongs.language}`,
         '',
         strongs.definition.slice(0, 1400),
         ''
@@ -227,7 +239,7 @@ async function localWord(ctx: AssistantContext, query: string): Promise<LocalRes
     lines.push('### Usos en la Escritura', '')
     for (const hit of hits) {
       const ref = refLabel(ctx, hit.book, hit.chapter, hit.verse)
-      lines.push(`- **${ref}** — ${stripTags(hit.text)}`)
+      lines.push(`- **${ref}** â€” ${stripTags(hit.text)}`)
       passages.push({ ref, module: hit.module, text: stripTags(hit.text) })
     }
   }
@@ -246,7 +258,7 @@ async function localConcept(ctx: AssistantContext, query: string): Promise<Local
       []
     )
     for (const hit of hits) {
-      lines.push(`### ${hit.module} · ${hit.book}`, '', stripTags(hit.text).slice(0, 1600), '')
+      lines.push(`### ${hit.module} Â· ${hit.book}`, '', stripTags(hit.text).slice(0, 1600), '')
     }
   }
 
@@ -259,7 +271,7 @@ async function localConcept(ctx: AssistantContext, query: string): Promise<Local
     lines.push('### Pasajes relacionados', '')
     for (const hit of verses) {
       const ref = refLabel(ctx, hit.book, hit.chapter, hit.verse)
-      lines.push(`- **${ref}** — ${stripTags(hit.text)}`)
+      lines.push(`- **${ref}** â€” ${stripTags(hit.text)}`)
       passages.push({ ref, module: hit.module, text: stripTags(hit.text) })
     }
   }
@@ -289,11 +301,11 @@ async function localHermeneutica(ctx: AssistantContext, query: string): Promise<
   const guideLines = [
     `## Guia hermeneutica: ${query}`,
     '',
-    '1. **Genero literario** — define reglas de lectura.',
-    '2. **Contexto** — historico, cultural y literario.',
-    '3. **Palabras clave** — terminos originales y rango semantico.',
-    '4. **Figuras** — retorica, parabolas, tipos y profecia.',
-    '5. **Puente al presente** — del principio eterno a la aplicacion.',
+    '1. **Genero literario** â€” define reglas de lectura.',
+    '2. **Contexto** â€” historico, cultural y literario.',
+    '3. **Palabras clave** â€” terminos originales y rango semantico.',
+    '4. **Figuras** â€” retorica, parabolas, tipos y profecia.',
+    '5. **Puente al presente** â€” del principio eterno a la aplicacion.',
     '',
     '> Usa la checklist interactiva del modo Estudio para armar el documento.'
   ]
@@ -301,8 +313,7 @@ async function localHermeneutica(ctx: AssistantContext, query: string): Promise<
 }
 
 const MODE_INSTRUCTIONS: Record<AssistantMode, string> = {
-  verse: [
-    'Realiza una exegesis completa y de nivel academico del pasaje:',
+  verse: [    'Realiza una exegesis completa y de nivel academico del pasaje:',
     '(1) Texto y traduccion literal.',
     '(2) Contexto literario, historico y redentor (donde encaja en el argumento del libro y en la historia de la redencion).',
     '(3) Analisis del original: terminos clave en hebreo/griego (transliterados), gramatica y sintaxis relevante.',
@@ -356,7 +367,10 @@ const MODE_INSTRUCTIONS: Record<AssistantMode, string> = {
     '(6) Gran idea en una sola frase y aplicacion concreta.',
     'Usa los recursos de Fee/Stuart (generos), Duvall/Hays (viaje interpretativo) y',
     'J.M. Martinez como marco metodologico, sin citarlos textually salvo referencia.'
-  ].join(' ')
+  ].join(' '),
+  crearsermon: 'Documento completo listo para predicar (via runCreator).',
+  crearestudio: 'Documento completo de estudio biblico (via runCreator).',
+  creardevocional: 'Documento devocional completo (via runCreator).'
 }
 
 const SYSTEM_PROMPT = [
@@ -459,7 +473,7 @@ async function gatherEvidence(
     )
     if (hits.length) {
       const lines = hits.map(
-        (hit) => `${refLabel(ctx, hit.book, hit.chapter, hit.verse)} — ${stripTags(hit.text)}`
+        (hit) => `${refLabel(ctx, hit.book, hit.chapter, hit.verse)} â€” ${stripTags(hit.text)}`
       )
       parts.push(`[Pasajes en ${translation.name}]\n${lines.join('\n')}`)
     }
@@ -475,6 +489,11 @@ export async function runAssistant(
   const trimmed = query.trim()
   if (!trimmed) {
     return { markdown: '', passages: [], aiUsed: false }
+  }
+
+  // Modos de creacion completa (sermon / estudio / devocional estilo grandes)
+  if (mode === 'crearsermon' || mode === 'crearestudio' || mode === 'creardevocional') {
+    return runCreator(ctx, mode, trimmed, ctx.personaId ?? 'peterson')
   }
 
   let local: LocalResult
@@ -518,7 +537,10 @@ export const ASSISTANT_EXAMPLES: Record<AssistantMode, string[]> = {
   topic: ['gracia', 'esperanza', 'perdon'],
   word: ['amor', 'G26', 'fe'],
   concept: ['justificacion', 'santidad', 'pacto'],
-  hermeneutica: ['Salmos 23', 'Mateo 13:1-23', 'Romanos 12:1-2']
+  hermeneutica: ['Salmos 23', 'Mateo 13:1-23', 'Romanos 12:1-2'],
+  crearsermon: ['Juan 3:16', 'Salmos 23', 'Filipenses 2:1-11'],
+  crearestudio: ['Romanos 12:1-2', 'Genesis 1', 'Marcos 4:35-41'],
+  creardevocional: ['Salmos 91', 'Lamentaciones 3:22-23', 'Mateo 11:28-30']
 }
 
 export function assistantBookOptions(): Array<{ code: string; label: string }> {

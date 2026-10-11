@@ -9,9 +9,12 @@ import {
   type AssistantMode,
   type AssistantResult
 } from '../lib/assistant'
+import { PERSONAS } from '../lib/creator'
 import { renderMarkdown } from '../lib/markdown'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
+
+const CREATOR_MODES: AssistantMode[] = ['crearsermon', 'crearestudio', 'creardevocional']
 
 export function AssistantView() {
   const { t, locale } = useI18n()
@@ -22,6 +25,7 @@ export function AssistantView() {
   const notify = useAppStore((s) => s.notify)
 
   const [mode, setMode] = useState<AssistantMode>('verse')
+  const [personaId, setPersonaId] = useState('peterson')
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<AssistantResult | null>(null)
@@ -42,7 +46,11 @@ export function AssistantView() {
     setQuery(text)
     setLoading(true)
     try {
-      const res = await runAssistant({ locale, settings, modules, selectedModule }, mode, text)
+      const res = await runAssistant(
+        { locale, settings, modules, selectedModule, personaId },
+        mode,
+        text
+      )
       setResult(res)
       if (res.notice) notify(res.notice)
     } finally {
@@ -91,6 +99,32 @@ export function AssistantView() {
               <Icon name="search" size={14} /> {loading ? t('assistant.thinking') : t('assistant.ask')}
             </button>
           </div>
+
+          {CREATOR_MODES.includes(mode) && (
+            <div className="creator-options">
+              <div className="creator-option">
+                <label className="creator-option-label" htmlFor="assistant-persona">
+                  {t('assistant.persona')}
+                </label>
+                <select
+                  id="assistant-persona"
+                  className="select"
+                  value={personaId}
+                  onChange={(e) => setPersonaId(e.target.value)}
+                  title={t('assistant.personaHint')}
+                >
+                  {PERSONAS.map((persona) => (
+                    <option key={persona.id} value={persona.id}>
+                      {persona.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="creator-option-desc">
+                  {PERSONAS.find((p) => p.id === personaId)?.style}
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="assistant-examples">
             {examples.map((example) => (

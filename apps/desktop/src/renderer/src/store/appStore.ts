@@ -15,6 +15,7 @@ export type View =
   | 'write'
   | 'templates'
   | 'assistant'
+  | 'inspiration'
   | 'modules'
   | 'settings'
 

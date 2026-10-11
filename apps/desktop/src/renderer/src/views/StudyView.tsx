@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+﻿import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { useI18n } from '@keryx/i18n'
 import { bookName, CANONICAL_BOOKS, type Verse } from '@keryx/core'
 import { api } from '../lib/api'
-import { languageLabel, languageRank } from '../lib/languages'
-import { moduleLabel } from '../lib/modules'
+import { languageRank } from '../lib/languages'
+import { moduleOptionLabel } from '../lib/modules'
 import { parseReference } from '../lib/reference'
 import { useAppStore } from '../store/appStore'
 import { HermeneuticPanel } from '../components/HermeneuticPanel'
@@ -42,12 +42,7 @@ export function StudyView() {
     [modules, priorities]
   )
   const commentaryOptions = useMemo(
-    () =>
-      sortBy(
-        modules.filter(
-          (m) => m.category === 'Commentary' || m.name.toLowerCase().startsWith('champlin')
-        )
-      ),
+    () => sortBy(modules.filter((m) => m.category === 'Commentary')),
     [modules, priorities]
   )
   const dictModules = useMemo(
@@ -219,7 +214,7 @@ export function StudyView() {
     setDictLoading(true)
     try {
       const entry = await api.dict.lookup({ module: dictModule, key })
-      setDictResult(entry ?? '—')
+      setDictResult(entry ?? 'â€”')
     } catch (error) {
       setDictResult(error instanceof Error ? error.message : t('common.error'))
     } finally {
@@ -230,7 +225,7 @@ export function StudyView() {
   const lookupSelection = (): void => {
     const selected = window.getSelection()?.toString().trim()
     if (!selected || selected.length > 40) return
-    void lookup(selected.replace(/[.,;:!?¡¿"«»()[\]]+$/g, ''))
+    void lookup(selected.replace(/[.,;:!?Â¡Â¿"Â«Â»()[\]]+$/g, ''))
   }
 
   const handleVerseClick = (event: ReactMouseEvent<HTMLDivElement>): void => {
@@ -270,7 +265,7 @@ export function StudyView() {
       `> ${plain}`
     ]
     if (commentaryText) {
-      parts.push('', `**${t('study.commentary')} — ${commentaryModule}**`, '', commentaryText)
+      parts.push('', `**${t('study.commentary')} â€” ${commentaryModule}**`, '', commentaryText)
     }
     void sendToWriting(parts.join('\n'), `${bookName(currentBook, locale)} ${chapter}`)
   }
@@ -289,10 +284,10 @@ export function StudyView() {
           onKeyDown={(e) => e.key === 'Enter' && jump()}
         />
         <button className="btn small ghost" onClick={() => goChapter(-1)} title={t('study.prevChapter')}>
-          ‹
+          â€¹
         </button>
         <button className="btn small ghost" onClick={() => goChapter(1)} title={t('study.nextChapter')}>
-          ›
+          â€º
         </button>
         <button className="btn primary small" onClick={sendPassage}>
           {t('study.sendToEditor')}
@@ -326,7 +321,7 @@ export function StudyView() {
               >
                 {bibleModules.map((m) => (
                   <option key={m.name} value={m.name}>
-                    {moduleLabel(m)} ({languageLabel(m.lang, locale)})
+                    {moduleOptionLabel(m, locale)}
                   </option>
                 ))}
               </select>
@@ -366,7 +361,7 @@ export function StudyView() {
               >
                 {commentaryOptions.map((m) => (
                   <option key={`${m.driver}-${m.name}`} value={m.name}>
-                    {moduleLabel(m)} ({languageLabel(m.lang, locale)})
+                    {moduleOptionLabel(m, locale)}
                   </option>
                 ))}
               </select>
@@ -403,7 +398,7 @@ export function StudyView() {
               >
                 {dictModules.map((m) => (
                   <option key={`${m.driver}-${m.name}`} value={m.name}>
-                    {moduleLabel(m)} ({languageLabel(m.lang, locale)})
+                    {moduleOptionLabel(m, locale)}
                   </option>
                 ))}
               </select>

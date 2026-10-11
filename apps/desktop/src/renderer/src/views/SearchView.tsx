@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '@keryx/i18n'
 import { bookName, CANONICAL_BOOKS, type SearchResult } from '@keryx/core'
 import { api } from '../lib/api'
+import { moduleOptionLabel } from '../lib/modules'
 import { useAppStore } from '../store/appStore'
 
 type Scope = 'all' | 'ot' | 'nt'
@@ -24,7 +25,7 @@ export function SearchView() {
   const [module, setModule] = useState(selectedModule || bibles[0]?.name || '')
   const [scope, setScope] = useState<Scope>('all')
   const [caseSensitive, setCaseSensitive] = useState(false)
-  const [wholeWord, setWholeWord] = useState(false)
+  const [wholeWord, setWholeWord] = useState(true)
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<SearchResult[] | null>(null)
 
@@ -86,7 +87,7 @@ export function SearchView() {
         >
           {bibles.map((m) => (
             <option key={m.name} value={m.name}>
-              {m.name}
+              {moduleOptionLabel(m, locale)}
             </option>
           ))}
         </select>

@@ -13,6 +13,7 @@ import {
   type Verse
 } from '@keryx/core'
 import { resolveBook } from '../reference'
+import { matchesQuery, tokenizeQuery } from './search'
 import type { SwordProvider } from '../provider'
 
 const BIBLE_EXT = new Set(['.bblx', '.bbli', '.bbl'])
@@ -260,6 +261,16 @@ export class EswordProvider implements SwordProvider {
     const results: SearchResult[] = []
     const limit = options.limit ?? 200
     const like = `%${escapeLike(options.query)}%`
+    // El LIKE de SQLite solo pre-filtra (superset); el filtro real es por
+    // palabra completa, para que "amor" no empate con "JAMOR" o "Amorrheo".
+    const tokens = tokenizeQuery(options.query)
+    const matchOptions = {
+      caseSensitive: options.caseSensitive ?? false,
+      wholeWord: options.wholeWord ?? true
+    }
+    // El LIKE trae un superconjunto; se amplia para que el filtro por palabra
+    // completa no agote los candidatos antes de llenar el limite pedido.
+    const likeLimit = Math.min(limit * 25, 5000)
     for (const name of targets) {
       const conf = this.module(name)
       if (!conf) continue
@@ -270,13 +281,15 @@ export class EswordProvider implements SwordProvider {
             .prepare(
               `SELECT Book AS book, Chapter AS chapter, Verse AS verse, Scripture AS text FROM ${conf.bookTable} WHERE Scripture LIKE ? ESCAPE '\\' LIMIT ?`
             )
-            .all(like, limit) as Array<{
+            .all(like, likeLimit) as Array<{
             book: number
             chapter: number
             verse: number
             text: string
           }>
           for (const row of rows) {
+            const plain = stripHtml(renderEsword(row.text ?? ''))
+            if (tokens.length && !matchesQuery(plain, tokens, matchOptions)) continue
             const canonical = CANONICAL_BOOKS[row.book - 1]
             results.push({
               module: name,
@@ -298,8 +311,10 @@ export class EswordProvider implements SwordProvider {
             .prepare(
               `SELECT ${topicCol} AS topic, ${defCol} AS text FROM ${conf.dictTable} WHERE ${defCol} LIKE ? ESCAPE '\\' LIMIT ?`
             )
-            .all(like, limit) as Array<{ topic: string; text: string }>
+            .all(like, likeLimit) as Array<{ topic: string; text: string }>
           for (const row of rows) {
+            const plain = stripHtml(renderEsword(row.text ?? ''))
+            if (tokens.length && !matchesQuery(plain, tokens, matchOptions)) continue
             results.push({
               module: name,
               book: String(row.topic ?? ''),

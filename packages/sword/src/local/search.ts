@@ -21,9 +21,14 @@ export interface SearchMatchOptions {
   wholeWord: boolean
 }
 
+/** Escrituras sin espacios (Han/Hiragana/Katakana/Hangul): el limite de palabra no aplica. */
+const IDEOGRAPHIC_RE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u
+
 /**
  * Verifica si el texto cumple la consulta (AND de tokens, tolerante a acentos).
- * `wholeWord` exige el limite de palabra para cada token.
+ * `wholeWord` exige el limite de palabra para cada token, evitando falsos
+ * positivos tipo "amor" dentro de "JAMOR" o "Amorrheo". Los tokens de
+ * escrituras ideograficas se comparan por subcadena.
  */
 export function matchesQuery(
   haystack: string,
@@ -35,7 +40,7 @@ export function matchesQuery(
   for (const token of tokens) {
     const needle = options.caseSensitive ? token : normalizeText(token)
     if (!needle) continue
-    if (options.wholeWord) {
+    if (options.wholeWord && !IDEOGRAPHIC_RE.test(needle)) {
       const boundary = new RegExp(`(^|[^\\p{L}\\p{N}])${escapeRegExp(needle)}([^\\p{L}\\p{N}]|$)`, 'u')
       if (!boundary.test(hay)) return false
     } else if (!hay.includes(needle)) {

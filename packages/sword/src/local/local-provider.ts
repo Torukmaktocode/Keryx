@@ -245,7 +245,7 @@ export class LocalSwordProvider implements SwordProvider {
     if (!tokens.length) return done()
     const matchOptions: SearchMatchOptions = {
       caseSensitive: options.caseSensitive ?? false,
-      wholeWord: options.wholeWord ?? false
+      wholeWord: options.wholeWord ?? true
     }
 
     for (const name of modules) {

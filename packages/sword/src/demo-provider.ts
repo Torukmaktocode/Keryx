@@ -85,6 +85,8 @@ export class DemoSwordProvider implements SwordProvider {
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const needle = options.caseSensitive ? options.query : options.query.toLowerCase()
+    const wholeWord = options.wholeWord ?? true
+    const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const results: SearchResult[] = []
     const modules = options.modules?.length ? options.modules : ['KJV', 'RVR1909']
     for (const [key, verses] of Object.entries(DEMO_CHAPTERS)) {
@@ -92,8 +94,8 @@ export class DemoSwordProvider implements SwordProvider {
       if (!modules.includes(module)) continue
       for (const verse of verses) {
         const haystack = options.caseSensitive ? verse.text : verse.text.toLowerCase()
-        const matches = options.wholeWord
-          ? new RegExp(`\\b${needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(haystack)
+        const matches = wholeWord
+          ? new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}([^\\p{L}\\p{N}]|$)`, 'u').test(haystack)
           : haystack.includes(needle)
         if (matches) {
           results.push({

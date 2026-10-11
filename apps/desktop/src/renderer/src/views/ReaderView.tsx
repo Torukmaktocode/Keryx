@@ -1,8 +1,14 @@
-import { useEffect, useMemo, useState, type ReactElement } from 'react'
+﻿import { useEffect, useMemo, useState, type ReactElement } from 'react'
 import { useI18n } from '@keryx/i18n'
-import { bookName, CANONICAL_BOOKS, type Verse } from '@keryx/core'
+import {
+  bookName,
+  booksByTestament,
+  CANONICAL_BOOKS,
+  type Verse
+} from '@keryx/core'
 import { api } from '../lib/api'
 import { languageLabel, languageRank } from '../lib/languages'
+import { moduleOptionLabel } from '../lib/modules'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
 
@@ -27,6 +33,7 @@ export function ReaderView() {
   const [secondaryModule, setSecondaryModule] = useState('')
   const [secondaryVerses, setSecondaryVerses] = useState<Verse[]>([])
   const [secondaryLoading, setSecondaryLoading] = useState(false)
+  const [testament, setTestament] = useState<'all' | 'OT' | 'NT'>('all')
 
   const allBibles = useMemo(() => modules.filter((m) => m.category === 'Bible'), [modules])
   const languages = useMemo(
@@ -53,6 +60,25 @@ export function ReaderView() {
     [allBibles, langFilter]
   )
   const currentBook = CANONICAL_BOOKS.find((b) => b.code === book) ?? CANONICAL_BOOKS[0]
+  const displayedBooks = useMemo(
+    () => (testament === 'all' ? CANONICAL_BOOKS : booksByTestament(testament)),
+    [testament]
+  )
+
+  useEffect(() => {
+    if (testament !== 'all' && currentBook.testament !== testament) {
+      const first = booksByTestament(testament)[0]
+      if (first) {
+        setNav(first.code, 1)
+        setSelectedVerse(null)
+      }
+    }
+  }, [testament, currentBook, setNav])
+
+  const selectVerse = (num: number): void => {
+    setSelectedVerse(num)
+    setNav(book, chapter, num)
+  }
 
   useEffect(() => {
     if (langFilter && bibleModules.length && !bibleModules.some((m) => m.name === selectedModule)) {
@@ -63,6 +89,12 @@ export function ReaderView() {
   useEffect(() => {
     if (navVerse !== null) setSelectedVerse(navVerse)
   }, [navVerse])
+
+  useEffect(() => {
+    if (selectedVerse === null) return
+    const el = document.querySelector('.verse.selected')
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [selectedVerse])
 
   useEffect(() => {
     if (!selectedModule) return
@@ -135,7 +167,7 @@ export function ReaderView() {
           >
             {bibleModules.map((m) => (
               <option key={m.name} value={m.name}>
-                {m.name} ({languageLabel(m.lang, locale)})
+                {moduleOptionLabel(m, locale)}
               </option>
             ))}
           </select>
@@ -156,9 +188,29 @@ export function ReaderView() {
             }}
             title={t('reader.swap')}
           >
-            ⇄
+            â‡„
           </button>
         )}
+        <div className="seg">
+          <button
+            className={`seg-btn ${testament === 'all' ? 'active' : ''}`}
+            onClick={() => setTestament('all')}
+          >
+            {t('reader.testament.all')}
+          </button>
+          <button
+            className={`seg-btn ${testament === 'OT' ? 'active' : ''}`}
+            onClick={() => setTestament('OT')}
+          >
+            {t('reader.testament.ot')}
+          </button>
+          <button
+            className={`seg-btn ${testament === 'NT' ? 'active' : ''}`}
+            onClick={() => setTestament('NT')}
+          >
+            {t('reader.testament.nt')}
+          </button>
+        </div>
         <select
           className="select"
           value={book}
@@ -167,7 +219,7 @@ export function ReaderView() {
             setSelectedVerse(null)
           }}
         >
-          {CANONICAL_BOOKS.map((b) => (
+          {displayedBooks.map((b) => (
             <option key={b.code} value={b.code}>
               {bookName(b, locale)}
             </option>
@@ -187,6 +239,21 @@ export function ReaderView() {
             </option>
           ))}
         </select>
+        {verses.length > 0 && (
+          <select
+            className="select"
+            value={selectedVerse ?? ''}
+            onChange={(e) => e.target.value && selectVerse(Number(e.target.value))}
+            title={t('reader.verse')}
+          >
+            <option value="">{t('reader.verse')}</option>
+            {verses.map((v) => (
+              <option key={v.verse} value={v.verse}>
+                {v.verse}
+              </option>
+            ))}
+          </select>
+        )}
       </header>
       {compare ? (
         <div className="view-body flush">
@@ -200,7 +267,7 @@ export function ReaderView() {
                 >
                   {bibleModules.map((m) => (
                     <option key={m.name} value={m.name}>
-                      {m.name} ({languageLabel(m.lang, locale)})
+                      {moduleOptionLabel(m, locale)}
                     </option>
                   ))}
                 </select>
@@ -226,7 +293,7 @@ export function ReaderView() {
                 >
                   {bibleModules.map((m) => (
                     <option key={m.name} value={m.name}>
-                      {m.name} ({languageLabel(m.lang, locale)})
+                      {moduleOptionLabel(m, locale)}
                     </option>
                   ))}
                 </select>
