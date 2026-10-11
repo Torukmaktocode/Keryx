@@ -1,4 +1,4 @@
-# Biblioteca nueva + Modo Estudio rediseñado + limpieza Champlin
+﻿# Biblioteca nueva + Modo Estudio rediseñado + limpieza Champlin
 
 > **Para agentes:** implementar tarea por tarea con checkboxes. Ejecutado inicialmente en
 > `docs/superpowers/plans/2026-10-11-biblioteca-estudio.md` (esta copia).
@@ -31,18 +31,18 @@ niveles; `esword/` queda vacío). El Modo Estudio usa un layout engine en el app
 
 ## Tasks
 - [x] Task 0: limpieza (módulos, scripts, código, i18n, package.json, extraResources)
-- [ ] Task 1: multi-root scan (`EswordProvider(roots[])`, recursivo 2 niveles, dedupe,
+- [x] Task 1: multi-root scan (`EswordProvider(roots[])`, recursivo 2 niveles, dedupe,
       `SwordModule.source`, `resolveBibliotecaPath()` en main)
-- [ ] Task 2: detección Topical/.refi (`dictTable` += `/topical|book|article/i`)
-- [ ] Task 3: `commentaryVerses(module, book, chapter): number[]` + IPC
+- [x] Task 2: detección Topical/.refi (`dictTable` += `/topical|book|article/i`)
+- [x] Task 3: `commentaryVerses(module, book, chapter): number[]` + IPC
       `bibleCommentaryVerses` + `api.bible.commentaryVerses`
-- [ ] Task 4: settings zod + AppSettings (`bibliotecaEnabled, showStrongs, studyTemplate,
+- [x] Task 4: settings zod + AppSettings (`bibliotecaEnabled, showStrongs, studyTemplate,
       studyWidths, studyPanes, studyClosed, studyModules, paneSync`)
-- [ ] Task 5: `lib/studyLayout.ts` (TEMPLATES/clampWidth/applyTemplate),
+- [x] Task 5: `lib/studyLayout.ts` (TEMPLATES/clampWidth/applyTemplate),
       `PaneSplitter.tsx`, `PaneShell.tsx`
-- [ ] Task 6: StudyView rewrite (flex + splitters + `paneContent(kind)` + acordeón
+- [x] Task 6: StudyView rewrite (flex + splitters + `paneContent(kind)` + acordeón
       generalizado + fallback de módulos inexistentes)
-- [ ] Task 7: marcas Strong CSS `.show-strongs w[data-strong]::after` + toggle
-- [ ] Task 8: LibraryView tabs `Todos|Biblias|Comentarios|Diccionarios|Libros` + acciones
-- [ ] Task 9: i18n es/en/pt
-- [ ] Task 10: verificación (vitest, typecheck, lint, dev smoke)
+- [x] Task 7: marcas Strong CSS `.show-strongs w[data-strong]::after` + toggle
+- [x] Task 8: LibraryView tabs `Todos|Biblias|Comentarios|Diccionarios|Libros` + acciones
+- [x] Task 9: i18n es/en/pt
+- [x] Task 10: verificación (vitest, typecheck, lint, dev smoke)
