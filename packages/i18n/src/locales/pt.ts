@@ -303,6 +303,8 @@ export const pt: Record<TranslationKey, string> = {
   'settings.focusMode': 'Modo foco',
   'settings.focusHint': 'Atenua tudo exceto a parte ativa',
   'settings.typewriter': 'Typewriter',
+  'settings.showStrongs': 'Marcas Strong#',
+  'settings.showStrongsHint': 'Números Strong clicáveis junto às palavras (módulos que os trazem)',
   'settings.typewriterHint': 'Mantém o cursor centralizado',
   'settings.measure': 'Medida (caracteres)',
   'settings.fontSize': 'Tamanho da fonte',

@@ -186,8 +186,9 @@ export class EswordProvider implements SwordProvider {
       const depth = root.library === 'principal' ? 0 : 2
       for (const path of collectFiles(root.path, depth)) {
         const ext = extname(path).toLowerCase()
-        const key = basename(path).toLowerCase()
-        if (seen.has(key)) continue // sin duplicados: gana la primera raiz
+        // sin duplicados por nombre de modulo (name != filename) en varias raices
+        const key = basename(path, ext).toLowerCase()
+        if (seen.has(key)) continue
         seen.add(key)
         try {
           const db = this.open(path)

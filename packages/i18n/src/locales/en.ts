@@ -302,6 +302,8 @@ export const en: Record<TranslationKey, string> = {
   'settings.focusMode': 'Focus mode',
   'settings.focusHint': 'Dim everything except the active part',
   'settings.typewriter': 'Typewriter',
+  'settings.showStrongs': 'Strong# marks',
+  'settings.showStrongsHint': 'Clickable Strong numbers next to the words (modules that carry them)',
   'settings.typewriterHint': 'Keeps the cursor centered',
   'settings.measure': 'Measure (characters)',
   'settings.fontSize': 'Font size',

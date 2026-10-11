@@ -301,6 +301,8 @@ export const es = {
   'settings.focusMode': 'Modo enfoque',
   'settings.focusHint': 'Atenúa todo salvo la parte activa',
   'settings.typewriter': 'Typewriter',
+  'settings.showStrongs': 'Marcas Strong#',
+  'settings.showStrongsHint': 'Números Strong clicables junto a las palabras (módulos que los traen)',
   'settings.typewriterHint': 'Mantiene el cursor centrado',
   'settings.measure': 'Medida (caracteres)',
   'settings.fontSize': 'Tamaño de letra',

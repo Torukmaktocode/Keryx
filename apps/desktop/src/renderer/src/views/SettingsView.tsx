@@ -129,6 +129,18 @@ export function SettingsView() {
 
           <div className="settings-row">
             <label>
+              {t('settings.showStrongs')}
+              <span className="hint">{t('settings.showStrongsHint')}</span>
+            </label>
+            <input
+              type="checkbox"
+              checked={settings.showStrongs}
+              onChange={(e) => void update({ showStrongs: e.target.checked })}
+            />
+          </div>
+
+          <div className="settings-row">
+            <label>
               {t('settings.measure')}
               <span className="hint">{settings.measure}ch</span>
             </label>
