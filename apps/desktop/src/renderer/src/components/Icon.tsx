@@ -19,6 +19,8 @@ export type IconName =
   | 'menu'
   | 'fullscreen'
   | 'fullscreen-exit'
+  | 'pin'
+  | 'close'
 
 const PATHS: Record<IconName, JSX.Element> = {
   reader: (
@@ -128,6 +130,18 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d="M15 4v5h5" />
       <path d="M9 20v-5H4" />
       <path d="M15 20v-5h5" />
+    </>
+  ),
+  pin: (
+    <>
+      <path d="M12 17v5" />
+      <path d="M9 3h6l-1 6 2.5 2.5v2h-9v-2L10 9z" />
+    </>
+  ),
+  close: (
+    <>
+      <path d="M6 6l12 12" />
+      <path d="M18 6L6 18" />
     </>
   )
 }

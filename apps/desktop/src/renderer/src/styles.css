@@ -536,6 +536,234 @@
   align-items: stretch;
 }
 
+/* ===== Estudio: layout flexible con separadores ===== */
+.study-flex {
+  display: flex;
+  gap: var(--space-4);
+  align-items: stretch;
+}
+
+.pane-slot {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 240px;
+  gap: 0;
+}
+
+.pane-slot .pane {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pane-splitter {
+  flex: 0 0 6px;
+  cursor: col-resize;
+  border-radius: 3px;
+  background: transparent;
+  margin: 0 -5px;
+  position: relative;
+  z-index: 2;
+}
+
+.pane-splitter:hover,
+.pane-splitter:active {
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* Menú de zona del panel */
+.pane-menu {
+  position: relative;
+  display: flex;
+}
+
+.pane-menu-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 190px;
+  z-index: 40;
+  background: var(--glass-strong, var(--glass));
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glass);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  backdrop-filter: var(--glass-filter);
+}
+
+.pane-menu-pop.add-pop {
+  position: relative;
+  top: auto;
+  right: auto;
+  display: inline-flex;
+}
+
+.pane-menu-title {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 2px 6px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.pane-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.pane-menu-item:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pane-menu-item.active {
+  font-weight: 700;
+}
+
+.pane-menu-item.danger:hover {
+  background: rgba(210, 60, 60, 0.14);
+  color: #c23c3c;
+}
+
+.pane-menu-sep {
+  height: 1px;
+  background: var(--glass-border-soft);
+  margin: 4px 2px;
+}
+
+.pane-kind {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* Marca del versículo sincronizado (estilo e-Sword) */
+.verse-mark {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-right: 6px;
+  background: var(--muted);
+}
+
+.verse-mark.synced {
+  background: var(--accent);
+}
+
+.verse-mark.pinned-off {
+  background: transparent;
+  border: 1.5px solid var(--muted);
+}
+
+/* ===== Acordeón de comentarios (e-Sword .cmtx) ===== */
+.comment-accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-item {
+  border-bottom: 1px solid var(--glass-border-soft);
+}
+
+.comment-head {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) 2px;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.comment-head:hover .comment-ref {
+  color: var(--accent);
+}
+
+.comment-item.open .comment-ref {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.comment-ref {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.comment-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--muted);
+}
+
+.comment-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.comment-body {
+  padding: 0 2px var(--space-3);
+  font-size: 15px;
+  line-height: 1.7;
+  max-width: none;
+  margin: 0;
+}
+
+/* ===== Marcas Strong# (superíndices clicables) ===== */
+.show-strongs w[data-strong]::after {
+  content: attr(data-strong);
+  font-size: 10px;
+  vertical-align: super;
+  color: var(--accent);
+  opacity: 0.75;
+  margin-left: 1px;
+}
+
+.show-strongs w[data-strong] {
+  cursor: pointer;
+}
+
+.show-strongs w[data-strong]:hover::after {
+  opacity: 1;
+}
+
+/* Responsive del estudio: se apila en pantallas estrechas */
+@media (max-width: 1100px) {
+  .study-flex {
+    flex-direction: column;
+  }
+
+  .pane-splitter {
+    display: none;
+  }
+
+  .pane-slot {
+    flex: 1 1 auto !important;
+    min-height: 340px;
+  }
+}
+
 .pane {
   border: 1px solid var(--glass-border-soft);
   border-radius: var(--radius-md);

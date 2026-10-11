@@ -3,6 +3,7 @@ import {
   DEFAULT_SETTINGS,
   type AppSettings,
   type EngineInfo,
+  type StudyLayout,
   type SwordModule
 } from '@keryx/core'
 import { api } from '../lib/api'
@@ -47,6 +48,8 @@ interface AppState {
   bootstrap: () => Promise<void>
   refreshModules: () => Promise<void>
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
+  /** Parchea settings.study (layout del modo Estudio) sin reemplazar el array entero. */
+  updateStudy: (patch: Partial<StudyLayout>) => Promise<void>
   togglePriority: (name: string) => Promise<void>
   sendToWriting: (block: string, title?: string) => Promise<void>
 }
@@ -131,6 +134,11 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   updateSettings: async (patch) => {
     const settings = await api.settings.set(patch)
+    set({ settings })
+  },
+
+  updateStudy: async (patch) => {
+    const settings = await api.settings.set({ study: { ...get().settings.study, ...patch } })
     set({ settings })
   },
 

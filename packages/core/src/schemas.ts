@@ -61,6 +61,29 @@ export const zoomSchema = z.object({
   value: z.number().min(0.5).max(3).optional()
 })
 
+export const studyPaneKindSchema = z.enum(['bible', 'commentary', 'dictionary', 'book'])
+
+export const studyTemplateSchema = z.enum(['completo', 'lectura', 'libros', 'investigar', 'custom'])
+
+const paneFlags = <T extends z.ZodType>(value: T) =>
+  z
+    .object({
+      bible: value.optional(),
+      commentary: value.optional(),
+      dictionary: value.optional(),
+      book: value.optional()
+    })
+    .default({})
+
+export const studyLayoutSchema = z.object({
+  template: studyTemplateSchema.default('completo'),
+  panes: z.array(studyPaneKindSchema).default(['bible', 'commentary', 'dictionary']),
+  widths: z.array(z.number()).default([]),
+  closed: z.array(studyPaneKindSchema).default([]),
+  sync: paneFlags(z.boolean()),
+  modules: paneFlags(z.string().min(1))
+})
+
 export const documentIdSchema = z.object({
   id: z.string().min(1)
 })
@@ -92,7 +115,10 @@ export const settingsPatchSchema = z.object({
   aiEnabled: z.boolean().optional(),
   aiBaseUrl: z.string().optional(),
   aiModel: z.string().optional(),
-  aiApiKey: z.string().optional()
+  aiApiKey: z.string().optional(),
+  bibliotecaEnabled: z.boolean().optional(),
+  showStrongs: z.boolean().optional(),
+  study: studyLayoutSchema.optional()
 })
 
 export const aiChatSchema = z.object({

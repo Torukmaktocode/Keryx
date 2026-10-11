@@ -107,6 +107,51 @@ export interface AppSettings {
   aiBaseUrl: string
   aiModel: string
   aiApiKey: string
+  /** Mostrar biblioteca (escanea biblioteca/). */
+  bibliotecaEnabled: boolean
+  /** Superindices Strong# visibles en la Biblia del modo Estudio. */
+  showStrongs: boolean
+  /** Layout del modo Estudio (plantilla, paneles, anchos, sincronia). */
+  study: StudyLayout
+}
+
+export type StudyPaneKind = 'bible' | 'commentary' | 'dictionary' | 'book'
+
+export type StudyTemplate = 'completo' | 'lectura' | 'libros' | 'investigar' | 'custom'
+
+/** Anchos relativos (%) por panel; 0 = peso por defecto. */
+export interface StudyLayout {
+  template: StudyTemplate
+  panes: StudyPaneKind[]
+  widths: number[]
+  closed: StudyPaneKind[]
+  /** Fijar/soltar la sincronia del versiculo por panel (default true). */
+  sync: Partial<Record<StudyPaneKind, boolean>>
+  /** Modulo seleccionado por clase de panel. */
+  modules: Partial<Record<StudyPaneKind, string>>
+}
+
+/** Especifica una plantilla: paneles base + pesos relativos. */
+export interface StudyTemplateSpec {
+  id: StudyTemplate
+  panes: StudyPaneKind[]
+  weights: number[]
+}
+
+export const STUDY_TEMPLATES: StudyTemplateSpec[] = [
+  { id: 'completo', panes: ['bible', 'commentary', 'dictionary'], weights: [1.2, 1, 1] },
+  { id: 'lectura', panes: ['bible', 'commentary'], weights: [1.4, 1] },
+  { id: 'libros', panes: ['bible', 'book'], weights: [1, 1.4] },
+  { id: 'investigar', panes: ['bible', 'dictionary'], weights: [1, 1] }
+]
+
+export const DEFAULT_STUDY: StudyLayout = {
+  template: 'completo',
+  panes: [...STUDY_TEMPLATES[0].panes],
+  widths: [],
+  closed: [],
+  sync: {},
+  modules: {}
 }
 
 export type AiRole = 'system' | 'user' | 'assistant'
@@ -157,5 +202,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   aiEnabled: true,
   aiBaseUrl: 'https://api.openai.com/v1',
   aiModel: 'gpt-4o-mini',
-  aiApiKey: ''
+  aiApiKey: '',
+  bibliotecaEnabled: true,
+  showStrongs: false,
+  study: DEFAULT_STUDY
 }

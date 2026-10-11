@@ -1,12 +1,26 @@
-﻿import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
-import { useI18n } from '@keryx/i18n'
-import { bookName, CANONICAL_BOOKS, type Verse } from '@keryx/core'
+﻿import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
+import { useI18n, type TranslationKey } from '@keryx/i18n'
+import {
+  STUDY_TEMPLATES,
+  bookName,
+  CANONICAL_BOOKS,
+  type SearchResult,
+  type StudyLayout,
+  type StudyPaneKind,
+  type SwordModule,
+  type Verse
+} from '@keryx/core'
 import { api } from '../lib/api'
 import { languageRank } from '../lib/languages'
-import { moduleOptionLabel } from '../lib/modules'
 import { parseReference } from '../lib/reference'
 import { useAppStore } from '../store/appStore'
 import { HermeneuticPanel } from '../components/HermeneuticPanel'
+import { PaneShell } from '../components/PaneShell'
+import { PaneSplitter } from '../components/PaneSplitter'
+import { CommentaryAccordion } from '../components/CommentaryAccordion'
+import { applyTemplate, paneWidths, resizePanes, PANE_LABELS } from '../lib/studyLayout'
+
+const PANE_KINDS: StudyPaneKind[] = ['bible', 'commentary', 'dictionary', 'book']
 
 const stripTags = (value: string): string => value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
 
@@ -16,7 +30,100 @@ const extractStrongs = (html: string): string[] => {
   return [...found]
 }
 
-const commentaryCache = new Map<string, string | null>()
+/** Modulo efectivo: preferencia del layout si existe; si no, el primero disponible. */
+function effective(list: { name: string }[], wanted: string | undefined): string {
+  if (wanted && list.some((m) => m.name === wanted)) return wanted
+  return list[0]?.name ?? ''
+}
+
+/* ============================== Contenido: Libros ================================= */
+
+function BookBody({ module: name }: { module: string }) {
+  const initial = useRef('')
+  const { t } = useI18n()
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [text, setText] = useState<string | null>(null)
+  const [current, setCurrent] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    initial.current = name
+    setResults([])
+    setText(null)
+    setCurrent('')
+  }, [name])
+
+  const run = async (): Promise<void> => {
+    if (!name || !query.trim()) return
+    setBusy(true)
+    try {
+      setResults(await api.bible.search({ query: query.trim(), modules: [name], limit: 40 }))
+    } catch {
+      setResults([])
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const open = async (topic: string): Promise<void> => {
+    setCurrent(topic)
+    api.dict
+      .lookup({ module: name, key: topic })
+      .then(setText)
+      .catch(() => setText(null))
+  }
+
+  return (
+    <div className="pane-book">
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          className="input"
+          style={{ flex: 1 }}
+          placeholder={t('study.bookSearch')}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && void run()}
+        />
+        <button className="btn" onClick={() => void run()} disabled={busy}>
+          {t('common.search')}
+        </button>
+      </div>
+      {text !== null ? (
+        <div className="article-view">
+          <div className="pane-ref" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              className="btn small ghost"
+              onClick={() => {
+                setText(null)
+                setCurrent('')
+              }}
+            >
+              ‹ {t('common.back')}
+            </button>
+            <span>{current}</span>
+          </div>
+          <div className="scripture" style={{ fontSize: 16 }} dangerouslySetInnerHTML={{ __html: text }} />
+        </div>
+      ) : results.length > 0 ? (
+        <div className="list" style={{ marginTop: 12 }}>
+          {results.map((item) => (
+            <button key={`${item.book}-${item.chapter}`} className="list-item" onClick={() => void open(item.book)}>
+              <div className="meta">
+                <strong>{item.book}</strong>
+                <small>{stripTags(item.text)}</small>
+              </div>
+            </button>
+          ))}
+        </div>
+      ) : (
+        !busy && <p className="empty">{t('study.bookHint')}</p>
+      )}
+    </div>
+  )
+}
+
+/* ================================== Vista ========================================= */
 
 export function StudyView() {
   const { t, locale } = useI18n()
@@ -24,8 +131,12 @@ export function StudyView() {
   const selectedModule = useAppStore((s) => s.selectedModule)
   const setSelectedModule = useAppStore((s) => s.setSelectedModule)
   const priorities = useAppStore((s) => s.settings.priorityModules)
+  const showStrongs = useAppStore((s) => s.settings.showStrongs)
   const sendToWriting = useAppStore((s) => s.sendToWriting)
+  const updateStudy = useAppStore((s) => s.updateStudy)
+  const settings = useAppStore((s) => s.settings)
 
+  const study = settings.study
   const rank = (name: string): number => (priorities.includes(name) ? 0 : 1)
   const sortBy = <T extends { name: string }>(list: T[]): T[] =>
     list.sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name))
@@ -49,22 +160,30 @@ export function StudyView() {
     () => sortBy(modules.filter((m) => m.category === 'Lexicon' || m.category === 'Dictionary')),
     [modules, priorities]
   )
+  const bookModules = useMemo(
+    () => sortBy(modules.filter((m) => m.category === 'GenBook')),
+    [modules, priorities]
+  )
+  const optionsFor = (kind: StudyPaneKind): SwordModule[] =>
+    kind === 'bible'
+      ? bibleModules
+      : kind === 'commentary'
+        ? commentaryOptions
+        : kind === 'dictionary'
+          ? dictModules
+          : bookModules
 
   const [verses, setVerses] = useState<Verse[]>([])
   const [selectedVerse, setSelectedVerse] = useState(1)
   const [tab, setTab] = useState<'panes' | 'hermeneutics'>('panes')
-  const [commentaryModule, setCommentaryModule] = useState('')
-  const [commentary, setCommentary] = useState<Verse | null>(null)
-  const [commentaryHtml, setCommentaryHtml] = useState<string | null>(null)
-  const [commentaryLoading, setCommentaryLoading] = useState(false)
-  const [dictModule, setDictModule] = useState('')
   const [dictKey, setDictKey] = useState('')
   const [dictResult, setDictResult] = useState<string | null>(null)
   const [dictLoading, setDictLoading] = useState(false)
   const [refInput, setRefInput] = useState('')
+  const [addOpen, setAddOpen] = useState(false)
 
   const paneRef = useRef<HTMLDivElement>(null)
-  const commentaryReq = useRef(0)
+  const flexRef = useRef<HTMLDivElement>(null)
   const lastAutoKey = useRef('')
   const navBook = useAppStore((s) => s.navBook)
   const navChapter = useAppStore((s) => s.navChapter)
@@ -76,7 +195,96 @@ export function StudyView() {
     () => CANONICAL_BOOKS.find((b) => b.code === book) ?? CANONICAL_BOOKS[0],
     [book]
   )
+  const bibleModule =
+    study.modules.bible && bibleModules.some((m) => m.name === study.modules.bible)
+      ? study.modules.bible
+      : selectedModule && bibleModules.some((m) => m.name === selectedModule)
+        ? selectedModule
+        : (bibleModules[0]?.name ?? '')
+  const commentaryModule = effective(commentaryOptions, study.modules.commentary)
+  const dictModule = effective(dictModules, study.modules.dictionary)
+  const bookModule = effective(bookModules, study.modules.book)
 
+  // ---------- layout ----------
+  const available = useState(1200)[0] // inicial neutro; lo mide el observer
+  const [widths, setWidths] = useState<number[]>(study.widths)
+  useEffect(() => setWidths(study.widths), [study.widths])
+  useEffect(() => {
+    let timer: number | undefined
+    const node = flexRef.current
+    if (!node) return
+    const observer = new ResizeObserver(() => {
+      setComputedWidth(node.clientWidth)
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => updateStudy({ widths }), 600)
+    })
+    observer.observe(node)
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(timer)
+    }
+  }, [widths])
+  const [computedWidth, setComputedWidth] = useState(available)
+  const realWidths = useMemo(
+    () => paneWidths(study, computedWidth),
+    [study, computedWidth] // depend on `widths` via study? use widths local
+  )
+  const useWidths = widths.length ? widths : realWidths
+
+  const patch = (next: Partial<StudyLayout>): void => void updateStudy(next)
+
+  const changeTemplate = (id: string): void => {
+    const next = applyTemplate(id as StudyLayout['template'], study)
+    setWidths([])
+    patch(next)
+  }
+
+  const onDrag = (leftIndex: number, dx: number): void => {
+    const w = widths.length ? widths : realWidths
+    const next = resizePanes(w, leftIndex, w[leftIndex] + dx, computedWidth, study.panes.length)
+    setWidths(next)
+  }
+  const onResetSplit = (leftIndex: number): void => {
+    const base = widths.length ? [...widths] : [...realWidths]
+    base[leftIndex] = 0
+    base[leftIndex + 1] = 0
+    setWidths(base)
+    patch({ widths: base, template: 'custom' })
+  }
+
+  const closePane = (kind: StudyPaneKind): void => {
+    patch({
+      panes: study.panes.filter((p) => p !== kind),
+      closed: [...study.closed, kind],
+      template: 'custom',
+      widths: []
+    })
+    setWidths([])
+  }
+  const addPane = (kind: StudyPaneKind): void => {
+    patch({
+      panes: [...study.panes, kind],
+      closed: study.closed.filter((p) => p !== kind),
+      template: 'custom',
+      widths: []
+    })
+    setWidths([])
+    setAddOpen(false)
+  }
+  const changeKind = (index: number, kind: StudyPaneKind): void => {
+    const nextPanes = [...study.panes]
+    nextPanes[index] = kind
+    patch({ panes: nextPanes, template: 'custom', widths: [], modules: { ...study.modules, [kind]: '' } })
+    setWidths([])
+  }
+  const setPaneModule = (kind: StudyPaneKind, name: string): void => {
+    patch({ modules: { ...study.modules, [kind]: name } })
+    if (kind === 'bible') setSelectedModule(name)
+  }
+  const toggleSync = (kind: StudyPaneKind): void =>
+    patch({ sync: { ...study.sync, [kind]: !study.sync[kind] } })
+
+  // ---------- navegacion ----------
   const goChapter = (delta: number): void => {
     const index = CANONICAL_BOOKS.findIndex((b) => b.code === book)
     if (delta > 0) {
@@ -103,82 +311,18 @@ export function StudyView() {
   }, [navVerse])
 
   useEffect(() => {
-    if (!commentaryModule && commentaryOptions.length) {
-      setCommentaryModule(commentaryOptions[0].name)
-    }
-  }, [commentaryOptions, commentaryModule])
-
-  useEffect(() => {
-    if (!dictModule && dictModules.length) setDictModule(dictModules[0].name)
-  }, [dictModules, dictModule])
-
-  useEffect(() => {
-    if (!selectedModule) return
+    if (!bibleModule) return
     api.bible
-      .chapter({ module: selectedModule, book, chapter })
+      .chapter({ module: bibleModule, book, chapter })
       .then(setVerses)
       .catch(() => setVerses([]))
-  }, [selectedModule, book, chapter])
+  }, [bibleModule, book, chapter])
 
   useEffect(() => {
     if (verses.length && !verses.some((v) => v.verse === selectedVerse)) {
       setSelectedVerse(verses[0].verse)
     }
   }, [verses, selectedVerse])
-
-  useEffect(() => {
-    if (!commentaryModule) return
-    const req = ++commentaryReq.current
-    const conf = modules.find((m) => m.name === commentaryModule)
-
-    if (conf && conf.category === 'Commentary') {
-      setCommentaryHtml(null)
-      setCommentaryLoading(true)
-      api.bible
-        .verse({ module: commentaryModule, book, chapter, verse: selectedVerse })
-        .then((value) => {
-          if (req === commentaryReq.current) setCommentary(value)
-        })
-        .catch(() => {
-          if (req === commentaryReq.current) setCommentary(null)
-        })
-        .finally(() => {
-          if (req === commentaryReq.current) setCommentaryLoading(false)
-        })
-      return
-    }
-
-    const cacheKey = `${commentaryModule}:${book}:${chapter}:${selectedVerse}`
-    if (commentaryCache.has(cacheKey)) {
-      setCommentary(null)
-      setCommentaryHtml(commentaryCache.get(cacheKey) ?? null)
-      return
-    }
-
-    setCommentary(null)
-    setCommentaryHtml(null)
-    setCommentaryLoading(true)
-    const primary = conf?.lang === 'es' ? 'es' : 'pt'
-    const fallback = primary === 'es' ? 'pt' : 'es'
-    const searchChapter = async (loc: string): Promise<string | null> => {
-      const query = `${bookName(currentBook, loc)} ${chapter}`
-      const found = await api.bible.search({ query, modules: [commentaryModule], limit: 1 })
-      if (!found[0]) return null
-      return api.dict.lookup({ module: commentaryModule, key: found[0].book })
-    }
-    void (async () => {
-      const html = (await searchChapter(primary)) ?? (await searchChapter(fallback))
-      commentaryCache.set(cacheKey, html)
-      if (req !== commentaryReq.current) return
-      setCommentaryHtml(html)
-    })()
-      .catch(() => {
-        if (req === commentaryReq.current) setCommentaryHtml(null)
-      })
-      .finally(() => {
-        if (req === commentaryReq.current) setCommentaryLoading(false)
-      })
-  }, [commentaryModule, book, chapter, selectedVerse, modules, currentBook])
 
   useEffect(() => {
     const el = paneRef.current?.querySelector('.verse.selected')
@@ -214,7 +358,7 @@ export function StudyView() {
     setDictLoading(true)
     try {
       const entry = await api.dict.lookup({ module: dictModule, key })
-      setDictResult(entry ?? 'â€”')
+      setDictResult(entry ?? '—')
     } catch (error) {
       setDictResult(error instanceof Error ? error.message : t('common.error'))
     } finally {
@@ -225,7 +369,7 @@ export function StudyView() {
   const lookupSelection = (): void => {
     const selected = window.getSelection()?.toString().trim()
     if (!selected || selected.length > 40) return
-    void lookup(selected.replace(/[.,;:!?Â¡Â¿"Â«Â»()[\]]+$/g, ''))
+    void lookup(selected.replace(/[.,;:!?¡¿"«»()[\]]+$/g, ''))
   }
 
   const handleVerseClick = (event: ReactMouseEvent<HTMLDivElement>): void => {
@@ -253,27 +397,135 @@ export function StudyView() {
     void lookup(strongs[0])
   }, [selectedVerse, verses, dictModule, modules, book, chapter])
 
-  const sendPassage = (): void => {
+  const sendPassage = async (): Promise<void> => {
     const verse = verses.find((v) => v.verse === selectedVerse)
     const plain = stripTags(verse?.text ?? '')
-    const commentaryText = commentaryHtml
-      ? stripTags(commentaryHtml)
-      : stripTags(commentary?.text ?? '')
-    const parts = [
-      `## ${bookName(currentBook, locale)} ${chapter}:${selectedVerse}`,
-      '',
-      `> ${plain}`
-    ]
+    const entry = commentaryModule
+      ? await api.bible.verse({ module: commentaryModule, book, chapter, verse: selectedVerse }).catch(() => null)
+      : null
+    const commentaryText = entry?.text ? stripTags(entry.text) : ''
+    const parts = [`## ${bookName(currentBook, locale)} ${chapter}:${selectedVerse}`, '', `> ${plain}`]
     if (commentaryText) {
-      parts.push('', `**${t('study.commentary')} â€” ${commentaryModule}**`, '', commentaryText)
+      parts.push('', `**${t('study.commentary')} — ${commentaryModule}**`, '', commentaryText)
     }
     void sendToWriting(parts.join('\n'), `${bookName(currentBook, locale)} ${chapter}`)
   }
+
+  const paneContent = (kind: StudyPaneKind): ReactNode => {
+    if (kind === 'bible') {
+      return (
+        <div
+          className={`pane-body scripture ${showStrongs ? 'show-strongs' : ''}`}
+          style={{ fontSize: 17 }}
+          ref={paneRef}
+          onDoubleClick={lookupSelection}
+          onClick={handleVerseClick}
+          title={t('study.wordHint')}
+        >
+          {verses.map((verse) => (
+            <div key={verse.verse}>
+              {verse.heading && <div className="verse-heading">{verse.heading}</div>}
+              <div className={`verse ${selectedVerse === verse.verse ? 'selected' : ''}`}>
+                <span className="verse-num">{verse.verse}</span>
+                <span dangerouslySetInnerHTML={{ __html: verse.text }} />
+              </div>
+            </div>
+          ))}
+          {verses.length === 0 && (
+            <p className="empty">{t('reader.noText', { module: bibleModule })}</p>
+          )}
+        </div>
+      )
+    }
+    if (kind === 'commentary') {
+      return (
+        <div className="pane-body">
+          <CommentaryAccordion
+            module={commentaryModule}
+            book={book}
+            chapter={chapter}
+            verse={selectedVerse}
+            onSelectVerse={setSelectedVerse}
+          />
+        </div>
+      )
+    }
+    if (kind === 'dictionary') {
+      return (
+        <div className="pane-body">
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              className="input"
+              style={{ flex: 1 }}
+              placeholder={t('study.strongsPlaceholder')}
+              value={dictKey}
+              onChange={(e) => setDictKey(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && void lookup()}
+            />
+            <button className="btn" onClick={() => void lookup()} disabled={dictLoading}>
+              {dictLoading ? t('study.searching') : t('common.search')}
+            </button>
+          </div>
+          {dictLoading && (
+            <div className="empty">
+              <span className="spinner" />
+            </div>
+          )}
+          {!dictLoading && dictResult && (
+            <div
+              className="scripture"
+              style={{ fontSize: 16, marginTop: 12 }}
+              dangerouslySetInnerHTML={{ __html: dictResult }}
+            />
+          )}
+        </div>
+      )
+    }
+    return (
+      <div className="pane-body">
+        {bookModule ? <BookBody module={bookModule} /> : <p className="empty">{t('study.noCommentary')}</p>}
+      </div>
+    )
+  }
+
+  const refLabel = `${bookName(currentBook, locale)} ${chapter}:${selectedVerse}`
 
   return (
     <div className="view">
       <header className="view-header">
         <h1 className="view-title">{t('nav.study')}</h1>
+        <select
+          className="select"
+          style={{ width: 140 }}
+          value={study.template}
+          title={t('study.template.title')}
+          onChange={(e) => changeTemplate(e.target.value)}
+        >
+          {STUDY_TEMPLATES.map((spec) => (
+            <option key={spec.id} value={spec.id}>
+              {t(`study.template.${spec.id}` as TranslationKey)}
+            </option>
+          ))}
+          {study.template === 'custom' && (
+            <option value="custom">{t('study.template.custom')}</option>
+          )}
+        </select>
+        <button
+          className="btn small ghost"
+          title={t('study.menu.add')}
+          onClick={() => setAddOpen((v) => !v)}
+        >
+          +
+        </button>
+        {addOpen && (
+          <div className="pane-menu-pop add-pop">
+            {PANE_KINDS.filter((k) => !study.panes.includes(k)).map((k) => (
+              <button key={k} className="pane-menu-item" onClick={() => addPane(k)}>
+                {t(PANE_LABELS[k])}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="spacer" />
         <input
           className="input"
@@ -284,12 +536,12 @@ export function StudyView() {
           onKeyDown={(e) => e.key === 'Enter' && jump()}
         />
         <button className="btn small ghost" onClick={() => goChapter(-1)} title={t('study.prevChapter')}>
-          â€¹
+          ‹
         </button>
         <button className="btn small ghost" onClick={() => goChapter(1)} title={t('study.nextChapter')}>
-          â€º
+          ›
         </button>
-        <button className="btn primary small" onClick={sendPassage}>
+        <button className="btn primary small" onClick={() => void sendPassage()}>
           {t('study.sendToEditor')}
         </button>
         <div className="segmented">
@@ -310,133 +562,43 @@ export function StudyView() {
             reference={`${bookName(currentBook, locale)} ${chapter}:${selectedVerse}`}
           />
         ) : (
-        <div className="study-panes">
-          <section className="pane">
-            <div className="pane-head">
-              <span>{t('study.bible')}</span>
-              <select
-                className="select"
-                value={selectedModule}
-                onChange={(e) => setSelectedModule(e.target.value)}
+          <div className="study-flex" ref={flexRef}>
+            {study.panes.map((kind, index) => (
+              <div
+                key={`${kind}-${index}`}
+                className="pane-slot"
+                style={{ flex: `0 0 ${Math.round(useWidths[index] ?? 480)}px` }}
               >
-                {bibleModules.map((m) => (
-                  <option key={m.name} value={m.name}>
-                    {moduleOptionLabel(m, locale)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div
-              className="pane-body scripture"
-              style={{ fontSize: 17 }}
-              ref={paneRef}
-              onDoubleClick={lookupSelection}
-              onClick={handleVerseClick}
-              title={t('study.wordHint')}
-            >
-              {verses.map((verse) => (
-                <div key={verse.verse}>
-                  {verse.heading && <div className="verse-heading">{verse.heading}</div>}
-                  <div
-                    className={`verse ${selectedVerse === verse.verse ? 'selected' : ''}`}
-                  >
-                    <span className="verse-num">{verse.verse}</span>
-                    <span dangerouslySetInnerHTML={{ __html: verse.text }} />
-                  </div>
-                </div>
-              ))}
-              {verses.length === 0 && (
-                <p className="empty">{t('reader.noText', { module: selectedModule })}</p>
-              )}
-            </div>
-          </section>
-
-          <section className="pane">
-            <div className="pane-head">
-              <span>{t('study.commentary')}</span>
-              <select
-                className="select"
-                value={commentaryModule}
-                onChange={(e) => setCommentaryModule(e.target.value)}
-              >
-                {commentaryOptions.map((m) => (
-                  <option key={`${m.driver}-${m.name}`} value={m.name}>
-                    {moduleOptionLabel(m, locale)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="pane-body">
-              <div className="pane-ref">
-                {bookName(currentBook, locale)} {chapter}:{selectedVerse}
+                <PaneShell
+                  kind={kind}
+                  modules={optionsFor(kind)}
+                  moduleId={
+                    kind === 'bible'
+                      ? bibleModule
+                      : kind === 'commentary'
+                        ? commentaryModule
+                        : kind === 'dictionary'
+                          ? dictModule
+                          : bookModule
+                  }
+                  sync={study.sync[kind] ?? true}
+                  refLabel={refLabel}
+                  onModuleChange={(name) => setPaneModule(kind, name)}
+                  onToggleSync={() => toggleSync(kind)}
+                  onChangeKind={(next) => changeKind(index, next)}
+                  onClose={() => closePane(kind)}
+                >
+                  {paneContent(kind)}
+                </PaneShell>
+                {index < study.panes.length - 1 && (
+                  <PaneSplitter onResize={(dx) => onDrag(index, dx)} onReset={() => onResetSplit(index)} />
+                )}
               </div>
-              {commentaryLoading ? (
-                <div className="empty">
-                  <span className="spinner" />
-                </div>
-              ) : commentaryHtml ? (
-                <div className="scripture" dangerouslySetInnerHTML={{ __html: commentaryHtml }} />
-              ) : commentary?.text ? (
-                <div
-                  className="scripture"
-                  style={{ fontSize: 16 }}
-                  dangerouslySetInnerHTML={{ __html: commentary.text }}
-                />
-              ) : (
-                <p className="empty">{t('study.noCommentary')}</p>
-              )}
-            </div>
-          </section>
-
-          <section className="pane">
-            <div className="pane-head">
-              <span>{t('study.dictionary')}</span>
-              <select
-                className="select"
-                value={dictModule}
-                onChange={(e) => setDictModule(e.target.value)}
-              >
-                {dictModules.map((m) => (
-                  <option key={`${m.driver}-${m.name}`} value={m.name}>
-                    {moduleOptionLabel(m, locale)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="pane-body">
-              <div className="pane-ref">
-                {bookName(currentBook, locale)} {chapter}:{selectedVerse}
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  className="input"
-                  style={{ flex: 1 }}
-                  placeholder={t('study.strongsPlaceholder')}
-                  value={dictKey}
-                  onChange={(e) => setDictKey(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && void lookup()}
-                />
-                <button className="btn" onClick={() => void lookup()} disabled={dictLoading}>
-                  {dictLoading ? t('study.searching') : t('common.search')}
-                </button>
-              </div>
-              {dictLoading && (
-                <div className="empty">
-                  <span className="spinner" />
-                </div>
-              )}
-              {!dictLoading && dictResult && (
-                <div
-                  className="scripture"
-                  style={{ fontSize: 16, marginTop: 12 }}
-                  dangerouslySetInnerHTML={{ __html: dictResult }}
-                />
-              )}
-            </div>
-          </section>
-        </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
   )
 }
+
