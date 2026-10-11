@@ -83,6 +83,11 @@ export class CompositeSwordProvider implements SwordProvider {
     return null
   }
 
+  async commentaryVerses(module: string, book: string, chapter: number): Promise<number[]> {
+    const lists = await Promise.all(this.providers.map((p) => p.commentaryVerses(module, book, chapter)))
+    return [...new Set(lists.flat())].sort((a, b) => a - b)
+  }
+
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const results: SearchResult[] = []
     for (const provider of this.providers) {

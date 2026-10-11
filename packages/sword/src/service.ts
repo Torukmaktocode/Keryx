@@ -20,7 +20,11 @@ export class SwordService {
     private readonly nativeLoaded: boolean
   ) {}
 
-  static async create(dataPath?: string, eswordPath?: string): Promise<SwordService> {
+  static async create(
+    dataPath?: string,
+    eswordPath?: string,
+    bibliotecaPath?: string
+  ): Promise<SwordService> {
     const providers: SwordProvider[] = []
     if (dataPath) {
       try {
@@ -30,9 +34,10 @@ export class SwordService {
         // ignora
       }
     }
-    if (eswordPath) {
+    const extraRoots = bibliotecaPath ? [bibliotecaPath] : []
+    if (eswordPath || bibliotecaPath) {
       try {
-        const esword = EswordProvider.create(eswordPath)
+        const esword = EswordProvider.create(eswordPath ?? '', extraRoots)
         if (esword) providers.push(esword)
       } catch {
         // ignora
@@ -90,6 +95,10 @@ export class SwordService {
 
   getVerse(module: string, book: string, chapter: number, verse: number): Promise<Verse | null> {
     return this.provider.getVerse(module, book, chapter, verse)
+  }
+
+  commentaryVerses(module: string, book: string, chapter: number): Promise<number[]> {
+    return this.provider.commentaryVerses(module, book, chapter)
   }
 
   search(options: SearchOptions): Promise<SearchResult[]> {

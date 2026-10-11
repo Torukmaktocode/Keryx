@@ -30,6 +30,7 @@ const api: KeryxApi = {
     books: (module) => invoke(IPC.bibleBooks, module),
     chapter: (req) => invoke(IPC.bibleChapter, req),
     verse: (req) => invoke(IPC.bibleVerse, req),
+    commentaryVerses: (req) => invoke(IPC.bibleCommentaryVerses, req),
     search: (req) => invoke(IPC.bibleSearch, req),
     compare: (req) => invoke(IPC.bibleCompare, req)
   },

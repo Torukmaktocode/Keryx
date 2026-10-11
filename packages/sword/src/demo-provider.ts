@@ -83,6 +83,10 @@ export class DemoSwordProvider implements SwordProvider {
     return chapterVerses.find((v) => v.verse === verse) ?? null
   }
 
+  async commentaryVerses(): Promise<number[]> {
+    return []
+  }
+
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const needle = options.caseSensitive ? options.query : options.query.toLowerCase()
     const wholeWord = options.wholeWord ?? true

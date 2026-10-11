@@ -222,6 +222,10 @@ export class LocalSwordProvider implements SwordProvider {
     return list.find((item) => item.verse === verse) ?? null
   }
 
+  async commentaryVerses(): Promise<number[]> {
+    return []
+  }
+
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const cacheKey = JSON.stringify(options)
     const cached = this.searchCache.get(cacheKey)

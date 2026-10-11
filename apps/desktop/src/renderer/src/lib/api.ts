@@ -54,6 +54,11 @@ export const api = {
       chapter: number
       verse: number
     }): Promise<Verse | null> => unwrap(raw.bible.verse(req)),
+    commentaryVerses: (req: {
+      module: string
+      book: string
+      chapter: number
+    }): Promise<number[]> => unwrap(raw.bible.commentaryVerses(req)),
     search: (req: SearchOptions) => unwrap(raw.bible.search(req)),
     compare: (req: {
       book: string

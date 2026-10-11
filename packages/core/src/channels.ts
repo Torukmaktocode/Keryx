@@ -19,6 +19,7 @@ export const IPC = {
   bibleBooks: 'bible:books',
   bibleChapter: 'bible:chapter',
   bibleVerse: 'bible:verse',
+  bibleCommentaryVerses: 'bible:commentary-verses',
   bibleSearch: 'bible:search',
   bibleCompare: 'bible:compare',
 

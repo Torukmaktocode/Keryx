@@ -42,10 +42,11 @@ function register(channel: string, handler: Handler): void {
 
 export async function registerIpc(
   dataPath?: string,
-  eswordPath?: string
+  eswordPath?: string,
+  bibliotecaPath?: string
 ): Promise<JsonStore | undefined> {
   const store = new JsonStore(join(app.getPath('userData'), 'keryx-store.json'))
-  const sword = await SwordService.create(dataPath, eswordPath)
+  const sword = await SwordService.create(dataPath, eswordPath, bibliotecaPath)
 
   const currentWindow = (): BrowserWindow | null =>
     BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0] ?? null
@@ -104,6 +105,10 @@ export async function registerIpc(
   register(IPC.bibleVerse, (args) => {
     const req = verseRequestSchema.parse(args[0])
     return sword.getVerse(req.module, req.book, req.chapter, req.verse)
+  })
+  register(IPC.bibleCommentaryVerses, (args) => {
+    const req = chapterRequestSchema.parse(args[0])
+    return sword.commentaryVerses(req.module, req.book, req.chapter)
   })
   register(IPC.bibleSearch, (args) => {
     const req = searchRequestSchema.parse(args[0])

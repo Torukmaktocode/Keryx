@@ -19,6 +19,7 @@ export interface SwordProvider {
   getBooks(module: string): Promise<BookInfo[]>
   getChapter(module: string, book: string, chapter: number): Promise<Verse[]>
   getVerse(module: string, book: string, chapter: number, verse: number): Promise<Verse | null>
+  commentaryVerses(module: string, book: string, chapter: number): Promise<number[]>
   search(options: SearchOptions): Promise<SearchResult[]>
   lookupDict(module: string, key: string): Promise<string | null>
   strongs(key: string): Promise<StrongsEntry | null>

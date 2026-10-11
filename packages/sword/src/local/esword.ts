@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, statSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import {
@@ -75,6 +75,11 @@ function snippet(text: string, query: string, radius = 120): string {
   return `${start > 0 ? '…' : ''}${text.slice(start, end)}${end < text.length ? '…' : ''}`
 }
 
+interface EswordRoot {
+  path: string
+  library: 'principal' | 'biblioteca'
+}
+
 interface EswordModule {
   name: string
   path: string
@@ -82,9 +87,54 @@ interface EswordModule {
   category: ModuleCategory
   description: string
   abbreviation: string
+  lang: string
+  library: 'principal' | 'biblioteca'
   bookTable: string | null
   dictTable: string | null
   commTable: string | null
+  commVerse: string | null
+  commChapter: string | null
+  commBook: string | null
+}
+
+/** Normaliza el campo Language de Details a codigo iso (es/pt/en) o ''. */
+function normalizeLang(raw: string): string {
+  const token = raw.trim().toLowerCase().split(/[\s,-]/)[0] ?? ''
+  if (['es', 'spanish', 'castellano', 'espanol', 'español'].includes(token)) return 'es'
+  if (['pt', 'portuguese', 'portuguesa', 'português', 'portugues'].includes(token)) return 'pt'
+  if (['en', 'english', 'ingles', 'inglés'].includes(token)) return 'en'
+  return ''
+}
+
+/**
+ * Recorre la raiz_ (y subcarpetas hasta `depth`) recogiendo archivos con
+ * extension de modulo e-Sword. depth 0 = carpeta plana.
+ */
+function collectFiles(root: string, depth: number): string[] {
+  const out: string[] = []
+  const walk = (dir: string, level: number): void => {
+    let entries: string[] = []
+    try {
+      entries = readdirSync(dir)
+    } catch {
+      return
+    }
+    for (const name of entries) {
+      if (name.startsWith('.') || name === '__MACOSX') continue
+      const path = join(dir, name)
+      try {
+        if (statSync(path).isDirectory()) {
+          if (level < depth) walk(path, level + 1)
+        } else if (categoryFor(extname(path).toLowerCase()) !== 'Unknown') {
+          out.push(path)
+        }
+      } catch {
+        // omite archivos bloqueados
+      }
+    }
+  }
+  walk(root, 0)
+  return out
 }
 
 export class EswordProvider implements SwordProvider {
@@ -93,13 +143,31 @@ export class EswordProvider implements SwordProvider {
   private modules: EswordModule[] = []
   private readonly dbs = new Map<string, DatabaseSync>()
 
-  private constructor(private readonly root: string) {}
+  private constructor(private readonly roots: EswordRoot[]) {}
 
-  static create(root: string): EswordProvider | null {
-    if (!existsSync(root)) return null
-    const provider = new EswordProvider(root)
+  /** Crea el proveedor con raiz principal (esword/) y raices extra (biblioteca/...). */
+  static create(root: string, extraRoots: string[] = []): EswordProvider | null {
+    const roots: EswordRoot[] = []
+    if (existsSync(root)) roots.push({ path: root, library: 'principal' })
+    for (const extra of extraRoots) {
+      if (existsSync(extra)) roots.push({ path: extra, library: 'biblioteca' })
+    }
+    if (!roots.length) return null
+    const provider = new EswordProvider(roots)
     provider.refresh()
     return provider.modules.length > 0 ? provider : null
+  }
+
+  /** Cierra las conexiones SQLite abiertas (uso al refrescar o apagar). */
+  dispose(): void {
+    for (const db of this.dbs.values()) {
+      try {
+        db.close()
+      } catch {
+        // ignora
+      }
+    }
+    this.dbs.clear()
   }
 
   refresh(): void {
@@ -112,33 +180,53 @@ export class EswordProvider implements SwordProvider {
     }
     this.dbs.clear()
     this.modules = []
-    for (const file of readdirSync(this.root)) {
-      const ext = extname(file).toLowerCase()
-      const category = categoryFor(ext)
-      if (category === 'Unknown') continue
-      const path = join(this.root, file)
-      try {
-        const db = this.open(path)
-        const info = this.readDetails(db)
-        const tables = this.tables(db)
-        const bookTable = tables.find((t) => /^bible$/i.test(t)) ?? null
-        const dictTable =
-          tables.find((t) => /dict|lexicon/i.test(t)) ??
-          (tables.includes('Dictionary') ? 'Dictionary' : null)
-        const commTable = tables.find((t) => /comment/i.test(t)) ?? null
-        this.modules.push({
-          name: basename(file, ext),
-          path,
-          ext,
-          category,
-          description: info.description,
-          abbreviation: info.abbreviation,
-          bookTable,
-          dictTable,
-          commTable
-        })
-      } catch {
-        // modulo cifrado o invalido
+    const seen = new Set<string>()
+    for (const root of this.roots) {
+      // principal = carpeta plana; biblioteca = recursivo a 2 niveles
+      const depth = root.library === 'principal' ? 0 : 2
+      for (const path of collectFiles(root.path, depth)) {
+        const ext = extname(path).toLowerCase()
+        const key = basename(path).toLowerCase()
+        if (seen.has(key)) continue // sin duplicados: gana la primera raiz
+        seen.add(key)
+        try {
+          const db = this.open(path)
+          const info = this.readDetails(db)
+          const tables = this.tables(db)
+          const bookTable = tables.find((t) => /^bible$/i.test(t)) ?? null
+          // diccionario: tablas de contenido (evita tablas de indice)
+          const contentTables = tables.filter((t) => !/index/i.test(t))
+          const dictTable =
+            contentTables.find((t) => /dict|lexicon/i.test(t)) ??
+            contentTables.find(
+              (t) => /topical|reference|article|gbook|\bbook\b/i.test(t) && !/^bible$/i.test(t)
+            ) ??
+            (tables.includes('Dictionary') ? 'Dictionary' : null)
+          // comentario e-Sword 2009: Verse/Chapter/Book Commentary
+          const commVerse = tables.find((t) => /^versecommentary$/i.test(t)) ?? null
+          const commChapter = tables.find((t) => /^chaptercommentary$/i.test(t)) ?? null
+          const commBook = tables.find((t) => /^bookcommentary$/i.test(t)) ?? null
+          const commTable =
+            commVerse ?? commChapter ?? commBook ?? (contentTables.find((t) => /comment/i.test(t)) ?? null)
+          this.modules.push({
+            name: basename(path, ext),
+            path,
+            ext,
+            category: categoryFor(ext),
+            description: info.description,
+            abbreviation: info.abbreviation,
+            lang: info.language,
+            library: root.library,
+            bookTable,
+            dictTable,
+            commTable,
+            commVerse,
+            commChapter,
+            commBook
+          })
+        } catch {
+          // modulo cifrado o invalido
+        }
       }
     }
   }
@@ -159,17 +247,22 @@ export class EswordProvider implements SwordProvider {
     return rows.map((row) => row.name)
   }
 
-  private readDetails(db: DatabaseSync): { description: string; abbreviation: string } {
+  private readDetails(db: DatabaseSync): {
+    description: string
+    abbreviation: string
+    language: string
+  } {
     try {
       const row = db.prepare('SELECT * FROM Details LIMIT 1').get() as
         | Record<string, unknown>
         | undefined
-      if (!row) return { description: '', abbreviation: '' }
+      if (!row) return { description: '', abbreviation: '', language: '' }
       const description = String(row.Description ?? row.description ?? '')
       const abbreviation = String(row.Abbreviation ?? row.abbreviation ?? '')
-      return { description, abbreviation }
+      const language = normalizeLang(String(row.Language ?? row.language ?? ''))
+      return { description, abbreviation, language }
     } catch {
-      return { description: '', abbreviation: '' }
+      return { description: '', abbreviation: '', language: '' }
     }
   }
 
@@ -182,12 +275,13 @@ export class EswordProvider implements SwordProvider {
       name: module.name,
       description: module.description,
       category: module.category,
-      lang: module.name.toLowerCase().startsWith('champlin') ? 'es' : '',
+      lang: module.lang,
       driver: `e-Sword ${module.ext}`,
       encoding: 'UTF-8',
       version: '',
       installed: true,
       source: 'local',
+      library: module.library,
       hasStrongs: false
     }
   }
@@ -205,7 +299,7 @@ export class EswordProvider implements SwordProvider {
   }
 
   async installModule(): Promise<void> {
-    throw new Error('Instala modulos e-Sword copiandolos a la carpeta esword/')
+    throw new Error('Instala modulos e-Sword copiandolos a esword/ o dentro de biblioteca/')
   }
 
   async uninstallModule(): Promise<void> {
@@ -220,15 +314,16 @@ export class EswordProvider implements SwordProvider {
     const conf = this.module(module)
     const canonical = resolveBook(book)
     if (!conf || !canonical) return []
+    if (conf.category === 'Commentary') {
+      return this.readCommentary(conf, canonical.code, canonical.ordinal, chapter)
+    }
+    if (!conf.bookTable) return []
     const bookNumber = canonical.ordinal
     const db = this.open(conf.path)
-    const table = conf.category === 'Commentary' ? conf.commTable : conf.bookTable
-    if (!table) return []
-    const textColumn = conf.category === 'Commentary' ? 'Comments' : 'Scripture'
     try {
       const rows = db
         .prepare(
-          `SELECT Verse AS verse, ${textColumn} AS text FROM ${table} WHERE Book = ? AND Chapter = ? ORDER BY Verse`
+          `SELECT Verse AS verse, Scripture AS text FROM ${conf.bookTable} WHERE Book = ? AND Chapter = ? ORDER BY Verse`
         )
         .all(bookNumber, chapter) as Array<{ verse: number; text: string }>
       return rows
@@ -244,6 +339,80 @@ export class EswordProvider implements SwordProvider {
     }
   }
 
+  /**
+   * Lee la entrada de comentario para los versiculos de un capitulo. Los
+   * comentarios e-Sword usan rangos (ChapterBegin/VerseBegin..ChapterEnd/VerseEnd)
+   * y niveles adicionales (comentario de capitulo y de libro).
+   */
+  private readCommentary(
+    conf: EswordModule,
+    code: string,
+    ordinal: number,
+    chapter: number
+  ): Verse[] {
+    const db = this.open(conf.path)
+    const out: Verse[] = []
+    try {
+      if (conf.commVerse) {
+        const rows = db
+          .prepare(
+            `SELECT ChapterBegin AS cb, VerseBegin AS vb, ChapterEnd AS ce, VerseEnd AS ve, Comments AS text` +
+              ` FROM ${conf.commVerse} WHERE Book = ? AND ChapterBegin <= ? AND ChapterEnd >= ? ORDER BY VerseBegin`
+          )
+          .all(ordinal, chapter, chapter) as Array<{
+          cb: number
+          vb: number
+          ce: number
+          ve: number
+          text: string
+        }>
+        for (const row of rows) {
+          const start = row.cb < chapter ? 1 : row.vb
+          const end = row.ce > chapter ? 999 : row.ve
+          const text = renderEsword(row.text ?? '')
+          if (!text) continue
+          for (let v = start; v <= end; v++) out.push({ book: code, chapter, verse: v, text })
+        }
+      }
+      const intro = this.readCommentaryIntro(conf, code, ordinal, chapter)
+      if (intro) out.unshift(...intro)
+    } catch {
+      // se devuelve lo que haya
+    }
+    return out
+  }
+
+  /** Comentarios de capitulo (verse 0) y de libro (verse 0). */
+  private readCommentaryIntro(
+    conf: EswordModule,
+    code: string,
+    ordinal: number,
+    chapter: number
+  ): Verse[] {
+    if (!conf.commChapter && !conf.commBook) return []
+    const db = this.open(conf.path)
+    const parts: string[] = []
+    try {
+      if (conf.commBook) {
+        const book = db
+          .prepare(`SELECT Comments AS text FROM ${conf.commBook} WHERE Book = ?`)
+          .get(ordinal) as { text: string } | undefined
+        if (book?.text) parts.push(renderEsword(book.text))
+      }
+      if (conf.commChapter) {
+        const chapterComment = db
+          .prepare(
+            `SELECT Comments AS text FROM ${conf.commChapter} WHERE Book = ? AND Chapter = ?`
+          )
+          .get(ordinal, chapter) as { text: string } | undefined
+        if (chapterComment?.text) parts.push(renderEsword(chapterComment.text))
+      }
+    } catch {
+      // ignora
+    }
+    return parts.map((text) => ({ book: code, chapter: 0, verse: 0, text }))
+  }
+
   async getVerse(
     module: string,
     book: string,
@@ -252,6 +421,50 @@ export class EswordProvider implements SwordProvider {
   ): Promise<Verse | null> {
     const list = await this.getChapter(module, book, chapter)
     return list.find((item) => item.verse === verse) ?? null
+  }
+
+  /** Versiculos del capitulo que tienen entrada en el comentario (.cmtx/.cmti). */
+  async commentaryVerses(module: string, book: string, chapter: number): Promise<number[]> {
+    const conf = this.module(module)
+    const canonical = resolveBook(book)
+    if (!conf || !canonical || conf.category !== 'Commentary') return []
+    const db = this.open(conf.path)
+    const found = new Set<number>()
+    try {
+      if (conf.commVerse) {
+        const rows = db
+          .prepare(
+            `SELECT ChapterBegin AS cb, VerseBegin AS vb, ChapterEnd AS ce, VerseEnd AS ve` +
+              ` FROM ${conf.commVerse} WHERE Book = ? AND ChapterBegin <= ? AND ChapterEnd >= ?`
+          )
+          .all(canonical.ordinal, chapter, chapter) as Array<{
+          cb: number
+          vb: number
+          ce: number
+          ve: number
+        }>
+        for (const row of rows) {
+          const start = row.cb < chapter ? 1 : row.vb
+          const end = row.ce > chapter ? 250 : row.ve
+          for (let v = start; v <= end && v - start < 200; v++) found.add(v)
+        }
+      }
+      if (conf.commChapter) {
+        const exists = db
+          .prepare(`SELECT 1 FROM ${conf.commChapter} WHERE Book = ? AND Chapter = ?`)
+          .get(canonical.ordinal, chapter)
+        if (exists) found.add(0)
+      }
+      if (conf.commBook) {
+        const exists = db
+          .prepare(`SELECT 1 FROM ${conf.commBook} WHERE Book = ?`)
+          .get(canonical.ordinal)
+        if (exists) found.add(0)
+      }
+    } catch {
+      // ignora
+    }
+    return [...found].sort((a, b) => a - b)
   }
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
@@ -300,11 +513,36 @@ export class EswordProvider implements SwordProvider {
             })
             if (results.length >= limit) return results
           }
+        } else if (conf.category === 'Commentary' && conf.commVerse) {
+          const rows = db
+            .prepare(
+              `SELECT Book AS book, ChapterBegin AS chapter, VerseBegin AS verse, Comments AS text` +
+                ` FROM ${conf.commVerse} WHERE Comments LIKE ? ESCAPE '\\' LIMIT ?`
+            )
+            .all(like, likeLimit) as Array<{
+            book: number
+            chapter: number
+            verse: number
+            text: string
+          }>
+          for (const row of rows) {
+            const plain = stripHtml(renderEsword(row.text ?? ''))
+            if (tokens.length && !matchesQuery(plain, tokens, matchOptions)) continue
+            const canonical = CANONICAL_BOOKS[row.book - 1]
+            results.push({
+              module: name,
+              book: canonical?.code ?? String(row.book),
+              chapter: row.chapter,
+              verse: row.verse,
+              text: snippet(stripHtml(row.text ?? ''), options.query)
+            })
+            if (results.length >= limit) return results
+          }
         } else if (conf.dictTable) {
           const columns = this.columns(db, conf.dictTable)
-          const topicCol = columns.find((c) => /topic|term|word|key/i.test(c)) ?? columns[0]
+          const topicCol = columns.find((c) => /topic|term|word|key|title/i.test(c)) ?? columns[0]
           const defCol =
-            columns.find((c) => /definition|def|meaning|notes|data/i.test(c)) ??
+            columns.find((c) => /definition|def\b|meaning|notes|data|content|body|text/i.test(c)) ??
             columns[1] ??
             columns[0]
           const rows = db
@@ -337,9 +575,11 @@ export class EswordProvider implements SwordProvider {
     if (!conf || !conf.dictTable) return null
     const db = this.open(conf.path)
     const columns = this.columns(db, conf.dictTable)
-    const topicCol = columns.find((c) => /topic|term|word|key/i.test(c)) ?? columns[0]
+    const topicCol = columns.find((c) => /topic|term|word|key|title/i.test(c)) ?? columns[0]
     const defCol =
-      columns.find((c) => /definition|def|meaning|notes|data/i.test(c)) ?? columns[1] ?? columns[0]
+      columns.find((c) => /definition|def\b|meaning|notes|data|content|body|text/i.test(c)) ??
+      columns[1] ??
+      columns[0]
     try {
       const row = db
         .prepare(

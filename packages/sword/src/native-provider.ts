@@ -107,6 +107,10 @@ export class NativeSwordProvider implements SwordProvider {
     return chapterVerses.find((v) => v.verse === verse) ?? null
   }
 
+  async commentaryVerses(): Promise<number[]> {
+    return []
+  }
+
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const module = options.modules?.[0] ?? 'KJV'
     const results: any[] = await this.require('getModuleSearchResults')(

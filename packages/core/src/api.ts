@@ -55,6 +55,7 @@ export interface KeryxApi {
       chapter: number
       verse: number
     }): Promise<Result<Verse | null>>
+    commentaryVerses(req: { module: string; book: string; chapter: number }): Promise<Result<number[]>>
     search(req: SearchOptions): Promise<Result<SearchResult[]>>
     compare(req: {
       book: string

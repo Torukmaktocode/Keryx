@@ -20,6 +20,8 @@ export interface SwordModule {
   installed: boolean
   source: ModuleSource
   repository?: string
+  /** library = "principal" (esword/) or "biblioteca" folder (scan bibliography/). */
+  library?: 'principal' | 'biblioteca'
   hasStrongs?: boolean
   cipherKey?: boolean
 }

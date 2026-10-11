@@ -32,6 +32,22 @@ function resolveEswordPath(): string {
   return join(app.getPath('userData'), 'esword')
 }
 
+function resolveBibliotecaPath(): string | undefined {
+  const candidates = [
+    process.env.KERYX_BIBLIOTECA_PATH,
+    join(process.cwd(), 'biblioteca'),
+    join(app.getAppPath(), '..', '..', 'biblioteca'),
+    join(app.getAppPath(), '..', 'biblioteca'),
+    join(app.getPath('userData'), 'biblioteca')
+  ].filter((value): value is string => Boolean(value))
+  let userHome = ''
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate
+    if (!userHome) userHome = candidate
+  }
+  return userHome || undefined
+}
+
 function createWindow(): void {
   const window = new BrowserWindow({
     width: 1320,
@@ -71,7 +87,7 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  const store = await registerIpc(resolveSwordPath(), resolveEswordPath())
+  const store = await registerIpc(resolveSwordPath(), resolveEswordPath(), resolveBibliotecaPath())
   window_all_closed_flush = (): void => store?.flush()
   createWindow()
 
