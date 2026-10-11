@@ -39,6 +39,8 @@ export interface AgentCitation {
     | 'cristologico'
     | 'filosofico'
     | 'aplicacion'
+    | 'idiomas'
+    | 'morfologia'
 }
 
 export interface DossierSection {
@@ -57,7 +59,7 @@ export interface Dossier {
 
 export const ENTRY_MAX_CHARS = 620
 export const SECTION_MAX_ENTRIES = 3
-export const DOSSIER_BUDGET = 11000
+export const DOSSIER_BUDGET = 14000
 
 /** Ganchos de datos inyectables (api en produccion, fake en tests). */
 export interface AgentHook {
@@ -83,12 +85,14 @@ const SPECIAL_RE: Record<AgentCitation['kind'], RegExp | null> = {
   tema: /nave|concordancia tem.?atica|tematico/i,
   historico: /geogra|enciclop|tabern.culo de israel|usos y costumbre|manners|historic/i,
   ilustracion: /an.cdot|ilustracion|figuras|citas/i,
-  referencia: null,
+  referencia: /lambert|paralelos|concordancias|analogias/i,
   teologico: /diccionario de teologi|teologico|teologia|eclesiologi|sacramentum/i,
   cultural: /usos y costumbre|arqueolog|perspicacia/i,
   cristologico: /jes.s de nazaret|cristologi|vida de jes/i,
   filosofico: /diccionario de filosofi/i,
-  aplicacion: /pastoral|evangelizaci|catequis|doctrina social|evangelismo/i
+  aplicacion: /pastoral|evangelizaci|catequis|doctrina social|evangelismo/i,
+  idiomas: /tuggy|lexico griego/i,
+  morfologia: /morfologico robinson|morphological analysis/i
 }
 
 /** Orden interna de especialistas: preferimos los de contenido mas extenso. */
@@ -146,10 +150,37 @@ function verseThemeWords(html: string): string[] {
     'todos', 'toda', 'todo', 'otra', 'otro', 'esta', 'este', 'esas', 'esos',
     'pero', 'como', 'cual', 'cuales', 'para', 'sino', 'tiene', 'tienen', 'dijo'
   ])
-  return [...new Set(stripTags(html).toLowerCase().split(/[^\wáéíóúñü]+/).filter((w) => w.length >= 4 && !stop.has(w)))]
+  return [
+    ...new Set(
+      [...new Set(stripTags(html).toLowerCase().split(/[^\wáéíóúñü]+/))]
+        .filter((w) => /^[a-záéíóúñü]{4,}$/.test(w) && !stop.has(w))
+    )
+  ]
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .sort((a, b) => b.length - a.length)
     .slice(0, 6)
+}
+
+/** Codigo morfologico compacto (VAAI3S) → candidatos Robinson (V-AAI-3S, VAAI3S). */
+function morphCandidates(compact: string): string[] {
+  const c = compact.trim().toUpperCase()
+  if (!/^[A-Z]{2,10}\d{0,3}[A-Z]{0,3}$/.test(c)) return []
+  const dashed =
+    (c.startsWith('V') ? `V-${c.slice(1)}` : c)
+      .replace(/(\d)([A-Z])/g, '$1-$2')
+      .replace(/([A-Z])(\d)/g, '$1-$2')
+  return [...new Set([dashed, c])]
+}
+
+/** Códigos morfológicos del markup e-Sword: <num>G25 VAAI3S</num>. */
+function verseMorphCodes(html: string): string[] {
+  return [
+    ...new Set(
+      [...html.matchAll(/<num>\s*[GH]\d{1,5}\s+([A-Z0-9]{2,8}(?:\s+[A-Z0-9-]{1,10})*)\s*<\/num>/gi)]
+        .flatMap((m) => m[1].split(/\s+/))
+        .filter((code) => /^[A-Z]{2,}/i.test(code))
+    )
+  ].slice(0, 6)
 }
 
 /** Ensambla el dosier con presupuesto global. `at` fuerza la referencia (Guía del Pasaje). */
@@ -210,11 +241,14 @@ export async function buildDossier(
 
   // ---- 2-7) Agentes de mina EN PARALELO: cada uno produce {entries, cites}
   //           y el presupuesto se consume en orden canonico al ensamblar.
-  // Claves Strong extraidas del verso (agente strongs).
+  // Claves Strong extraidas del verso (data-strong="G26" o <num>G25 VAAI3S</num>).
   const strongKeys = verseHtml
-    ? [...verseHtml.matchAll(/data-strong="([GH]\d{1,6})"/gi)]
-        .slice(0, 6)
-        .map((m) => m[1].toUpperCase())
+    ? [
+        ...[...verseHtml.matchAll(/data-strong="([GH]\d{1,6})"/gi)].map((m) => m[1]),
+        ...[...verseHtml.matchAll(/<num>\s*([GH]\d{1,6})\s/gi)].map((m) => m[1])
+      ]
+        .map((k) => k.toUpperCase())
+        .slice(0, 8)
     : []
 
   interface Job {
@@ -267,6 +301,53 @@ export async function buildDossier(
       if (!entry) continue
       job.entries.push(`**${entry.key}** (${entry.language}) ${trimEntry(entry.definition, 420)}`)
       job.cites.push({ kind: 'strongs', module: entry.key, entry: key })
+    }
+    return job
+  }
+
+  // ---- 3b) Idiomas originales: lexico griego (Tuggy) keyeado por la palabra
+  //          ESPANOLA del verso → palabras griegas reales que la traducen.
+  const idiomasJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'idiomas', title: 'Palabras griegas del NT (Tuggy)', entries: [], cites: [] }
+    const topics = (themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 3)
+    if (!topics.length) return job
+    const mods = hook.modules.filter((m) => SPECIAL_RE.idiomas?.test(m.name)).slice(0, 1)
+    for (const mod of mods) {
+      for (const topic of topics.flatMap(topicVariants)) {
+        const entry = await safe(hook.lookup(mod.name, topic), null)
+        if (!entry) continue
+        job.entries.push(
+          `**${topic}** → ${trimEntry(entry, 520)}`
+        )
+        job.cites.push({ kind: 'idiomas', module: mod.name, entry: topic })
+        break
+      }
+    }
+    return job
+  }
+
+  // ---- 3c) Morfologia gramatical: codigos del verso explicados por Robinson.
+  const morfologiaJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'morfologia', title: 'Morfologia (Robinson)', entries: [], cites: [] }
+    const mods = hook.modules
+      .filter((m) => SPECIAL_RE.morfologia?.test(m.name))
+      .slice(0, 2)
+    if (!mods.length) return job
+    for (const compact of verseMorphCodes(verseHtml)) {
+      for (const candidate of morphCandidates(compact)) {
+        let entry: string | null = null
+        for (const mod of mods) {
+          entry = await safe(hook.lookup(mod.name, candidate), null)
+          if (!entry) continue
+          // la definicion Robinson ya trae Tiempo/Voz/Modo/Persona/Numero
+          job.entries.push(
+            `**${compact}** (${candidate}) ${trimEntry(entry.replace(/<[^>]+>/g, ' ').replace(/Funci[oó]n gramatical:?/i, ''), 320)}`
+          )
+          job.cites.push({ kind: 'morfologia', module: mod.name, entry: candidate })
+          break
+        }
+        if (entry) break
+      }
     }
     return job
   }
@@ -386,13 +467,34 @@ export async function buildDossier(
     return job
   }
 
+  // ---- 4b) Paralelos y analogias (Lambert): temas ↔ referencias cruzadas.
+  const refsJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'referencia', title: 'Paralelos y referencias cruzadas (Lambert)', entries: [], cites: [] }
+    const topicsForRefs = (themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 3)
+    if (!topicsForRefs.length) return job
+    const refMods = hook.modules.filter((m) => SPECIAL_RE.referencia?.test(m.name)).slice(0, 1)
+    for (const mod of refMods) {
+      for (const topic of topicsForRefs.flatMap(topicVariants)) {
+        const entry = await safe(hook.lookup(mod.name, topic), null)
+        if (!entry) continue
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 560)}`)
+        job.cites.push({ kind: 'referencia', module: mod.name, entry: topic })
+        break
+      }
+    }
+    return job
+  }
+
   const jobs = await Promise.all([
     commentJob(),
     outlineJob(),
     strongsJob(),
+    idiomasJob(),
+    morfologiaJob(),
     themeJob(),
     geoJob(),
     ...contextJobs,
+    refsJob(),
     illusJob()
   ])
 
@@ -418,9 +520,14 @@ function refEntry(book: string, chapter: number, verse?: number): string {
 function pickBibleModule(hook: AgentHook): SwordModule | null {
   const bibles = hook.modules.filter((m) => m.category === 'Bible')
   const scored = bibles.sort((a, b) => {
-    const rankA = hook.priorityModules.includes(a.name) ? 0 : 1
-    const rankB = hook.priorityModules.includes(b.name) ? 0 : 1
-    if (rankA !== rankB) return rankA - rankB
+    // 1º biblia del panel activo, 2º biblia con Strong# (markup explotable),
+    // 3º español, luego alfabético.
+    const selA = hook.selectedModule && a.name === hook.selectedModule ? 0 : 1
+    const selB = hook.selectedModule && b.name === hook.selectedModule ? 0 : 1
+    if (selA !== selB) return selA - selB
+    const stA = /strong/i.test(a.name) ? 0 : 1
+    const stB = /strong/i.test(b.name) ? 0 : 1
+    if (stA !== stB) return stA - stB
     const es = (m: SwordModule): number => ((m.lang || '').toLowerCase().startsWith('es') ? 0 : 1)
     return es(a) - es(b) || a.name.localeCompare(b.name)
   })

@@ -98,6 +98,39 @@ function fakeHook(overrides: Partial<AgentHook> = {}): AgentHook {
         version: '',
         installed: true,
         source: 'local'
+      },
+      {
+        name: 'Lexico Griego-Espanol del NT - Alfred Tuggy',
+        description: '',
+        category: 'Lexicon',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Diccionario Morfologico Robinson',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Diccionario Lambert - Paralelos-Concordancias-Analogias',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
       }
     ],
     locale: 'es',
@@ -176,6 +209,31 @@ describe('buildDossier (sub-agentes 0 tokens)', () => {
     const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
     const cultural = dossier.sections.find((s) => s.kind === 'cultural')
     expect(cultural?.entries[0]).toContain('Usos y Costumbres')
+  })
+
+  it('idiomas originales: lexico griego keyeado por palabra del verso (Tuggy)', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    const idiomas = dossier.sections.find((s) => s.kind === 'idiomas')
+    expect(idiomas?.entries[0]).toContain('Tuggy')
+    expect(idiomas?.entries[0]).toContain('**AMOR**')
+  })
+
+  it('morfologia gramatical: codigo del verso resuelto por Robinson', async () => {
+    const hook = fakeHook({
+      chapter: async () => [
+        { verse: 16, text: '<w data-strong="G26">amor</w> <num>G25 VAAI3S</num> mundo' }
+      ]
+    })
+    const dossier = await buildDossier(hook, 'crearsermon', 'Juan 3:16')
+    const morph = dossier.sections.find((s) => s.kind === 'morfologia')
+    expect(morph?.entries[0]).toContain('VAAI3S')
+    expect(morph?.entries[0]).toContain('Robinson')
+  })
+
+  it('paralelos y analogias via Lambert con temas del verso', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    const refs = dossier.sections.find((s) => s.kind === 'referencia')
+    expect(refs?.entries[0]).toContain('Lambert')
   })
 })
 

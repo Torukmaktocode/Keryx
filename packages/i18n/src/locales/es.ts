@@ -107,6 +107,8 @@ export const es = {
   'guide.cristologico': 'Contexto cristológico',
   'guide.filosofico': 'Contexto filosófico',
   'guide.aplicacion': 'Puentes pastorales y aplicación',
+  'guide.idiomas': 'Palabras griegas del NT (Tuggy)',
+  'guide.morfologia': 'Morfología gramatical (Robinson)',
   'guide.ilustracion': 'Ilustraciones',
   'guide.referencia': 'Referencias cruzadas',
   'guide.noData': 'Sin fichas ancladas para este pasaje.',

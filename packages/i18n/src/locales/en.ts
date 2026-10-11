@@ -109,6 +109,8 @@ export const en: Record<TranslationKey, string> = {
   'guide.cristologico': 'Christological context',
   'guide.filosofico': 'Philosophical context',
   'guide.aplicacion': 'Pastoral bridges and application',
+  'guide.idiomas': 'NT Greek words (Tuggy)',
+  'guide.morfologia': 'Grammatical morphology (Robinson)',
   'guide.ilustracion': 'Illustrations',
   'guide.referencia': 'Cross references',
   'guide.noData': 'No anchored cards for this passage.',

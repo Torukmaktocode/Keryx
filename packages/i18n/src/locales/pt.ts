@@ -109,6 +109,8 @@ export const pt: Record<TranslationKey, string> = {
   'guide.cristologico': 'Contexto cristológico',
   'guide.filosofico': 'Contexto filosófico',
   'guide.aplicacion': 'Pontes pastorais e aplicação',
+  'guide.idiomas': 'Palavras gregas do NT (Tuggy)',
+  'guide.morfologia': 'Morfologia gramatical (Robinson)',
   'guide.ilustracion': 'Ilustrações',
   'guide.referencia': 'Referências cruzadas',
   'guide.noData': 'Sem fichas ancoradas para esta passagem.',
