@@ -91,6 +91,8 @@ export const pt: Record<TranslationKey, string> = {
   'study.commentary.empty': 'Sem comentário para este capítulo neste módulo.',
   'study.bookSearch': 'Buscar no livro…',
   'study.bookHint': 'Busque um tema para ler sua seção.',
+  'study.speakOf': 'Falam de {ref}',
+  'study.dictHave': 'Dicionários com "{term}"',
   'study.bible': 'Bíblia',
   'study.commentary': 'Comentário',
   'study.dictionary': 'Dicionário',

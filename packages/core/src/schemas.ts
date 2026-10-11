@@ -53,6 +53,15 @@ export const strongsSchema = z.object({
   key: z.string().min(1)
 })
 
+export const coverageRequestSchema = z.object({
+  book: z.string().min(1),
+  chapter: z.number().int().positive()
+})
+
+export const dictCoverageSchema = z.object({
+  term: z.string().min(1)
+})
+
 export const fullscreenSchema = z.object({
   value: z.boolean().optional()
 })

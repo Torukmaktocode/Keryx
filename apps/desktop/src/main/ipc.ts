@@ -4,6 +4,8 @@ import {
   IPC,
   aiChatSchema,
   chapterRequestSchema,
+  coverageRequestSchema,
+  dictCoverageSchema,
   compareRequestSchema,
   dictLookupSchema,
   documentCreateSchema,
@@ -110,6 +112,10 @@ export async function registerIpc(
     const req = chapterRequestSchema.parse(args[0])
     return sword.commentaryVerses(req.module, req.book, req.chapter)
   })
+  register(IPC.bibleCommentaryCoverage, (args) => {
+    const req = coverageRequestSchema.parse(args[0])
+    return sword.commentaryCoverage(req.book, req.chapter)
+  })
   register(IPC.bibleSearch, (args) => {
     const req = searchRequestSchema.parse(args[0])
     return sword.search(req)
@@ -129,6 +135,10 @@ export async function registerIpc(
     return sword.lookupDict(req.module, req.key)
   })
   register(IPC.dictStrongs, (args) => sword.strongs(String(args[0])))
+  register(IPC.dictCoverage, (args) => {
+    const req = dictCoverageSchema.parse(args[0])
+    return sword.dictCoverage(req.term)
+  })
 
   register(IPC.documentsList, () => store.listDocuments())
   register(IPC.documentsGet, (args) => {

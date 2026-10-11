@@ -6,6 +6,7 @@ import type {
   BookInfo,
   Document,
   DocumentMeta,
+  ModuleCoverage,
   Repository,
   Result,
   SearchOptions,
@@ -56,6 +57,7 @@ export interface KeryxApi {
       verse: number
     }): Promise<Result<Verse | null>>
     commentaryVerses(req: { module: string; book: string; chapter: number }): Promise<Result<number[]>>
+    commentaryCoverage(req: { book: string; chapter: number }): Promise<Result<ModuleCoverage[]>>
     search(req: SearchOptions): Promise<Result<SearchResult[]>>
     compare(req: {
       book: string
@@ -66,6 +68,7 @@ export interface KeryxApi {
   dict: {
     lookup(req: { module: string; key: string }): Promise<Result<string | null>>
     strongs(key: string): Promise<Result<StrongsEntry | null>>
+    coverage(req: { term: string }): Promise<Result<ModuleCoverage[]>>
   }
   documents: {
     list(): Promise<Result<DocumentMeta[]>>

@@ -1,5 +1,6 @@
 import type {
   BookInfo,
+  ModuleCoverage,
   Repository,
   SearchOptions,
   SearchResult,
@@ -20,6 +21,9 @@ export interface SwordProvider {
   getChapter(module: string, book: string, chapter: number): Promise<Verse[]>
   getVerse(module: string, book: string, chapter: number, verse: number): Promise<Verse | null>
   commentaryVerses(module: string, book: string, chapter: number): Promise<number[]>
+  /** Modulos con contenido para la referencia/termino (marcas e-Sword). */
+  commentaryCoverage(book: string, chapter: number): Promise<ModuleCoverage[]>
+  dictCoverage(term: string): Promise<ModuleCoverage[]>
   search(options: SearchOptions): Promise<SearchResult[]>
   lookupDict(module: string, key: string): Promise<string | null>
   strongs(key: string): Promise<StrongsEntry | null>

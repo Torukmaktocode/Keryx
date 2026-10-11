@@ -4,6 +4,7 @@ import {
   STUDY_TEMPLATES,
   bookName,
   CANONICAL_BOOKS,
+  type ModuleCoverage,
   type SearchResult,
   type StudyLayout,
   type StudyPaneKind,
@@ -181,10 +182,13 @@ export function StudyView() {
   const [dictLoading, setDictLoading] = useState(false)
   const [refInput, setRefInput] = useState('')
   const [addOpen, setAddOpen] = useState(false)
+  const [coverage, setCoverage] = useState<ModuleCoverage[]>([])
+  const [dictCoverage, setDictCoverage] = useState<ModuleCoverage[]>([])
 
   const paneRef = useRef<HTMLDivElement>(null)
   const flexRef = useRef<HTMLDivElement>(null)
   const lastAutoKey = useRef('')
+  const commentaryReq = useRef(0)
   const navBook = useAppStore((s) => s.navBook)
   const navChapter = useAppStore((s) => s.navChapter)
   const navVerse = useAppStore((s) => s.navVerse)
@@ -323,6 +327,32 @@ export function StudyView() {
       setSelectedVerse(verses[0].verse)
     }
   }, [verses, selectedVerse])
+
+  // marcas e-Sword: comentarios que hablan del capitulo actual
+  useEffect(() => {
+    const req = ++commentaryReq.current
+    api.bible
+      .commentaryCoverage({ book, chapter })
+      .then((list) => {
+        if (req === commentaryReq.current) setCoverage(list)
+      })
+      .catch(() => {
+        if (req === commentaryReq.current) setCoverage([])
+      })
+  }, [book, chapter])
+
+  // diccionarios con el termino activo (palabra Strong o busqueda manual)
+  useEffect(() => {
+    const term = dictKey.trim() || extractStrongs(verses.find((v) => v.verse === selectedVerse)?.text ?? '')[0] || ''
+    if (!term) {
+      setDictCoverage([])
+      return
+    }
+    api.dict
+      .coverage({ term })
+      .then(setDictCoverage)
+      .catch(() => setDictCoverage([]))
+  }, [dictKey, verses, selectedVerse, book, chapter])
 
   useEffect(() => {
     const el = paneRef.current?.querySelector('.verse.selected')
@@ -488,6 +518,52 @@ export function StudyView() {
     )
   }
 
+  const shortName = (name: string): string => name.length > 26 ? `${name.slice(0, 24)}…` : name
+
+  const coverageStrip = (
+    <div className="coverage-strip">
+      {coverage.length > 0 && (
+        <div className="coverage-row">
+          <span className="coverage-label">
+            {t('study.speakOf', { ref: `${bookName(currentBook, locale)} ${chapter}` })}
+          </span>
+          <div className="coverage-chips">
+            {coverage.map((item) => (
+              <button
+                key={item.module}
+                className={`coverage-chip ${commentaryModule === item.module ? 'active' : ''}`}
+                title={`${item.module} — ${item.hits} ${item.hits === 1 ? 'verso' : 'versos'}`}
+                onClick={() => setPaneModule('commentary', item.module)}
+              >
+                {shortName(item.module)}
+                {item.hits > 1 && <b>{item.hits}</b>}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {dictCoverage.length > 0 && (
+        <div className="coverage-row">
+          <span className="coverage-label">
+            {t('study.dictHave', { term: dictKey.trim() || 'Strong#' })}
+          </span>
+          <div className="coverage-chips">
+            {dictCoverage.map((item) => (
+              <button
+                key={item.module}
+                className={`coverage-chip dict ${dictModule === item.module ? 'active' : ''}`}
+                title={item.module}
+                onClick={() => setPaneModule('dictionary', item.module)}
+              >
+                {shortName(item.module)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
   const refLabel = `${bookName(currentBook, locale)} ${chapter}:${selectedVerse}`
 
   return (
@@ -563,6 +639,7 @@ export function StudyView() {
           />
         ) : (
           <div className="study-flex" ref={flexRef}>
+            {coverageStrip}
             {study.panes.map((kind, index) => (
               <div
                 key={`${kind}-${index}`}

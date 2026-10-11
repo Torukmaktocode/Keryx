@@ -91,6 +91,8 @@ export const en: Record<TranslationKey, string> = {
   'study.commentary.empty': 'No commentary for this chapter in this module.',
   'study.bookSearch': 'Search in the book…',
   'study.bookHint': 'Search a topic to read its section.',
+  'study.speakOf': 'Speak of {ref}',
+  'study.dictHave': 'Dictionaries with "{term}"',
   'study.bible': 'Bible',
   'study.commentary': 'Commentary',
   'study.dictionary': 'Dictionary',

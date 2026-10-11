@@ -20,11 +20,13 @@ export const IPC = {
   bibleChapter: 'bible:chapter',
   bibleVerse: 'bible:verse',
   bibleCommentaryVerses: 'bible:commentary-verses',
+  bibleCommentaryCoverage: 'bible:commentary-coverage',
   bibleSearch: 'bible:search',
   bibleCompare: 'bible:compare',
 
   dictLookup: 'dict:lookup',
   dictStrongs: 'dict:strongs',
+  dictCoverage: 'dict:coverage',
 
   documentsList: 'documents:list',
   documentsGet: 'documents:get',

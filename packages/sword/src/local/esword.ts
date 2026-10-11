@@ -5,6 +5,7 @@ import {
   CANONICAL_BOOKS,
   type BookInfo,
   type ModuleCategory,
+  type ModuleCoverage,
   type Repository,
   type SearchOptions,
   type SearchResult,
@@ -466,6 +467,102 @@ export class EswordProvider implements SwordProvider {
       // ignora
     }
     return [...found].sort((a, b) => a - b)
+  }
+
+  /**
+   * Marcas e-Sword: comentarios con contenido para el libro+capitulo, de todos
+   * los modulos de comentario a la vez (1 query indexada por modulo).
+   */
+  async commentaryCoverage(book: string, chapter: number): Promise<ModuleCoverage[]> {
+    const canonical = resolveBook(book)
+    if (!canonical) return []
+    const out: ModuleCoverage[] = []
+    for (const conf of this.modules) {
+      if (conf.category !== 'Commentary') continue
+      if (!conf.commVerse && !conf.commChapter && !conf.commBook) continue
+      let hits = 0
+      try {
+        const db = this.open(conf.path)
+        if (conf.commVerse) {
+          const row = db
+            .prepare(
+              `SELECT COUNT(*) AS n FROM ${conf.commVerse}` +
+                ` WHERE Book = ? AND ChapterBegin <= ? AND ChapterEnd >= ?`
+            )
+            .get(canonical.ordinal, chapter, chapter) as { n: number }
+          hits = Number(row.n) > 0 ? Math.max(hits, 1) : 0
+          if (hits > 0) {
+            // cuenta aproximada de versiculos cubiertos para el conteo del chip
+            const rows = db
+              .prepare(
+                `SELECT VerseBegin AS vb, ChapterBegin AS cb, VerseEnd AS ve, ChapterEnd AS ce` +
+                  ` FROM ${conf.commVerse} WHERE Book = ? AND ChapterBegin <= ? AND ChapterEnd >= ?`
+              )
+              .all(canonical.ordinal, chapter, chapter) as Array<{
+              vb: number
+              cb: number
+              ve: number
+              ce: number
+            }>
+            const seen = new Set<number>()
+            for (const r of rows) {
+              const start = r.cb < chapter ? 1 : r.vb
+              const end = r.ce > chapter ? Math.min(250, r.ve) : r.ve
+              for (let v = start; v <= end && seen.size < 200; v++) seen.add(v)
+            }
+            hits = seen.size
+          }
+        }
+        if (hits === 0) {
+          if (conf.commChapter) {
+            const row = db
+              .prepare(`SELECT 1 FROM ${conf.commChapter} WHERE Book = ? AND Chapter = ?`)
+              .get(canonical.ordinal, chapter)
+            if (row) hits = 1
+          }
+          if (hits === 0 && conf.commBook) {
+            const row = db
+              .prepare(`SELECT 1 FROM ${conf.commBook} WHERE Book = ?`)
+              .get(canonical.ordinal)
+            if (row) hits = 1
+          }
+        }
+      } catch {
+        // ignora
+      }
+      if (hits > 0) out.push({ module: conf.name, hits })
+    }
+    return out.sort((a, b) => b.hits - a.hits || a.module.localeCompare(b.module))
+  }
+
+  /**
+   * Diccionarios/lexicos/libros que tienen entrada cuyo tema empieza por
+   * `term` (marca e-Sword de los paneles de diccionario).
+   */
+  async dictCoverage(term: string): Promise<ModuleCoverage[]> {
+    const keys = term.trim().split(/\s+/)
+    if (!keys.length || !keys[0]) return []
+    const out: ModuleCoverage[] = []
+    for (const conf of this.modules) {
+      if (!conf.dictTable) continue
+      if (conf.category === 'Bible' || conf.category === 'Commentary') continue
+      try {
+        const db = this.open(conf.path)
+        const columns = this.columns(db, conf.dictTable)
+        const topicCol = columns.find((c) => /topic|term|word|key|title/i.test(c)) ?? columns[0]
+        const first = keys[0].replace(/[%_\\]/g, '')
+        // solo prefijo: usa el TopicIndex y evita barridos completos
+        const probe = db.prepare(
+          `SELECT 1 FROM ${conf.dictTable} WHERE ${topicCol} LIKE ? LIMIT 1`
+        )
+        if (probe.get(`${first}%`)) {
+          out.push({ module: conf.name, hits: 1 })
+        }
+      } catch {
+        // ignora
+      }
+    }
+    return out.sort((a, b) => a.module.localeCompare(b.module))
   }
 
   async search(options: SearchOptions): Promise<SearchResult[]> {

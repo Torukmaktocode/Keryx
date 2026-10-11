@@ -1,5 +1,6 @@
 import type {
   BookInfo,
+  ModuleCoverage,
   Repository,
   SearchOptions,
   SearchResult,
@@ -86,6 +87,25 @@ export class CompositeSwordProvider implements SwordProvider {
   async commentaryVerses(module: string, book: string, chapter: number): Promise<number[]> {
     const lists = await Promise.all(this.providers.map((p) => p.commentaryVerses(module, book, chapter)))
     return [...new Set(lists.flat())].sort((a, b) => a - b)
+  }
+
+  async commentaryCoverage(book: string, chapter: number): Promise<ModuleCoverage[]> {
+    const lists = await Promise.all(this.providers.map((p) => p.commentaryCoverage(book, chapter)))
+    const merged = new Map<string, ModuleCoverage>()
+    for (const item of lists.flat()) {
+      const prev = merged.get(item.module)
+      merged.set(item.module, prev ? { ...item, hits: Math.max(item.hits, prev.hits) } : item)
+    }
+    return [...merged.values()].sort(
+      (a, b) => b.hits - a.hits || a.module.localeCompare(b.module)
+    )
+  }
+
+  async dictCoverage(term: string): Promise<ModuleCoverage[]> {
+    const lists = await Promise.all(this.providers.map((p) => p.dictCoverage(term)))
+    const merged = new Map<string, ModuleCoverage>()
+    for (const item of lists.flat()) merged.set(item.module, item)
+    return [...merged.values()].sort((a, b) => a.module.localeCompare(b.module))
   }
 
   async search(options: SearchOptions): Promise<SearchResult[]> {

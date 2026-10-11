@@ -1,6 +1,7 @@
-import {
+﻿import {
   CANONICAL_BOOKS,
   type BookInfo,
+  type ModuleCoverage,
   type Repository,
   type SearchOptions,
   type SearchResult,
@@ -111,6 +112,14 @@ export class NativeSwordProvider implements SwordProvider {
     return []
   }
 
+  async commentaryCoverage(): Promise<ModuleCoverage[]> {
+    return []
+  }
+
+  async dictCoverage(): Promise<ModuleCoverage[]> {
+    return []
+  }
+
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const module = options.modules?.[0] ?? 'KJV'
     const results: any[] = await this.require('getModuleSearchResults')(
@@ -161,3 +170,4 @@ export class NativeSwordProvider implements SwordProvider {
     }
   }
 }
+

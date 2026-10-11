@@ -1,6 +1,7 @@
-import {
+﻿import {
   CANONICAL_BOOKS,
   type BookInfo,
+  type ModuleCoverage,
   type Repository,
   type SearchOptions,
   type SearchResult,
@@ -87,6 +88,14 @@ export class DemoSwordProvider implements SwordProvider {
     return []
   }
 
+  async commentaryCoverage(): Promise<ModuleCoverage[]> {
+    return []
+  }
+
+  async dictCoverage(): Promise<ModuleCoverage[]> {
+    return []
+  }
+
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const needle = options.caseSensitive ? options.query : options.query.toLowerCase()
     const wholeWord = options.wholeWord ?? true
@@ -140,3 +149,4 @@ export class DemoSwordProvider implements SwordProvider {
     }
   }
 }
+

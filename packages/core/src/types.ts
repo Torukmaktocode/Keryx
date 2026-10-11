@@ -77,6 +77,13 @@ export interface StrongsEntry {
   language: 'greek' | 'hebrew' | 'unknown'
 }
 
+/** Marcas al estilo e-Sword: que modulos tienen contenido para la referencia/tema. */
+export interface ModuleCoverage {
+  module: string
+  /** Comentarios: versiculos cubiertos del capitulo. Diccionarios: 1 si existe entrada. */
+  hits: number
+}
+
 export interface DocumentMeta {
   id: string
   title: string

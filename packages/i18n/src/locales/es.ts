@@ -89,6 +89,8 @@ export const es = {
   'study.commentary.empty': 'Sin comentario para este capítulo en este módulo.',
   'study.bookSearch': 'Buscar en el libro…',
   'study.bookHint': 'Busca un tema para leer su sección.',
+  'study.speakOf': 'Hablan de {ref}',
+  'study.dictHave': 'Diccionarios con "{term}"',
   'study.bible': 'Biblia',
   'study.commentary': 'Comentario',
   'study.dictionary': 'Diccionario',

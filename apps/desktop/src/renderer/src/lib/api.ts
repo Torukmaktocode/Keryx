@@ -4,6 +4,7 @@ import type {
   AiStatus,
   AppSettings,
   Document,
+  ModuleCoverage,
   Result,
   SearchOptions,
   Verse,
@@ -59,6 +60,8 @@ export const api = {
       book: string
       chapter: number
     }): Promise<number[]> => unwrap(raw.bible.commentaryVerses(req)),
+    commentaryCoverage: (req: { book: string; chapter: number }): Promise<ModuleCoverage[]> =>
+      unwrap(raw.bible.commentaryCoverage(req)),
     search: (req: SearchOptions) => unwrap(raw.bible.search(req)),
     compare: (req: {
       book: string
@@ -69,7 +72,8 @@ export const api = {
   dict: {
     lookup: (req: { module: string; key: string }): Promise<string | null> =>
       unwrap(raw.dict.lookup(req)),
-    strongs: (key: string): Promise<StrongsEntry | null> => unwrap(raw.dict.strongs(key))
+    strongs: (key: string): Promise<StrongsEntry | null> => unwrap(raw.dict.strongs(key)),
+    coverage: (req: { term: string }): Promise<ModuleCoverage[]> => unwrap(raw.dict.coverage(req))
   },
   documents: {
     list: (): Promise<DocumentMeta[]> => unwrap(raw.documents.list()),

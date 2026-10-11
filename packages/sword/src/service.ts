@@ -1,5 +1,6 @@
 import type {
   BookInfo,
+  ModuleCoverage,
   Repository,
   SearchOptions,
   SearchResult,
@@ -99,6 +100,14 @@ export class SwordService {
 
   commentaryVerses(module: string, book: string, chapter: number): Promise<number[]> {
     return this.provider.commentaryVerses(module, book, chapter)
+  }
+
+  commentaryCoverage(book: string, chapter: number): Promise<ModuleCoverage[]> {
+    return this.provider.commentaryCoverage(book, chapter)
+  }
+
+  dictCoverage(term: string): Promise<ModuleCoverage[]> {
+    return this.provider.dictCoverage(term)
   }
 
   search(options: SearchOptions): Promise<SearchResult[]> {

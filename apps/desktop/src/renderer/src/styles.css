@@ -539,8 +539,85 @@
 /* ===== Estudio: layout flexible con separadores ===== */
 .study-flex {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-4);
   align-items: stretch;
+}
+
+/* ===== Marcas e-Sword: modulos que hablan del versiculo/termino ===== */
+.coverage-strip {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: -6px;
+}
+
+.coverage-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.coverage-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.coverage-label::before {
+  content: 'ℹ';
+  margin-right: 4px;
+  color: var(--accent);
+}
+
+.coverage-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+  max-height: 56px;
+  overflow-y: auto;
+}
+
+.coverage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 999px;
+  background: var(--glass-soft);
+  font: inherit;
+  font-size: 11.5px;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.coverage-chip b {
+  font-size: 10px;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.coverage-chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.coverage-chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.coverage-chip.dict {
+  border-style: dashed;
 }
 
 .pane-slot {

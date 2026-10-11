@@ -1,10 +1,11 @@
-import { spawnSync } from 'node:child_process'
+﻿import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CANONICAL_BOOKS,
   type BookInfo,
   type ModuleCategory,
+  type ModuleCoverage,
   type Repository,
   type SearchOptions,
   type SearchResult,
@@ -226,6 +227,14 @@ export class LocalSwordProvider implements SwordProvider {
     return []
   }
 
+  async commentaryCoverage(): Promise<ModuleCoverage[]> {
+    return []
+  }
+
+  async dictCoverage(): Promise<ModuleCoverage[]> {
+    return []
+  }
+
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const cacheKey = JSON.stringify(options)
     const cached = this.searchCache.get(cacheKey)
@@ -362,3 +371,4 @@ export class LocalSwordProvider implements SwordProvider {
     return null
   }
 }
+
