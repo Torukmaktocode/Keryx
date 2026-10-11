@@ -3,10 +3,11 @@ import { useCallback, useEffect, useRef } from 'react'
 interface Props {
   onResize: (dx: number) => void
   onReset: () => void
+  onEnd?: () => void
 }
 
 /** Separador entre paneles: arrastrar ajusta anchos, doble clic restaura. */
-export function PaneSplitter({ onResize, onReset }: Props) {
+export function PaneSplitter({ onResize, onReset, onEnd }: Props) {
   const dragging = useRef(false)
   const last = useRef(0)
 
@@ -21,8 +22,9 @@ export function PaneSplitter({ onResize, onReset }: Props) {
   )
 
   const stop = useCallback((): void => {
+    if (dragging.current) onEnd?.()
     dragging.current = false
-  }, [])
+  }, [onEnd])
 
   useEffect(() => {
     window.addEventListener('pointermove', onPointerMove)

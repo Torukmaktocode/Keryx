@@ -19,7 +19,7 @@ import { HermeneuticPanel } from '../components/HermeneuticPanel'
 import { PaneShell } from '../components/PaneShell'
 import { PaneSplitter } from '../components/PaneSplitter'
 import { CommentaryAccordion } from '../components/CommentaryAccordion'
-import { applyTemplate, paneWidths, resizePanes, PANE_LABELS } from '../lib/studyLayout'
+import { applyTemplate, normalizedWidths, resizePanes, resetPanePair, PANE_LABELS } from '../lib/studyLayout'
 
 const PANE_KINDS: StudyPaneKind[] = ['bible', 'commentary', 'dictionary', 'book']
 
@@ -29,6 +29,38 @@ const extractStrongs = (html: string): string[] => {
   const found = new Set<string>()
   for (const match of html.matchAll(/data-strong="([GH]\d{1,6})"/gi)) found.add(match[1].toUpperCase())
   return [...found]
+}
+
+/** Palabra bajo el cursor usando CaretPosition (barra/problemas de seleccion). */
+function wordUnderClick(event: ReactMouseEvent): string {
+  const target = event.target as HTMLElement
+  if (target.closest('w[data-strong]') || target.closest('.verse-num')) return ''
+  const doc = document as Document & {
+    caretRangeFromPoint?: (x: number, y: number) => Range | null
+    caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null
+  }
+  let node: Text | null = null
+  let offset = 0
+  if (doc.caretRangeFromPoint) {
+    const range = doc.caretRangeFromPoint(event.clientX, event.clientY)
+    if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
+      node = range.startContainer as Text
+      offset = range.startOffset
+    }
+  } else if (doc.caretPositionFromPoint) {
+    const pos = doc.caretPositionFromPoint(event.clientX, event.clientY)
+    if (pos) {
+      node = pos.offsetNode as Text
+      offset = pos.offset
+    }
+  }
+  if (!node) return ''
+  const text = node.textContent ?? ''
+  const before = text.slice(0, offset)
+  const after = text.slice(offset)
+  const head = before.match(/[\p{L}\p{N}'’áéíóúñÁÉÍÓÚÑüÜ-]+$/u)?.[0] ?? ''
+  const tail = after.match(/^[\p{L}\p{N}'’áéíóúñÁÉÍÓÚÑüÜ-]+/u)?.[0] ?? ''
+  return (head + tail).replace(/^['’\-—]+|['’\-—,.;:!?]+$/g, '')
 }
 
 /** Modulo efectivo: preferencia del layout si existe; si no, el primero disponible. */
@@ -189,6 +221,7 @@ export function StudyView() {
   const flexRef = useRef<HTMLDivElement>(null)
   const lastAutoKey = useRef('')
   const commentaryReq = useRef(0)
+  const lastDictKey = useRef('')
   const navBook = useAppStore((s) => s.navBook)
   const navChapter = useAppStore((s) => s.navChapter)
   const navVerse = useAppStore((s) => s.navVerse)
@@ -210,30 +243,22 @@ export function StudyView() {
   const bookModule = effective(bookModules, study.modules.book)
 
   // ---------- layout ----------
-  const available = useState(1200)[0] // inicial neutro; lo mide el observer
+  const [containerWidth, setContainerWidth] = useState(1400)
   const [widths, setWidths] = useState<number[]>(study.widths)
   useEffect(() => setWidths(study.widths), [study.widths])
+
+  const renderedWidths = useMemo(
+    () => normalizedWidths({ ...study, widths }, containerWidth),
+    [study, widths, containerWidth]
+  )
+
   useEffect(() => {
-    let timer: number | undefined
     const node = flexRef.current
     if (!node) return
-    const observer = new ResizeObserver(() => {
-      setComputedWidth(node.clientWidth)
-      window.clearTimeout(timer)
-      timer = window.setTimeout(() => updateStudy({ widths }), 600)
-    })
+    const observer = new ResizeObserver(() => setContainerWidth(node.clientWidth))
     observer.observe(node)
-    return () => {
-      observer.disconnect()
-      window.clearTimeout(timer)
-    }
-  }, [widths])
-  const [computedWidth, setComputedWidth] = useState(available)
-  const realWidths = useMemo(
-    () => paneWidths(study, computedWidth),
-    [study, computedWidth] // depend on `widths` via study? use widths local
-  )
-  const useWidths = widths.length ? widths : realWidths
+    return () => observer.disconnect()
+  }, [])
 
   const patch = (next: Partial<StudyLayout>): void => void updateStudy(next)
 
@@ -244,14 +269,16 @@ export function StudyView() {
   }
 
   const onDrag = (leftIndex: number, dx: number): void => {
-    const w = widths.length ? widths : realWidths
-    const next = resizePanes(w, leftIndex, w[leftIndex] + dx, computedWidth, study.panes.length)
-    setWidths(next)
+    const w = resizePanes(renderedWidths, leftIndex, renderedWidths[leftIndex] + dx)
+    setWidths(w)
   }
+
+  const onDragEnd = (): void => {
+    patch({ widths, template: 'custom' })
+  }
+
   const onResetSplit = (leftIndex: number): void => {
-    const base = widths.length ? [...widths] : [...realWidths]
-    base[leftIndex] = 0
-    base[leftIndex + 1] = 0
+    const base = resetPanePair(widths, leftIndex)
     setWidths(base)
     patch({ widths: base, template: 'custom' })
   }
@@ -384,10 +411,17 @@ export function StudyView() {
   const lookup = async (term?: string): Promise<void> => {
     const key = (term ?? dictKey).trim()
     if (!dictModule || !key) return
+    lastDictKey.current = key
     setDictKey(key)
     setDictLoading(true)
     try {
-      const entry = await api.dict.lookup({ module: dictModule, key })
+      let entry = await api.dict.lookup({ module: dictModule, key })
+      // Clave Strong (G26/H430) sin entrada en el modulo activo del diccionario:
+      // resuelve usando el/los modulos Strong de la biblioteca (igual que e-Sword).
+      if (!entry && /^[GH]0?\d{1,5}(\w)?$/i.test(key.replace(/\s/g, ''))) {
+        const strongs = await api.dict.strongs(key.replace(/\s/g, '').toUpperCase())
+        if (strongs) entry = `<p><b>${strongs.key}</b> — ${strongs.definition}</p>`
+      }
       setDictResult(entry ?? '—')
     } catch (error) {
       setDictResult(error instanceof Error ? error.message : t('common.error'))
@@ -395,6 +429,12 @@ export function StudyView() {
       setDictLoading(false)
     }
   }
+
+  // al cambiar el diccionario activo (chip de cobertura o selector), re-busca
+  // el termino pendiente como hace e-Sword
+  useEffect(() => {
+    if (dictModule && lastDictKey.current) void lookup(lastDictKey.current)
+  }, [dictModule])
 
   const lookupSelection = (): void => {
     const selected = window.getSelection()?.toString().trim()
@@ -408,6 +448,11 @@ export function StudyView() {
     if (strong) {
       void lookup(strong)
       return
+    }
+    // clic sobre una palabra del texto: la busca en el diccionario activo
+    const word = wordUnderClick(event)
+    if (word && word.length >= 2 && /[A-Za-zÀ-ÿ]/.test(word)) {
+      void lookup(word)
     }
     const verseEl = target.closest('.verse')
     const num = Number(verseEl?.querySelector('.verse-num')?.textContent)
@@ -638,41 +683,47 @@ export function StudyView() {
             reference={`${bookName(currentBook, locale)} ${chapter}:${selectedVerse}`}
           />
         ) : (
-          <div className="study-flex" ref={flexRef}>
+          <>
             {coverageStrip}
-            {study.panes.map((kind, index) => (
-              <div
-                key={`${kind}-${index}`}
-                className="pane-slot"
-                style={{ flex: `0 0 ${Math.round(useWidths[index] ?? 480)}px` }}
-              >
-                <PaneShell
-                  kind={kind}
-                  modules={optionsFor(kind)}
-                  moduleId={
-                    kind === 'bible'
-                      ? bibleModule
-                      : kind === 'commentary'
-                        ? commentaryModule
-                        : kind === 'dictionary'
-                          ? dictModule
-                          : bookModule
-                  }
-                  sync={study.sync[kind] ?? true}
-                  refLabel={refLabel}
-                  onModuleChange={(name) => setPaneModule(kind, name)}
-                  onToggleSync={() => toggleSync(kind)}
-                  onChangeKind={(next) => changeKind(index, next)}
-                  onClose={() => closePane(kind)}
+            <div className="study-flex" ref={flexRef}>
+              {study.panes.map((kind, index) => (
+                <div
+                  key={`${kind}-${index}`}
+                  className="pane-slot"
+                  style={{ flex: `0 0 ${Math.round(renderedWidths[index] ?? 480)}px` }}
                 >
-                  {paneContent(kind)}
-                </PaneShell>
-                {index < study.panes.length - 1 && (
-                  <PaneSplitter onResize={(dx) => onDrag(index, dx)} onReset={() => onResetSplit(index)} />
-                )}
-              </div>
-            ))}
-          </div>
+                  <PaneShell
+                    kind={kind}
+                    modules={optionsFor(kind)}
+                    moduleId={
+                      kind === 'bible'
+                        ? bibleModule
+                        : kind === 'commentary'
+                          ? commentaryModule
+                          : kind === 'dictionary'
+                            ? dictModule
+                            : bookModule
+                    }
+                    sync={study.sync[kind] ?? true}
+                    refLabel={refLabel}
+                    onModuleChange={(name) => setPaneModule(kind, name)}
+                    onToggleSync={() => toggleSync(kind)}
+                    onChangeKind={(next) => changeKind(index, next)}
+                    onClose={() => closePane(kind)}
+                  >
+                    {paneContent(kind)}
+                  </PaneShell>
+                  {index < study.panes.length - 1 && (
+                    <PaneSplitter
+                      onResize={(dx) => onDrag(index, dx)}
+                      onEnd={onDragEnd}
+                      onReset={() => onResetSplit(index)}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

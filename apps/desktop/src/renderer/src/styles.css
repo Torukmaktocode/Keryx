@@ -539,18 +539,17 @@
 /* ===== Estudio: layout flexible con separadores ===== */
 .study-flex {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-4);
   align-items: stretch;
+  min-height: 0;
 }
 
 /* ===== Marcas e-Sword: modulos que hablan del versiculo/termino ===== */
 .coverage-strip {
-  flex: 1 1 100%;
+  margin: 0 0 var(--space-3);
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: -6px;
 }
 
 .coverage-row {

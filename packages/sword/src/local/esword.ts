@@ -108,6 +108,18 @@ function normalizeLang(raw: string): string {
 }
 
 /**
+ * Normaliza un tema de diccionario para comparar: sin acentos, mayusculas,
+ * sin marcador de marcador inicial (\b, usado por e-Sword), sin numeracion
+ * inicial ("01. ADONAI" -> "ADONAI"), sin signos.
+ */
+function normTopic(raw: string): string {
+  let text = (raw ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
+  text = text.replace(/^\\?B\b/, '') // marcador \b de e-Sword (case-insensitive)
+  text = text.replace(/^[\s#*.\d\-–—]+/, '') // numeracion/prefijos iniciales
+  return text.replace(/[^A-Z0-9Ñ ]+/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+/**
  * Recorre la raiz_ (y subcarpetas hasta `depth`) recogiendo archivos con
  * extension de modulo e-Sword. depth 0 = carpeta plana.
  */
@@ -187,8 +199,9 @@ export class EswordProvider implements SwordProvider {
       const depth = root.library === 'principal' ? 0 : 2
       for (const path of collectFiles(root.path, depth)) {
         const ext = extname(path).toLowerCase()
-        // sin duplicados por nombre de modulo (name != filename) en varias raices
-        const key = basename(path, ext).toLowerCase()
+        // sin duplicados por NOMBRE DE ARCHIVO: un mismo titulo puede existir
+        // como comentario (.cmti) y diccionario (.dcti); ambos deben vivir
+        const key = basename(path).toLowerCase()
         if (seen.has(key)) continue
         seen.add(key)
         try {
@@ -229,6 +242,30 @@ export class EswordProvider implements SwordProvider {
         } catch {
           // modulo cifrado o invalido
         }
+      }
+    }
+    this.resolveNameCollisions()
+  }
+
+  /**
+   * Un mismo titulo puede existir en varias categorias (Ej. "Biblia de
+   * Estudio MacArthur" como .cmti y .dcti). Sufija con la categoria (es)
+   * para que los nombres queden unicos ante la UI y el consumo por nombre.
+   */
+  private resolveNameCollisions(): void {
+    const CATEGORY_LABELS: Record<string, string> = {
+      Bible: 'Biblia',
+      Commentary: 'Comentario',
+      Dictionary: 'Diccionario',
+      GenBook: 'Libro',
+      Devotional: 'Devocional'
+    }
+    const counts = new Map<string, number>()
+    for (const mod of this.modules) counts.set(mod.name.toLowerCase(), (counts.get(mod.name.toLowerCase()) ?? 0) + 1)
+    for (const mod of this.modules) {
+      if ((counts.get(mod.name.toLowerCase()) ?? 0) > 1) {
+        const label = CATEGORY_LABELS[mod.category]
+        if (label) mod.name = `${mod.name} (${label})`
       }
     }
   }
@@ -676,18 +713,43 @@ export class EswordProvider implements SwordProvider {
       columns[1] ??
       columns[0]
     try {
+      // 1) exacto (rapido via indice)
       const row = db
         .prepare(
           `SELECT ${defCol} AS text FROM ${conf.dictTable} WHERE ${topicCol} = ? COLLATE NOCASE LIMIT 1`
         )
         .get(key) as { text: string } | undefined
       if (row?.text) return renderEsword(row.text)
+      // 2) prefijo literal
       const like = db
         .prepare(
           `SELECT ${defCol} AS text FROM ${conf.dictTable} WHERE ${topicCol} LIKE ? LIMIT 1`
         )
-        .get(`${key}%`) as { text: string } | undefined
-      return like?.text ? renderEsword(like.text) : null
+        .get(`${escapeLike(key.trim())}%`) as { text: string } | undefined
+      if (like?.text) return renderEsword(like.text)
+      // 3) tolerante: numeracion inicial, acentos y ordinales. Se normalizan
+      //    TODOS los temas en JS (LIKE no matchea acentos: AARON vs AARON).
+      const wanted = normTopic(key)
+      const rows = db
+        .prepare(`SELECT ${topicCol} AS topic FROM ${conf.dictTable}`)
+        .all() as Array<{ topic: string }>
+      let best: string | undefined
+      for (const row of rows) {
+        const norm = normTopic(row.topic)
+        if (!norm) continue
+        if (norm === wanted) {
+          best = row.topic
+          break
+        }
+        if (!best && norm.startsWith(wanted)) best = row.topic
+      }
+      if (!best) return null
+      const exact = db
+        .prepare(
+          `SELECT ${defCol} AS text FROM ${conf.dictTable} WHERE ${topicCol} = ? LIMIT 1`
+        )
+        .get(best) as { text: string } | undefined
+      return exact?.text ? renderEsword(exact.text) : null
     } catch {
       return null
     }
@@ -703,8 +765,17 @@ export class EswordProvider implements SwordProvider {
   }
 
   async strongs(key: string): Promise<StrongsEntry | null> {
-    for (const name of ['Strongs', 'StrongsPlus', 'Strong']) {
-      const entry = await this.lookupDict(name, key)
+    // Resolucion por nombre: cualquier diccionario "Strong*" de la biblioteca
+    const names = ['Strongs', 'StrongsPlus', 'Strong']
+    const strongModules = this.modules.filter(
+      (m) => names.includes(m.name) || /strong/i.test(m.name)
+    )
+    const ordered = [
+      ...strongModules.filter((m) => names.includes(m.name)),
+      ...strongModules.filter((m) => !names.includes(m.name))
+    ]
+    for (const conf of ordered) {
+      const entry = await this.lookupDict(conf.name, key)
       if (entry) {
         return {
           key,
