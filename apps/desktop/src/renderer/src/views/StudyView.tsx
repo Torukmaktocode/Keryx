@@ -1,4 +1,12 @@
-﻿import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
+﻿import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode
+} from 'react'
 import { useI18n, type TranslationKey } from '@keryx/i18n'
 import {
   STUDY_TEMPLATES,
@@ -252,12 +260,18 @@ export function StudyView() {
     [study, widths, containerWidth]
   )
 
-  useEffect(() => {
-    const node = flexRef.current
-    if (!node) return
-    const observer = new ResizeObserver(() => setContainerWidth(node.clientWidth))
-    observer.observe(node)
-    return () => observer.disconnect()
+  const observerRef = useRef<ResizeObserver | null>(null)
+  // callback ref: al re-montar .study-flex (ej. volver desde Hermeneutica)
+  // reconecta el observer y re-mide, evitando anchos desactualizados
+  const setFlexNode = useCallback((node: HTMLDivElement | null): void => {
+    observerRef.current?.disconnect()
+    observerRef.current = null
+    flexRef.current = node
+    if (node) {
+      setContainerWidth(node.clientWidth)
+      observerRef.current = new ResizeObserver(() => setContainerWidth(node.clientWidth))
+      observerRef.current.observe(node)
+    }
   }, [])
 
   const patch = (next: Partial<StudyLayout>): void => void updateStudy(next)
@@ -685,7 +699,7 @@ export function StudyView() {
         ) : (
           <>
             {coverageStrip}
-            <div className="study-flex" ref={flexRef}>
+            <div className="study-flex" ref={setFlexNode}>
               {study.panes.map((kind, index) => (
                 <div
                   key={`${kind}-${index}`}
