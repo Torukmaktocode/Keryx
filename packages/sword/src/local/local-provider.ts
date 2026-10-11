@@ -234,6 +234,9 @@ export class LocalSwordProvider implements SwordProvider {
   async dictCoverage(): Promise<ModuleCoverage[]> {
     return []
   }
+  async strongsOccurrences(): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>> {
+    return []
+  }
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const cacheKey = JSON.stringify(options)

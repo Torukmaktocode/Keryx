@@ -119,6 +119,9 @@ export class NativeSwordProvider implements SwordProvider {
   async dictCoverage(): Promise<ModuleCoverage[]> {
     return []
   }
+  async strongsOccurrences(): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>> {
+    return []
+  }
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const module = options.modules?.[0] ?? 'KJV'

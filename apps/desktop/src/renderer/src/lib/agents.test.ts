@@ -65,6 +65,39 @@ function fakeHook(overrides: Partial<AgentHook> = {}): AgentHook {
         version: '',
         installed: true,
         source: 'local'
+      },
+      {
+        name: 'Diccionario Teologico Enciclopedico',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Diccionario de Filosofia Brugger',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Usos y Costumbres de las Tierras Biblicas - Fred Wight',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
       }
     ],
     locale: 'es',
@@ -127,6 +160,22 @@ describe('buildDossier (sub-agentes 0 tokens)', () => {
   it('sin pasaje ni tema no explota', async () => {
     const dossier = await buildDossier(fakeHook(), 'crearestudio', 'sobre la merced')
     expect(dossier.sections.length).toBeGreaterThan(0)
+  })
+
+  it('contextos de profundidad: teologico/cultural/filosofico anclados por tema y verso', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    const kinds = dossier.sections.map((s) => s.kind)
+    expect(kinds).toContain('teologico')
+    expect(kinds).toContain('cultural')
+    expect(kinds).toContain('filosofico')
+    const theo = dossier.sections.find((s) => s.kind === 'teologico')
+    expect(theo?.entries[0]).toContain('Diccionario Teologico Enciclopedico')
+  })
+
+  it('temas del verso alimentan los diccionarios generales cuando la consulta es solo referencia', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    const cultural = dossier.sections.find((s) => s.kind === 'cultural')
+    expect(cultural?.entries[0]).toContain('Usos y Costumbres')
   })
 })
 

@@ -569,10 +569,8 @@ export class EswordProvider implements SwordProvider {
     return out.sort((a, b) => b.hits - a.hits || a.module.localeCompare(b.module))
   }
 
-  /**
-   * Diccionarios/lexicos/libros que tienen entrada cuyo tema empieza por
-   * `term` (marca e-Sword de los paneles de diccionario).
-   */
+  /** Diccionarios/lexicos/libros que tienen entrada cuyo tema empieza por
+   * `term` (marca e-Sword de los paneles de diccionario). */
   async dictCoverage(term: string): Promise<ModuleCoverage[]> {
     const keys = term.trim().split(/\s+/)
     if (!keys.length || !keys[0]) return []
@@ -764,8 +762,8 @@ export class EswordProvider implements SwordProvider {
     }
   }
 
+  /** Resolucion por nombre: cualquier diccionario "Strong*" de la biblioteca */
   async strongs(key: string): Promise<StrongsEntry | null> {
-    // Resolucion por nombre: cualquier diccionario "Strong*" de la biblioteca
     const names = ['Strongs', 'StrongsPlus', 'Strong']
     const strongModules = this.modules.filter(
       (m) => names.includes(m.name) || /strong/i.test(m.name)
@@ -785,5 +783,57 @@ export class EswordProvider implements SwordProvider {
       }
     }
     return null
+  }
+
+  /**
+   * Guia Exegética (100% codigo): ocurrencias de un codigo Strong en la
+   * biblia con Strong# (formato e-Sword: `palabra <num>G25 VAAI3S</num>`).
+   */
+  async strongsOccurrences(
+    code: string,
+    limit = 600
+  ): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>> {
+    const clean = code.trim().toUpperCase().replace(/[^GH\d]/g, '')
+    const normalized = /^[GH]\d{1,5}$/.test(clean) ? clean : ''
+    if (!normalized) return []
+    const language = normalized.startsWith('G') ? 'greek' : 'hebrew'
+    const bible = this.modules.find(
+      (m) => m.category === 'Bible' && /strong/i.test(m.name) && m.bookTable
+    )
+    if (!bible || !bible.bookTable) return []
+    const db = this.open(bible.path)
+    try {
+      const rows = db
+        .prepare(
+          `SELECT Book AS book, Chapter AS chapter, Verse AS verse, Scripture AS text` +
+            ` FROM ${bible.bookTable} WHERE Scripture LIKE ? LIMIT ?`
+        )
+        .all(`%${normalized} %`, limit * 3) as Array<{
+        book: number
+        chapter: number
+        verse: number
+        text: string
+      }>
+      const out: Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }> = []
+      const pattern = new RegExp(`([^\\n<>]{1,30}?)\\s*<num>\\s*${normalized}([^<]*)<\\/num>`, 'gi')
+      for (const row of rows) {
+        pattern.lastIndex = 0
+        let match = pattern.exec(row.text ?? '')
+        while (match) {
+          out.push({
+            book: CANONICAL_BOOKS[row.book - 1]?.code ?? String(row.book),
+            chapter: row.chapter,
+            verse: row.verse,
+            word: stripHtml(match[1] ?? '').slice(0, 40),
+            morphology: `${language}${match[2] ?? ''}`.trim().slice(0, 40)
+          })
+          if (out.length >= limit) return out
+          match = pattern.exec(row.text ?? '')
+        }
+      }
+      return out
+    } catch {
+      return []
+    }
   }
 }

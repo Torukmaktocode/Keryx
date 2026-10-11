@@ -13,7 +13,12 @@ const KIND_TITLE_KEY: Record<DossierSection['kind'], string> = {
   tema: 'guide.tema',
   historico: 'guide.historico',
   ilustracion: 'guide.ilustracion',
-  referencia: 'guide.referencia'
+  referencia: 'guide.referencia',
+  teologico: 'guide.teologico',
+  cultural: 'guide.cultural',
+  cristologico: 'guide.cristologico',
+  filosofico: 'guide.filosofico',
+  aplicacion: 'guide.aplicacion'
 }
 
 interface Props {
@@ -110,9 +115,13 @@ export function PassageGuide({ book, chapter, verse, bookLabel }: Props) {
                       ? 'book'
                       : section.kind === 'ilustracion'
                         ? 'spark'
-                        : section.kind === 'tema'
-                          ? 'search'
-                          : 'library'
+                        : section.kind === 'cristologico'
+                          ? 'star'
+                          : section.kind === 'aplicacion'
+                            ? 'write'
+                            : section.kind === 'tema'
+                              ? 'search'
+                              : 'library'
                 }
                 size={15}
               />

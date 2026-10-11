@@ -95,6 +95,9 @@ export class DemoSwordProvider implements SwordProvider {
   async dictCoverage(): Promise<ModuleCoverage[]> {
     return []
   }
+  async strongsOccurrences(): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>> {
+    return []
+  }
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const needle = options.caseSensitive ? options.query : options.query.toLowerCase()

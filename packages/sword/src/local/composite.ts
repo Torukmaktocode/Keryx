@@ -108,6 +108,14 @@ export class CompositeSwordProvider implements SwordProvider {
     return [...merged.values()].sort((a, b) => a.module.localeCompare(b.module))
   }
 
+  async strongsOccurrences(
+    code: string,
+    limit = 600
+  ): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>> {
+    const lists = await Promise.all(this.providers.map((p) => p.strongsOccurrences(code, limit)))
+    return lists.flat()
+  }
+
   async search(options: SearchOptions): Promise<SearchResult[]> {
     const results: SearchResult[] = []
     for (const provider of this.providers) {

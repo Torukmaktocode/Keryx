@@ -204,6 +204,11 @@ export function composeFromDossier(
   const topicLines = sectionEntries(dossier, 'tema')
   const historyLines = sectionEntries(dossier, 'historico')
   const illusLines = sectionEntries(dossier, 'ilustracion')
+  const theoLines = sectionEntries(dossier, 'teologico')
+  const culturalLines = sectionEntries(dossier, 'cultural')
+  const christLines = sectionEntries(dossier, 'cristologico')
+  const philoLines = sectionEntries(dossier, 'filosofico')
+  const bridgeLines = sectionEntries(dossier, 'aplicacion')
 
   const lines: string[] = [
     `# ${TITLE_FOR[kind]}: ${ref}`,
@@ -235,6 +240,25 @@ export function composeFromDossier(
     lines.push(...historyLines.map((entry) => `- ${entry}`), '')
   } else {
     lines.push('[Punto por completar: autor, fecha y destinatarios del pasaje — consulta la Guía del Pasaje.]', '')
+  }
+
+  // 2b) Contextos de profundidad (solo secciones con contenido anclado)
+  if (theoLines.length) {
+    lines.push(
+      '## Contexto teologico y sistematico',
+      '',
+      ...theoLines.map((entry) => `- ${entry}`),
+      ''
+    )
+  }
+  if (christLines.length) {
+    lines.push('## Contexto cristologico', '', ...christLines.map((entry) => `- ${entry}`), '')
+  }
+  if (culturalLines.length) {
+    lines.push('## Contexto social y cultural', '', ...culturalLines.map((entry) => `- ${entry}`), '')
+  }
+  if (philoLines.length) {
+    lines.push('## Contexto filosofico', '', ...philoLines.map((entry) => `- ${entry}`), '')
   }
 
   // 3) Palabras originales
@@ -286,7 +310,10 @@ export function composeFromDossier(
     lines.push('## Ilustraciones ancladas', '', ...illusLines.map((entry) => `- ${entry}`), '')
   }
 
-  // 9) Aplicacion y oracion
+  // 9) Puentes pastorales y aplicacion
+  if (bridgeLines.length) {
+    lines.push('## Puentes pastorales (fuentes ancladas)', '', ...bridgeLines.map((entry) => `- ${entry}`), '')
+  }
   lines.push(
     '## Aplicacion en la vida',
     '',

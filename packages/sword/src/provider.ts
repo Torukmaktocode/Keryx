@@ -24,6 +24,11 @@ export interface SwordProvider {
   /** Modulos con contenido para la referencia/termino (marcas e-Sword). */
   commentaryCoverage(book: string, chapter: number): Promise<ModuleCoverage[]>
   dictCoverage(term: string): Promise<ModuleCoverage[]>
+  /** Guia Exegética: ocurrencias reales de un codigo Strong en la biblia. */
+  strongsOccurrences(
+    code: string,
+    limit?: number
+  ): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>>
   search(options: SearchOptions): Promise<SearchResult[]>
   lookupDict(module: string, key: string): Promise<string | null>
   strongs(key: string): Promise<StrongsEntry | null>

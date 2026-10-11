@@ -25,7 +25,20 @@ export type AgentMode =
 export interface AgentCitation {
   module: string
   entry: string
-  kind: 'texto' | 'comentario' | 'bosquejo' | 'strongs' | 'tema' | 'historico' | 'ilustracion' | 'referencia'
+  kind:
+    | 'texto'
+    | 'comentario'
+    | 'bosquejo'
+    | 'strongs'
+    | 'tema'
+    | 'historico'
+    | 'ilustracion'
+    | 'referencia'
+    | 'teologico'
+    | 'cultural'
+    | 'cristologico'
+    | 'filosofico'
+    | 'aplicacion'
 }
 
 export interface DossierSection {
@@ -44,7 +57,7 @@ export interface Dossier {
 
 export const ENTRY_MAX_CHARS = 620
 export const SECTION_MAX_ENTRIES = 3
-export const DOSSIER_BUDGET = 7000
+export const DOSSIER_BUDGET = 11000
 
 /** Ganchos de datos inyectables (api en produccion, fake en tests). */
 export interface AgentHook {
@@ -70,7 +83,21 @@ const SPECIAL_RE: Record<AgentCitation['kind'], RegExp | null> = {
   tema: /nave|concordancia tem.?atica|tematico/i,
   historico: /geogra|enciclop|tabern.culo de israel|usos y costumbre|manners|historic/i,
   ilustracion: /an.cdot|ilustracion|figuras|citas/i,
-  referencia: null
+  referencia: null,
+  teologico: /diccionario de teologi|teologico|teologia|eclesiologi|sacramentum/i,
+  cultural: /usos y costumbre|arqueolog|perspicacia/i,
+  cristologico: /jes.s de nazaret|cristologi|vida de jes/i,
+  filosofico: /diccionario de filosofi/i,
+  aplicacion: /pastoral|evangelizaci|catequis|doctrina social|evangelismo/i
+}
+
+/** Orden interna de especialistas: preferimos los de contenido mas extenso. */
+const SPECIAL_ORDER: Partial<Record<AgentCitation['kind'], (name: string) => number>> = {
+  teologico: (name) =>
+    /ferguson/i.test(name) ? 0 : /enciclopedico/i.test(name) ? 1 : 2,
+  filosofico: (name) => (/brugger/i.test(name) ? 0 : /herder|rosental/i.test(name) ? 1 : 2),
+  cultural: (name) => (/usos y costumbre/i.test(name) ? 0 : 1),
+  cristologico: (name) => (/nazaret/i.test(name) ? 0 : 1)
 }
 
 function shortName(name: string): string {
@@ -100,6 +127,29 @@ function themeWords(query: string): string {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ')
     .trim()
+}
+
+/** Variantes de tema para diccionarios generales (singular/plural). */
+function topicVariants(theme: string): string[] {
+  const t = theme.trim().toUpperCase()
+  if (!t) return []
+  const variants = [t]
+  if (t.endsWith('S') && t.length > 3) variants.push(t.slice(0, -1))
+  return [...new Set(variants)]
+}
+
+/** Palabras distintivas del texto del versiculo para minar diccionarios generales. */
+function verseThemeWords(html: string): string[] {
+  const stop = new Set([
+    'porque', 'aquel', 'aquella', 'cuando', 'donde', 'nuestro', 'nuestra', 'tambien',
+    'ustedes', 'ellos', 'ella', 'nosotros', 'hasta', 'desde', 'sobre', 'entre',
+    'todos', 'toda', 'todo', 'otra', 'otro', 'esta', 'este', 'esas', 'esos',
+    'pero', 'como', 'cual', 'cuales', 'para', 'sino', 'tiene', 'tienen', 'dijo'
+  ])
+  return [...new Set(stripTags(html).toLowerCase().split(/[^\wáéíóúñü]+/).filter((w) => w.length >= 4 && !stop.has(w)))]
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 6)
 }
 
 /** Ensambla el dosier con presupuesto global. `at` fuerza la referencia (Guía del Pasaje). */
@@ -207,21 +257,27 @@ export async function buildDossier(
   addSection('strongs', 'Palabras originales', strongEntries)
 
   // ---- 4) Temas (Nave y tematicos reales)
-  const theme = themeWords(query) || (parsed ? '' : query)
+  const rawTheme = themeWords(query) || (parsed ? '' : query)
+  const verseThemes = verseHtml ? verseThemeWords(verseHtml) : []
+  const esBookName = parsed
+    ? bookName(CANONICAL_BOOKS.find((b) => b.code === parsed.book) ?? CANONICAL_BOOKS[0], 'es').toLowerCase()
+    : ''
+  const themeForCtx =
+    parsed && rawTheme && esBookName.includes(rawTheme.toLowerCase()) ? '' : rawTheme
   const topicEntries: string[] = []
-  if (theme) {
+  if (rawTheme) {
     const topicMods = hook.modules
       .filter((m) => SPECIAL_RE.tema?.test(m.name))
       .sort((a, b) => Number(SPECIAL_RE.tema?.test(a.name)) - Number(SPECIAL_RE.tema?.test(b.name)))
       .slice(0, 2)
     for (const mod of topicMods) {
-      const entry = await safe(hook.lookup(mod.name, theme), null)
+      const entry = await safe(hook.lookup(mod.name, rawTheme), null)
       if (!entry) continue
-      topicEntries.push(`[${shortName(moduleLabel(mod))} · ${theme}] ${trimEntry(entry, 520)}`)
-      cite('tema', mod.name, theme)
+      topicEntries.push(`[${shortName(moduleLabel(mod))} · ${rawTheme}] ${trimEntry(entry, 520)}`)
+      cite('tema', mod.name, rawTheme)
     }
   }
-  addSection('tema', `Temas (${theme || '—'})`, topicEntries)
+  addSection('tema', `Temas (${rawTheme || '—'})`, topicEntries)
 
   // ---- 5) Contexto historico / geografia (especialistas reales)
   const geoEntries: string[] = []
@@ -242,9 +298,54 @@ export async function buildDossier(
   }
   addSection('historico', 'Contexto historico y geografico', geoEntries)
 
-  // ---- 6) Ilustraciones (anecdotario mibiblioteca)
+  // ---- 6) Contextos de profundidad (teologico / cultural / cristologico /
+  //          filosofico / aplicacion) con modulos especialistas reales.
+  const contextAgents: Array<{ kind: AgentCitation['kind']; title: string }> = [
+    { kind: 'teologico', title: 'Contexto teologico y sistematico' },
+    { kind: 'cultural', title: 'Contexto social y cultural' },
+    { kind: 'cristologico', title: 'Contexto cristologico' },
+    { kind: 'filosofico', title: 'Contexto filosofico' },
+    { kind: 'aplicacion', title: 'Puentes pastorales y aplicacion' }
+  ]
+  for (const agent of contextAgents) {
+    const entries: string[] = []
+    if (themeForCtx || verseThemes.length) {
+      const order = SPECIAL_ORDER[agent.kind]
+      const mods = hook.modules
+        .filter(
+          (m) =>
+            SPECIAL_RE[agent.kind]?.test(m.name) &&
+            (m.category === 'Dictionary' || m.category === 'Lexicon' || m.category === 'GenBook')
+        )
+        .sort(order ? (a, b) => order(a.name) - order(b.name) : undefined)
+        .slice(0, 2)
+      const topics = [
+        ...topicVariants(themeForCtx),
+        ...verseThemes.flatMap((w) => topicVariants(w.toUpperCase()))
+      ].slice(0, 6)
+      for (const mod of mods) {
+        let entry: string | null = null
+        let usedTopic = ''
+        for (const topic of topics) {
+          entry = await safe(hook.lookup(mod.name, topic), null)
+          if (entry) {
+            usedTopic = topic
+            break
+          }
+        }
+        if (!entry) continue
+        entries.push(`[${shortName(moduleLabel(mod))} · ${usedTopic}] ${trimEntry(entry, 520)}`)
+        cite(agent.kind, mod.name, usedTopic)
+        break
+      }
+    }
+    addSection(agent.kind, agent.title, entries)
+  }
+
+  // Ilustraciones (anecdotario mibiblioteca) — buscan por temas del verso o consulta
   const illusEntries: string[] = []
-  if (theme) {
+  const illusTopics = (rawTheme ? [rawTheme] : []).concat(verseThemes).slice(0, 3)
+  if (illusTopics.length) {
     const illusMods = hook.modules
       .filter(
         (m) =>
@@ -253,13 +354,18 @@ export async function buildDossier(
       )
       .slice(0, 2)
     for (const mod of illusMods) {
-      const found = await safe(hook.search(theme, [mod.name], 3), [])
-      const topic = found[0]?.book
-      if (!topic) continue
-      const entry = await safe(hook.lookup(mod.name, topic), null)
-      if (!entry) continue
-      illusEntries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 480)}`)
-      cite('ilustracion', mod.name, topic)
+      let done = false
+      for (const topicWord of illusTopics) {
+        if (done) break
+        const found = await safe(hook.search(topicWord, [mod.name], 3), [])
+        const topic = found[0]?.book
+        if (!topic) continue
+        const entry = await safe(hook.lookup(mod.name, topic), null)
+        if (!entry) continue
+        illusEntries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 480)}`)
+        cite('ilustracion', mod.name, topic)
+        done = true
+      }
     }
   }
   addSection('ilustracion', 'Ilustraciones', illusEntries)
