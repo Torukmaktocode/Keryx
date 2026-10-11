@@ -102,13 +102,14 @@ function themeWords(query: string): string {
     .trim()
 }
 
-/** Ensambla el dosier con presupuesto global. */
+/** Ensambla el dosier con presupuesto global. `at` fuerza la referencia (Guía del Pasaje). */
 export async function buildDossier(
   hook: AgentHook,
   mode: AgentMode,
-  query: string
+  query: string,
+  at?: { book: string; chapter: number; verse?: number }
 ): Promise<Dossier> {
-  const parsed = parseReference(query)
+  const parsed = at ?? parseReference(query)
   const sections: DossierSection[] = []
   const citations: AgentCitation[] = []
   let budget = DOSSIER_BUDGET

@@ -806,6 +806,67 @@
   margin: 0;
 }
 
+/* ===== Guía del Pasaje (FactBook por código) ===== */
+.guide {
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+.guide-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.guide-head h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+.guide-card {
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--glass);
+  padding: var(--space-3);
+  box-shadow: var(--glass-highlight-soft);
+}
+
+.guide-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: var(--space-2);
+}
+
+.guide-card ul {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+.guide-sources {
+  margin-top: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* ===== Marcas Strong# (superíndices clicables) ===== */
 .show-strongs w[data-strong]::after {
   content: attr(data-strong);

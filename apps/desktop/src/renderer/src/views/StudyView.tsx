@@ -27,6 +27,7 @@ import { HermeneuticPanel } from '../components/HermeneuticPanel'
 import { PaneShell } from '../components/PaneShell'
 import { PaneSplitter } from '../components/PaneSplitter'
 import { CommentaryAccordion } from '../components/CommentaryAccordion'
+import { PassageGuide } from '../components/PassageGuide'
 import { applyTemplate, normalizedWidths, resizePanes, resetPanePair, PANE_LABELS } from '../lib/studyLayout'
 
 const PANE_KINDS: StudyPaneKind[] = ['bible', 'commentary', 'dictionary', 'book']
@@ -216,7 +217,7 @@ export function StudyView() {
 
   const [verses, setVerses] = useState<Verse[]>([])
   const [selectedVerse, setSelectedVerse] = useState(1)
-  const [tab, setTab] = useState<'panes' | 'hermeneutics'>('panes')
+  const [tab, setTab] = useState<'panes' | 'hermeneutics' | 'guia'>('panes')
   const [dictKey, setDictKey] = useState('')
   const [dictResult, setDictResult] = useState<string | null>(null)
   const [dictLoading, setDictLoading] = useState(false)
@@ -683,6 +684,9 @@ export function StudyView() {
           <button className={tab === 'panes' ? 'active' : ''} onClick={() => setTab('panes')}>
             {t('study.tab.panes')}
           </button>
+          <button className={tab === 'guia' ? 'active' : ''} onClick={() => setTab('guia')}>
+            {t('study.tab.guia')}
+          </button>
           <button
             className={tab === 'hermeneutics' ? 'active' : ''}
             onClick={() => setTab('hermeneutics')}
@@ -695,6 +699,13 @@ export function StudyView() {
         {tab === 'hermeneutics' ? (
           <HermeneuticPanel
             reference={`${bookName(currentBook, locale)} ${chapter}:${selectedVerse}`}
+          />
+        ) : tab === 'guia' ? (
+          <PassageGuide
+            book={book}
+            chapter={chapter}
+            verse={selectedVerse}
+            bookLabel={bookName(currentBook, locale)}
           />
         ) : (
           <>
