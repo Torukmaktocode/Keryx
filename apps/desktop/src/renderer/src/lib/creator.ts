@@ -1,25 +1,18 @@
 /**
  * Creador de sermones, estudios y devocionales "nivel grandes".
  *
- * Ensambla evidencia de TODOS los modulos instalados (Biblia, comentarios,
- * Strong griego/hebreo/arameo, historico-geografico ISBE/Easton, tematico
- * Nave) y produce un documento completo. Si hay IA, un prompt maestro con
- * persona de los grandes predicadores/escritores lo desarrolla; sin IA
- * entrega el documento local estructurado.
+ * ARQUITECTURA: los sub-agentes (agents.ts, 0 tokens) anclan la evidencia de
+ * los modulos reales en un dosier citado. La IA solo REDACTA encima del
+ * dosier (cerebro). Sin IA (o si falla), el composer determinista crea el
+ * documento COMPLETO con la misma logica pastoral, sin romper el mensaje,
+ * y avisa explicitamente que fue ensamblado localmente.
  */
-import { CANONICAL_BOOKS, type Verse } from '@keryx/core'
+import type { AssistantContext, AssistantPassage, AssistantResult } from './assistant'
+import { refLabel, stripTags } from './assistant'
 import { api } from './api'
-import {
-  type AssistantContext,
-  type AssistantPassage,
-  type AssistantResult,
-  commentaryModules,
-  pickBible,
-  refLabel,
-  safe,
-  stripTags
-} from './assistant'
+import { apiHook, buildDossier, dossierForPrompt, type Dossier } from './agents'
 import { parseReference } from './reference'
+
 export type CreatorKind = 'crearsermon' | 'crearestudio' | 'creardevocional'
 
 export type PersonaId =
@@ -55,13 +48,13 @@ export const PERSONAS: Persona[] = [
     id: 'peterson',
     name: 'Eugene H. Peterson',
     style:
-      'Pastor-poeta (voz PRINCIPAL): lenguaje ordinario, concreto y sin adorno; te baja el texto a la cocina, el trafico y la mesa; discipulado lento, oracion y scripture vividos; huye de la religion de consumo y del ruido; frases cortas, imagenes caseras, honestidad cansada pero esperanzada.'
+      'Pastor-poeta (voz PRINCIPAL): lenguaje ordinario, concreto y sin adorno; te baja el texto a la cocina, el trafico y la mesa; discipulado lento, oracion y Escritura vividas; huye de la religion de consumo y del ruido; frases cortas, imagenes caseras, honestidad cansada pero esperanzada.'
   },
   {
     id: 'champlin',
     name: 'R. N. Champlin',
     style:
-      'Comentario verso por verso (profundidad EXEGETICA principal): analisis historico-gramatical de cada versiculo, terminos del original (hebreo/arameo/griego) con transliteracion, contexto cultural del mundo antiguo, variantes textuales, silogismo doctrinal y tono doxologico; erudito metodic y pastoral al mismo tiempo.'
+      'Exegeta verso a verso: analisis historico-gramatical de cada versiculo, terminos del original con transliteracion, contexto cultural del mundo antiguo, variantes textuales, silogismo doctrinal y tono doxologico.'
   },
   {
     id: 'spurgeon',
@@ -119,146 +112,40 @@ export const PERSONAS: Persona[] = [
   },
   {
     id: 'wesley',
-    name: 'John Wesley',
+    name: 'Juan Wesley',
     style:
-      'Santidad y llamado: gracia que capacita a vivir como Cristo, urgencia evangelistica, disciplina comunitaria, amor a todos.'
+      'Evangelista metodico: disciplina de santidad, predicacion al aire libre, amor perfecto, claro y directo al oyente comun.'
   }
 ]
 
 export function getPersona(id: string): Persona {
   const found = PERSONAS.find((p) => p.id === id)
   if (found) return found
-  // Estilo por defecto: Eugene Peterson (voz pastoral) — pedido del usuario.
   return PERSONAS.find((p) => p.id === 'peterson') ?? PERSONAS[0]
 }
 
-// --------------------------------------------------------------------------- //
-// Evidencia
-// --------------------------------------------------------------------------- //
-const extractStrongs = (html: string): string[] => {
-  const found = new Set<string>()
-  for (const match of html.matchAll(/data-strong="([GH]\d{1,6})"/gi)) found.add(match[1].toUpperCase())
-  return [...found]
-}
+/* ------------------------------------------------------------------ prompt */
 
-interface Evidence {
-  bible: string
-  commentaries: string
-  strongs: string
-  historyGeo: string
-  topics: string
-  passages: AssistantPassage[]
-}
-
-async function gatherEvidence(ctx: AssistantContext, query: string): Promise<Evidence> {
-  const parsed = parseReference(query)
-  const bible = pickBible(ctx)
-  const passages: AssistantPassage[] = []
-  let bibleText = ''
-  let verseHtml = ''
-
-  // 1) Texto biblico del pasaje (capitulo completo si no hay versiculo)
-  if (parsed && bible) {
-    const verses = await safe(api.bible.chapter({ module: bible, book: parsed.book, chapter: parsed.chapter }), [] as Verse[])
-    if (verses.length) {
-      const list = parsed.verse
-        ? verses.filter((v) => v.verse === parsed.verse)
-        : verses.slice(0, Math.min(verses.length, 8))
-      const lines: string[] = []
-      for (const verse of list) {
-        const ref = refLabel(ctx, parsed.book, parsed.chapter, verse.verse)
-        const text = stripTags(verse.text)
-        lines.push(`**${ref}** — ${text}`)
-        passages.push({ ref, module: bible, text })
-        if (!verseHtml) verseHtml = verse.text
-      }
-      bibleText = lines.join('\n')
-    }
-  }
-
-  // 2) Comentarios verso a verso (hasta 3 modulos)
-  const comments: string[] = []
-  if (parsed) {
-    for (const commentary of commentaryModules(ctx).slice(0, 3)) {
-      const comment = await safe(
-        api.bible.verse({
-          module: commentary.name,
-          book: parsed.book,
-          chapter: parsed.chapter,
-          verse: parsed.verse ?? 1
-        }),
-        null
-      )
-      const plain = comment?.text ? stripTags(comment.text) : ''
-      if (plain) comments.push(`[${commentary.name}] ${plain.slice(0, 2400)}`)
-    }
-  }
-
-  // 3) Palabras originales (griego/hebreo/arameo via Strong)
-  const strongs: string[] = []
-  const keys = verseHtml ? extractStrongs(verseHtml).slice(0, 6) : []
-  for (const key of keys) {
-    const entry = await safe(api.dict.strongs(key), null)
-    if (entry) strongs.push(`**${entry.key}** (${entry.language}) — ${entry.definition.slice(0, 700)}`)
-  }
-
-  // 4) Historico-geografico: entrada del libro en ISBE / Easton
-  const history: string[] = []
-  if (parsed) {
-    const en = CANONICAL_BOOKS.find((b) => b.code === parsed.book)?.name ?? parsed.book
-    for (const dictName of ['ISBE', 'Easton']) {
-      const entry = await safe(api.dict.lookup({ module: dictName, key: en }), null)
-      if (entry) history.push(`[${dictName} · ${en}] ${stripTags(entry).slice(0, 1600)}`)
-    }
-  }
-
-  // 5) Tema en Nave (topical), si esta instalado
-  let topics = ''
-  const theme = firstThemeWord(query)
-  const nave = ctx.modules.find((m) => m.name.toLowerCase() === 'nave')
-  if (nave && theme) {
-    const entry = await safe(api.dict.lookup({ module: nave.name, key: theme }), null)
-    if (entry) topics = `[Nave · ${theme}] ${stripTags(entry).slice(0, 1600)}`
-  }
-
-  return {
-    bible: bibleText,
-    commentaries: comments.join('\n\n'),
-    strongs: strongs.join('\n'),
-    historyGeo: history.join('\n\n'),
-    topics,
-    passages
-  }
-}
-
-function firstThemeWord(query: string): string {
-  const word = query.trim().split(/\s+/)[0] ?? ''
-  return word.length > 3 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word
-}
-
-// --------------------------------------------------------------------------- //
-// Prompt maestro + personas
-// --------------------------------------------------------------------------- //
 export const MASTER_PROMPT = [
   'Eres un homiletico y teologo del nivel de los grandes predicadores y escritores de la historia cristiana.',
-  'Produce un documento COMPLETO y profesional (600-1200 palabras), listo para usar, en el idioma del usuario.',
+  'Produce un documento COMPLETO y profesional (900-1500 palabras), listo para predicar, en el idioma del usuario.',
+  '',
+  'REGLA DE ORO: usa EXCLUSIVAMENTE la evidencia del DOSSIER anclado. Cada afirmacion expositiva debe poder rastrearse a una cita [Modulo · entrada].',
+  'No inventes citas biblicas, datos historicos, numeros Strong ni hechos; si algo no consta en el dosier, dilo con honestidad o dejalo como [PUNTO POR COMPLETAR].',
   '',
   'Estructura requerida (encabezados ##):',
   '1. "Texto base y gran idea": cita el pasaje y formula la gran idea en una frase.',
-  '2. "Contexto historico y geografico": autor, fecha, destinatarios, lugares (geografia real: ciudades, rutas, clima), costumbres y situacion politica-religiosa.',
-  '3. "Palabras originales": hebreo, arameo o griego transliterado (numero Strong si consta), rango semantico y peso teologico.',
-  '4. "Comentario verso a versiculo": exegesis compleja y honesta del pasaje, unidad literaria, sintaxis y retorica.',
-  '5. "Hermeneutica": genero literario y sus reglas; puente cultural entre el mundo del texto y el hoy.',
-  '6. "Homiletica": Gancho (necesidad humana) -> Concepto (exegesis) -> Ejemplo (vida moderna) -> Desafio (llamado a la accion).',
-  '7. "Ilustraciones": al menos dos, concretas y memorables.',
-  '8. "Aplicacion en la vida": concreta y medible para esta semana (hogar, trabajo, iglesia).',
+  '2. "Contexto historico y geografico": autor, fecha probable (si consta), destinatarios, geografia real y costumbres del DOSIER.',
+  '3. "Palabras originales": terminos Strong transliterados con su rango semantico segun las definiciones citadas.',
+  '4. "Comentario verso a versiculo": exegesis fiel siguiendo los comentarios anclados, con unidad literaria y sintaxis.',
+  '5. "Hermeneutica": genero literario y reglas; puente honesto entre el mundo del texto y hoy.',
+  '6. "Homiletica": Gancho (necesidad humana) -> Gran idea -> Ejemplo -> Desafio.',
+  '7. "Ilustraciones": usa primero las del dosier; al menos dos si constan.',
+  '8. "Aplicacion en la vida": concreta y medible (hogar, trabajo, iglesia).',
   '9. "Oracion final".',
   '',
-  'Reglas:',
   '- Cita referencias como "Libro Capitulo:Versiculo".',
-  '- Usa la evidencia de los modulos instalados: sintetizala y atribuyela, no la copies entera.',
-  '- No inventes citas, numeros ni datos; si algo no consta, dilo con honestidad.',
-  '- Densidad: nada de relleno; cada parrafo sostiene la gran idea.'
+  '- Densidad: nada de relleno; todo parrafo sostiene la gran idea.'
 ].join('\n')
 
 function personaPrompt(persona: Persona): string {
@@ -266,11 +153,11 @@ function personaPrompt(persona: Persona): string {
 }
 
 const SERMON_ADDENDUM =
-  'Ajusta el documento a un SERMON completo para predicar en voz alta, con tiempo estimado por seccion.'
+  'Tipo: SERMON completo para predicar en voz alta, con tiempo estimado por seccion.'
 const STUDY_ADDENDUM =
-  'Ajusta el documento a un ESTUDIO BIBLICO: secciones Observacion, Interpretacion, Aplicacion y 5 Preguntas para profundizar.'
+  'Tipo: ESTUDIO BIBLICO con secciones Observacion, Interpretacion, Aplicacion y 5 preguntas para profundizar.'
 const DEVOTIONAL_ADDENDUM =
-  'Ajusta el documento a un DEVOCIONAL: Versiculo clave, Reflexion calorosa y personal, Oracion y una Frase para llevar del dia.'
+  'Tipo: DEVOCIONAL con Versiculo clave, Reflexion calorosa y personal, Oracion y Frase para llevar del dia.'
 
 function addendum(kind: CreatorKind): string {
   if (kind === 'crearestudio') return STUDY_ADDENDUM
@@ -278,60 +165,144 @@ function addendum(kind: CreatorKind): string {
   return SERMON_ADDENDUM
 }
 
-// --------------------------------------------------------------------------- //
-// Documento local (sin IA)
-// --------------------------------------------------------------------------- //
-function composeLocal(
+const TITLE_FOR: Record<CreatorKind, string> = {
+  crearsermon: 'Sermón',
+  crearestudio: 'Estudio bíblico',
+  creardevocional: 'Devocional'
+}
+
+const LOCAL_NOTICE =
+  '> ⚠ **Documento ensamblado localmente (sin IA).** El mensaje bíblico está intacto y anclado a tus fuentes; revisa los espacios marcados con [ … ] y personaliza el estilo antes de predicar.'
+
+/* ---------------------------------------------------------------- composer */
+
+function firstSentence(text: string): string {
+  const plain = stripTags(text)
+  const cut = plain.search(/[.!?](\s|$)/)
+  const sentence = cut > 0 ? plain.slice(0, cut + 1) : plain
+  return sentence.length > 220 ? `${sentence.slice(0, 218)}…` : sentence
+}
+
+function sectionEntries(dossier: Dossier, kind: Dossier['sections'][number]['kind']): string[] {
+  return dossier.sections.filter((s) => s.kind === kind).flatMap((s) => s.entries)
+}
+
+/** Composer determinista: documento COMPLETO desde el dosier (IA off/caida). */
+export function composeFromDossier(
   kind: CreatorKind,
   ctx: AssistantContext,
   query: string,
-  evidence: Evidence
+  dossier: Dossier,
+  persona: Persona
 ): string {
   const parsed = parseReference(query)
   const ref = parsed ? refLabel(ctx, parsed.book, parsed.chapter, parsed.verse) : query
-  const title = kind === 'crearestudio' ? 'Estudio biblico' : kind === 'creardevocional' ? 'Devocional' : 'Sermón'
-  const lines: string[] = [`# ${title}: ${ref}`, '']
+  const textLines = sectionEntries(dossier, 'texto')
+  const commentLines = sectionEntries(dossier, 'comentario')
+  const outlineLines = sectionEntries(dossier, 'bosquejo')
+  const strongLines = sectionEntries(dossier, 'strongs')
+  const topicLines = sectionEntries(dossier, 'tema')
+  const historyLines = sectionEntries(dossier, 'historico')
+  const illusLines = sectionEntries(dossier, 'ilustracion')
 
-  if (evidence.bible) lines.push('## Texto base', '', evidence.bible, '')
-  if (evidence.historyGeo) lines.push('## Contexto historico y geografico', '', evidence.historyGeo, '')
-  if (evidence.strongs) lines.push('## Palabras originales (Strong)', '', evidence.strongs, '')
-  if (evidence.topics) lines.push('## Temas relacionados (Nave)', '', evidence.topics, '')
-  if (evidence.commentaries) lines.push('## Comentario', '', evidence.commentaries.slice(0, 3000), '')
-
-  lines.push(
-    '## Hermeneutica',
+  const lines: string[] = [
+    `# ${TITLE_FOR[kind]}: ${ref}`,
     '',
-    '- Genero literario y reglas: ',
-    '- Puente al presente: ',
+    LOCAL_NOTICE,
     '',
-    '## Homiletica',
-    '',
-    '1. **Gancho** — Necesidad humana: ',
-    '2. **Concepto (exegesis)** — Gran idea: ',
-    '3. **Ejemplo** — Caso moderno: ',
-    '4. **Desafio** — Accion concreta: ',
-    '',
-    '## Aplicacion en la vida',
-    '',
-    '- En casa: ',
-    '- En el trabajo/estudio: ',
-    '- En la iglesia: ',
-    '',
-    '## Oracion',
+    `> Estilo sugerido: voz de **${persona.name}** · Fuentes ancladas: **${dossier.citations.length}** de ${dossier.citations.length} módulos · Dosier: ${dossier.chars} caracteres.`,
     ''
-  )
-  if (!evidence.bible && !evidence.commentaries) {
-    lines.unshift(
-      `> Sin IA activa ni coincidencias exactas para **${query}**; esqueleto listo para completar.`,
+  ]
+
+  // 1) Texto base y gran idea
+  lines.push('## Texto base y gran idea', '')
+  if (textLines.length) {
+    const gran = firstSentence(commentLines[0] ?? topicLines[0] ?? '')
+    lines.push(`**${dossier.section ?? ref}**`)
+    lines.push(...textLines)
+    lines.push(
+      '',
+      `**Gran idea (borrador):** ${gran || '[Completa la gran idea leyendo el pasaje en voz alta.]'}`,
+      ''
+    )
+  } else {
+    lines.push(`(sin pasaje biblico anclado para "${query}" — define la referencia)`, '')
+  }
+
+  // 2) Contexto historico y geografico
+  lines.push('## Contexto historico y geografico', '')
+  if (historyLines.length) {
+    lines.push(...historyLines.map((entry) => `- ${entry}`), '')
+  } else {
+    lines.push('[Punto por completar: autor, fecha y destinatarios del pasaje — consulta la Guía del Pasaje.]', '')
+  }
+
+  // 3) Palabras originales
+  if (strongLines.length) {
+    lines.push('## Palabras originales (Strong)', '', ...strongLines.map((entry) => `- ${entry}`), '')
+  } else {
+    lines.push(
+      '## Palabras originales (Strong)',
+      '',
+      '[Punto por completar: usa una biblia con Strong# o la Guía Exegética del Estudio.]',
       ''
     )
   }
+
+  // 4) Comentario verso a verso
+  lines.push('## Comentario verso a versiculo', '')
+  lines.push(...(commentLines.length ? commentLines : ['[Punto por completar: elige un comentario con cobertura en el Estudio.]']), '')
+
+  // 5) Bosquejo anclado (Sermones y Bosquejos / Wiersbe)
+  if (outlineLines.length) {
+    lines.push('## Bosquejo homiletico anclado', '', ...outlineLines, '')
+  }
+
+  // 6) Hermeneutica guiada
+  lines.push(
+    '## Hermeneutica',
+    '',
+    '- **Genero literario y reglas:** [marca el genero: relato, ley, profecia, sabiduria, parabola, epistola…] y sus reglas de lectura.',
+    '- **Puente al presente:** [donde se repite hoy la situacion del texto.]',
+    ''
+  )
+
+  // 7) Homiletica: gancho → concepto → ejemplo → desafio
+  lines.push('## Homiletica', '')
+  lines.push('1. **Gancho (necesidad humana):** [la herida o el hambre real que este texto contesta.]')
+  lines.push(`2. **Gran idea (concepto exegético):** ${firstSentence(commentLines[0] ?? topicLines[0] ?? '[sintesis doctrinal del pasaje.]')}`)
+  if (illusLines.length) {
+    lines.push(`3. **Ejemplo:** ${firstSentence(illusLines[0])}`)
+  } else {
+    lines.push('3. **Ejemplo:** [caso moderno concreto.]')
+  }
+  lines.push('4. **Desafio:** [llamado concreto para esta semana.]', '')
+
+  // 8) Temas e ilustraciones ancladas
+  if (topicLines.length) {
+    lines.push('## Temas (concordancias tematicas)', '', ...topicLines.map((entry) => `- ${entry}`), '')
+  }
+  if (illusLines.length) {
+    lines.push('## Ilustraciones ancladas', '', ...illusLines.map((entry) => `- ${entry}`), '')
+  }
+
+  // 9) Aplicacion y oracion
+  lines.push(
+    '## Aplicacion en la vida',
+    '',
+    '- **En casa:** [concreto con los tuyos.]',
+    '- **En el trabajo/estudio:** [concreto con colegas.]',
+    '- **En la iglesia:** [concreto con la congregacion.]',
+    '',
+    '## Oracion final',
+    '',
+    '[Redacta la oración del mensaje, en una sola voz con la Escritura citada arriba.]'
+  )
   return lines.join('\n')
 }
 
-// --------------------------------------------------------------------------- //
-// Entrada principal
-// --------------------------------------------------------------------------- //
+/* ----------------------------------------------------------------- entrada */
+
 export async function runCreator(
   ctx: AssistantContext,
   kind: CreatorKind,
@@ -341,28 +312,38 @@ export async function runCreator(
   const trimmed = query.trim()
   if (!trimmed) return { markdown: '', passages: [], aiUsed: false }
 
-  const evidence = await gatherEvidence(ctx, trimmed)
-  const local = composeLocal(kind, ctx, trimmed, evidence)
+  const dossier = await buildDossier(
+    apiHook({
+      modules: ctx.modules,
+      locale: ctx.locale,
+      priorityModules: ctx.settings.priorityModules ?? [],
+      selectedModule: ''
+    }),
+    kind,
+    trimmed
+  )
+
+  const passages: AssistantPassage[] = dossier.citations
+    .filter((citation) => citation.kind === 'texto')
+    .map((citation) => ({ ref: citation.entry, module: citation.module, text: '' }))
+
+  const persona = getPersona(personaId)
+  const local = composeFromDossier(kind, ctx, trimmed, dossier, persona)
 
   if (!ctx.settings.aiEnabled) {
-    return { markdown: local, passages: evidence.passages, aiUsed: false }
+    return { markdown: local, passages, aiUsed: false, citations: dossier.citations, dossierChars: dossier.chars }
   }
 
   try {
     const language = ctx.locale === 'en' ? 'English' : ctx.locale === 'pt' ? 'Portuguese' : 'Spanish'
-    const persona = getPersona(personaId)
     const user = [
       personaPrompt(persona),
       addendum(kind),
       '',
-      `Tema o pasaje: ${trimmed}`,
+      `Tema o pasaje solicitado: ${trimmed}`,
       '',
-      'EVIDENCIA DE LOS MODULOS INSTALADOS (sintetizala y atribuyela):',
-      evidence.bible ? `--- Texto base ---\n${evidence.bible}` : '',
-      evidence.commentaries ? `--- Comentarios ---\n${evidence.commentaries}` : '',
-      evidence.strongs ? `--- Palabras originales ---\n${evidence.strongs}` : '',
-      evidence.historyGeo ? `--- Historico/geografico ---\n${evidence.historyGeo}` : '',
-      evidence.topics ? `--- Tematico ---\n${evidence.topics}` : ''
+      'DOSSIER ANCLADO (recogido por sub-agentes de codigo; usalo como unica fuente):',
+      dossierForPrompt(dossier)
     ]
       .filter(Boolean)
       .join('\n\n')
@@ -375,13 +356,21 @@ export async function runCreator(
       temperature: 0.55,
       maxTokens: 3600
     })
-    return { markdown: result.text, passages: evidence.passages, aiUsed: true }
+    return {
+      markdown: result.text,
+      passages,
+      aiUsed: true,
+      citations: dossier.citations,
+      dossierChars: dossier.chars
+    }
   } catch (error) {
     return {
       markdown: local,
-      passages: evidence.passages,
+      passages,
       aiUsed: false,
-      notice: error instanceof Error ? error.message : String(error)
+      notice: error instanceof Error ? error.message : String(error),
+      citations: dossier.citations,
+      dossierChars: dossier.chars
     }
   }
 }

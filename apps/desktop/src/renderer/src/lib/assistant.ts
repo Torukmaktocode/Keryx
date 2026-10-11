@@ -26,6 +26,10 @@ export interface AssistantResult {
   passages: AssistantPassage[]
   aiUsed: boolean
   notice?: string
+  /** Sub-agentes: fuentes ancladas del dosier (cuando aplica). */
+  citations?: Array<{ module: string; entry: string; kind: string }>
+  /** Caracteres del dosier anclado (presupuesto de sub-agentes). */
+  dossierChars?: number
 }
 
 export interface AssistantContext {
@@ -312,174 +316,6 @@ async function localHermeneutica(ctx: AssistantContext, query: string): Promise<
   return { markdown: guideLines.join('\n'), passages: [] }
 }
 
-const MODE_INSTRUCTIONS: Record<AssistantMode, string> = {
-  verse: [    'Realiza una exegesis completa y de nivel academico del pasaje:',
-    '(1) Texto y traduccion literal.',
-    '(2) Contexto literario, historico y redentor (donde encaja en el argumento del libro y en la historia de la redencion).',
-    '(3) Analisis del original: terminos clave en hebreo/griego (transliterados), gramatica y sintaxis relevante.',
-    '(4) Teologia biblica y sistematica: que revela sobre Dios, el hombre, Cristo y la salvacion.',
-    '(5) Interpretacion historica y debates: Padres de la Iglesia, Reformadores y exegesis moderna, con sus posturas.',
-    '(6) Aplicacion pastoral y espiritual.'
-  ].join(' '),
-  chapter: [
-    'Ofrece una exposicion profunda del capitulo:',
-    '(1) Panorama y estructura literaria (division en unidades).',
-    '(2) Tema central y argumento que articula el capitulo.',
-    '(3) Exegesis por secciones con los versiculos clave.',
-    '(4) Trasfondo historico-cultural y genero literario.',
-    '(5) Conexiones canonicas y teologicas (tipologia, cumplimiento, ecos del AT).',
-    '(6) Aplicaciones y sintesis doctrinal.'
-  ].join(' '),
-  topic: [
-    'Desarrolla el tema con rigor de teologia biblica y sistematica:',
-    '(1) Definicion y precision terminologica.',
-    '(2) Desarrollo progresivo a traves del canon (AT, evangelios, epistolas, escatologia).',
-    '(3) Principales pasajes con exegesis breve.',
-    '(4) Ubicacion en los loci de la teologia sistematica.',
-    '(5) Debates, matices y principales posturas con sus representantes.',
-    '(6) Sintesis y aplicacion.'
-  ].join(' '),
-  word: [
-    'Realiza un estudio lexico y teologico de la palabra:',
-    '(1) Termino original, transliteracion y raiz.',
-    '(2) Rango semantico y usos en el AT, la LXX y el NT.',
-    '(3) Matices, campos semanticos y terminos relacionados.',
-    '(4) Evolucion del uso y peso teologico.',
-    '(5) Pasajes clave y su interpretacion.',
-    '(6) Relevancia doctrinal y practica.'
-  ].join(' '),
-  concept: [
-    'Expone el concepto con profundidad dogmatica e historica:',
-    '(1) Definicion tecnica y precision terminologica.',
-    '(2) Fundamento biblico y desarrollo en la historia de la redencion.',
-    '(3) Desarrollo historico-dogmatico: Padres, concilios y confesiones.',
-    '(4) Formulacion sistematica actual.',
-    '(5) Herejias, controversias y debates contemporaneos.',
-    '(6) Implicaciones pastorales y aplicacion.'
-  ].join(' '),
-  hermeneutica: [
-    'Aplica el metodo hermeneutico completo al pasaje o tema:',
-    '(1) Genero literario y sus reglas de interpretacion.',
-    '(2) Contexto historico-cultural y literario (autor, destinatarios, proposito, estructura).',
-    '(3) Analisis del texto en el original: terminos clave griego/hebreo transliterados, con rango semantico.',
-    '(4) Figuras retoricas, parabolas, tipos y profecia presentes.',
-    '(5) Puente cultural: que diferencia hay entre el entonces y el hoy; principio eterno.',
-    '(6) Gran idea en una sola frase y aplicacion concreta.',
-    'Usa los recursos de Fee/Stuart (generos), Duvall/Hays (viaje interpretativo) y',
-    'J.M. Martinez como marco metodologico, sin citarlos textually salvo referencia.'
-  ].join(' '),
-  crearsermon: 'Documento completo listo para predicar (via runCreator).',
-  crearestudio: 'Documento completo de estudio biblico (via runCreator).',
-  creardevocional: 'Documento devocional completo (via runCreator).'
-}
-
-const SYSTEM_PROMPT = [
-  'Eres Keryx, un asistente de estudio biblico y teologia de nivel academico avanzado (doctorado).',
-  'Integras exegesis rigurosa, teologia biblica, teologia sistematica y teologia historica.',
-  '',
-  'Principios:',
-  '- Fidelidad a la Escritura y a la ortodoxia historica cristiana; distingue con claridad entre el texto, la interpretacion y la opinion.',
-  '- Cita siempre las referencias como "Libro Capitulo:Versiculo" y, cuando aporte, el termino original en hebreo/griego transliterado.',
-  '- Usa el material de los modulos instalados (comentarios, lexicos, diccionarios) como evidencia: sintetizalo y atribuyelo, sin copiarlo entero.',
-  '- Senala los debates interpretativos y las principales posturas (patristica, reformadores, exegesis moderna) con sus representantes.',
-  '- No inventes citas, datos ni referencias; si la evidencia es insuficiente, dilo con honestidad.',
-  '- Evita el relleno: privilegia precision, densidad teologica y claridad.',
-  '',
-  'Formato: Markdown con encabezados (##, ###), listas y tablas cuando ayuden a la claridad.',
-  'Extension: profunda y desarrollada (apunta a 600-1000 palabras), organizada por las secciones indicadas.'
-].join('\n')
-
-function buildAiMessages(
-  ctx: AssistantContext,
-  mode: AssistantMode,
-  query: string,
-  context: string
-): Array<{ role: 'system' | 'user' | 'assistant'; content: string }> {
-  const language = ctx.locale === 'en' ? 'English' : ctx.locale === 'pt' ? 'Portuguese' : 'Spanish'
-  const system = `${SYSTEM_PROMPT}\n\nResponde en ${language}.`
-  const user = [
-    `Modo: ${mode}`,
-    `Estructura requerida: ${MODE_INSTRUCTIONS[mode]}`,
-    '',
-    `Consulta del usuario: ${query}`,
-    '',
-    'Material recuperado de los modulos instalados (evidencia de apoyo; cita las fuentes, no lo copies literalmente):',
-    context || '(sin material adicional)'
-  ].join('\n')
-  return [
-    { role: 'system', content: system },
-    { role: 'user', content: user }
-  ]
-}
-
-async function gatherEvidence(
-  ctx: AssistantContext,
-  mode: AssistantMode,
-  query: string
-): Promise<string> {
-  const parts: string[] = []
-  const bible = pickBible(ctx)
-  const parsed = parseReference(query)
-
-  if ((mode === 'verse' || mode === 'chapter') && parsed) {
-    if (bible) {
-      const verses = await safe(
-        api.bible.chapter({ module: bible, book: parsed.book, chapter: parsed.chapter }),
-        []
-      )
-      if (verses.length) {
-        const text = verses.map((v) => `${v.verse}. ${stripTags(v.text)}`).join('\n')
-        parts.push(`[Biblia ${bible}] ${refLabel(ctx, parsed.book, parsed.chapter)}\n${text}`)
-      }
-    }
-    const commentaries = commentaryModules(ctx).slice(0, 3)
-    for (const commentary of commentaries) {
-      const comment = await safe(
-        api.bible.verse({
-          module: commentary.name,
-          book: parsed.book,
-          chapter: parsed.chapter,
-          verse: parsed.verse ?? 1
-        }),
-        null
-      )
-      const plain = comment?.text ? stripTags(comment.text) : ''
-      if (plain) {
-        parts.push(
-          `[Comentario ${moduleLabel(commentary)}] ${refLabel(ctx, parsed.book, parsed.chapter, parsed.verse)}\n${plain.slice(0, 2200)}`
-        )
-      }
-    }
-    return parts.join('\n\n')
-  }
-
-  const dicts = dictModules(ctx).slice(0, 4)
-  for (const dict of dicts) {
-    const entry = await safe(api.dict.lookup({ module: dict.name, key: query }), null)
-    if (entry) parts.push(`[${moduleLabel(dict)}] ${query}\n${stripTags(entry).slice(0, 2200)}`)
-  }
-
-  const bibles = ctx.modules
-    .filter((m) => m.category === 'Bible')
-    .sort((a, b) => {
-      const rank = (m: SwordModule): number => ((m.lang || '').toLowerCase().startsWith('es') ? 0 : 1)
-      return rank(a) - rank(b)
-    })
-    .slice(0, 2)
-  for (const translation of bibles) {
-    const hits = await safe(
-      api.bible.search({ query, modules: [translation.name], limit: 8 }),
-      []
-    )
-    if (hits.length) {
-      const lines = hits.map(
-        (hit) => `${refLabel(ctx, hit.book, hit.chapter, hit.verse)} â€” ${stripTags(hit.text)}`
-      )
-      parts.push(`[Pasajes en ${translation.name}]\n${lines.join('\n')}`)
-    }
-  }
-  return parts.join('\n\n')
-}
 
 export async function runAssistant(
   ctx: AssistantContext,
@@ -504,31 +340,8 @@ export async function runAssistant(
   else if (mode === 'hermeneutica') local = await localHermeneutica(ctx, trimmed)
   else local = await localTopic(ctx, trimmed)
 
-  if (!ctx.settings.aiEnabled) {
-    return { markdown: local.markdown, passages: local.passages, aiUsed: false }
-  }
-
-  try {
-    const evidence = await gatherEvidence(ctx, mode, trimmed)
-    const context = [local.markdown, evidence].filter(Boolean).join('\n\n---\n\n')
-    const result = await api.ai.chat({
-      messages: buildAiMessages(ctx, mode, trimmed, context),
-      temperature: 0.35,
-      maxTokens: 3200
-    })
-    return {
-      markdown: result.text,
-      passages: local.passages,
-      aiUsed: true
-    }
-  } catch (error) {
-    return {
-      markdown: local.markdown,
-      passages: local.passages,
-      aiUsed: false,
-      notice: error instanceof Error ? error.message : String(error)
-    }
-  }
+  // Los modos de estudio NO usan IA: todo se ancla por codigo (0 tokens).
+  return { markdown: local.markdown, passages: local.passages, aiUsed: false }
 }
 
 export const ASSISTANT_EXAMPLES: Record<AssistantMode, string[]> = {

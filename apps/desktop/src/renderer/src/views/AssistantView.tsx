@@ -143,6 +143,18 @@ export function AssistantView() {
           {!loading && result && result.markdown && (
             <article className="assistant-result">
               <div className="assistant-tools">
+                <span
+                  className={`badge ${result.aiUsed ? '' : 'muted'}`}
+                  title={
+                    result.aiUsed
+                      ? t('assistant.brain.aiHint', { chars: result.dossierChars ?? 0 })
+                      : t('assistant.brain.localHint', { chars: result.dossierChars ?? 0 })
+                  }
+                >
+                  {result.aiUsed
+                    ? t('assistant.brain.ai', { chars: result.dossierChars ?? 0 })
+                    : t('assistant.brain.local', { chars: result.dossierChars ?? 0 })}
+                </span>
                 <button
                   className="btn ghost small"
                   onClick={() => {
@@ -152,6 +164,20 @@ export function AssistantView() {
                   {t('assistant.sendToEditor')}
                 </button>
               </div>
+              {result.citations && result.citations.length > 0 && (
+                <div className="coverage-row" style={{ margin: '4px 0 10px' }}>
+                  <span className="coverage-label">
+                    {t('assistant.sources', { count: result.citations.length })}
+                  </span>
+                  <div className="coverage-chips">
+                    {[...new Set(result.citations.map((c) => c.module))].map((module) => (
+                      <span key={module} className="coverage-chip" title={module}>
+                        {module.length > 30 ? `${module.slice(0, 28)}…` : module}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div
                 className="scripture assistant-content"
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(result.markdown) }}

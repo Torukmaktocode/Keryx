@@ -1,0 +1,133 @@
+// @vitest-environment jsdom
+import { describe, expect, it } from 'vitest'
+import {
+  buildDossier,
+  dossierForPrompt,
+  renderDossier,
+  DOSSIER_BUDGET,
+  type AgentHook
+} from './agents'
+
+function fakeHook(overrides: Partial<AgentHook> = {}): AgentHook {
+  return {
+    modules: [
+      {
+        name: 'Reina Valera 1960',
+        description: 'RV60',
+        category: 'Bible',
+        lang: 'es',
+        driver: 'e-Sword .bbli',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Comentario Real',
+        description: '',
+        category: 'Commentary',
+        lang: 'es',
+        driver: 'e-Sword .cmti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Indice Tematico de la Biblia NAVE',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Diccionario de Geografia Biblica - H Martens',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Diccionario de Anecdotas',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      }
+    ],
+    locale: 'es',
+    priorityModules: [],
+    selectedModule: '',
+    chapter: async () => [{ verse: 16, text: '<w data-strong="G26">amor</w> de Dios' }],
+    verse: async () => ({ verse: 16, text: 'Comentario anclado del verso.' }),
+    coverage: async () => [{ module: 'Comentario Real', hits: 3 }],
+    lookup: async (module, key) => `Entrada de ${module} para ${key}. `.repeat(3),
+    strongs: async () => ({ key: 'G26', language: 'greek', definition: 'amore agape def' }),
+    search: async () => [
+      { module: 'Diccionario de Anecdotas', book: 'Paciencia', chapter: 0, verse: 0, text: 'a…' }
+    ],
+    ...overrides
+  }
+}
+
+describe('buildDossier (sub-agentes 0 tokens)', () => {
+  it('ancla texto + comentario + strongs + temas + geo + ilustraciones con citas', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    const kinds = dossier.sections.map((s) => s.kind)
+    expect(kinds).toContain('texto')
+    expect(kinds).toContain('comentario')
+    expect(kinds).toContain('strongs')
+    expect(kinds).toContain('tema')
+    expect(kinds).toContain('historico')
+    expect(kinds).toContain('ilustracion')
+    expect(dossier.citations.length).toBeGreaterThan(3)
+    expect(dossier.chars).toBeLessThanOrEqual(DOSSIER_BUDGET)
+  })
+
+  it('recorta las entradas largas y respeta el presupuesto', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    for (const section of dossier.sections) {
+      for (const entry of section.entries) expect(entry.length).toBeLessThan(950)
+    }
+  })
+
+  it('extrae los Strong# del markup del verso', async () => {
+    const dossier = await buildDossier(fakeHook(), 'verse', 'Juan 3:16')
+    const strongs = dossier.sections.find((s) => s.kind === 'strongs')
+    expect(strongs?.entries[0]).toContain('G26')
+  })
+
+  it('trata un tema sin referencia (topic mode) via Nave', async () => {
+    const dossier = await buildDossier(fakeHook(), 'topic', 'esperanza de la gloria')
+    const temas = dossier.sections.find((s) => s.kind === 'tema')
+    expect(temas?.title).toContain('Esperanza')
+  })
+
+  it('render markdown y prompt contienen las secciones citadas', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    const md = renderDossier(dossier)
+    const prompt = dossierForPrompt(dossier)
+    expect(md).toContain('## Comentario')
+    expect(prompt).toContain('### Temas')
+    expect(prompt.length).toBeLessThanOrEqual(DOSSIER_BUDGET * 1.2)
+  })
+
+  it('sin pasaje ni tema no explota', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearestudio', 'sobre la merced')
+    expect(dossier.sections.length).toBeGreaterThan(0)
+  })
+})
+
+// debug
