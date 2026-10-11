@@ -342,9 +342,9 @@ export class EswordProvider implements SwordProvider {
   }
 
   /**
-   * Lee la entrada de comentario para los versiculos de un capitulo. Los
-   * comentarios e-Sword usan rangos (ChapterBegin/VerseBegin..ChapterEnd/VerseEnd)
-   * y niveles adicionales (comentario de capitulo y de libro).
+   * Lee las entradas de comentario de un capitulo. Cada fila del comentario
+   * e-Sword es UNA entrada anclada en VerseBegin (los rangos tipo "1-8"
+   * llevan ese texto una sola vez, como e-Sword); no se expanden.
    */
   private readCommentary(
     conf: EswordModule,
@@ -358,23 +358,17 @@ export class EswordProvider implements SwordProvider {
       if (conf.commVerse) {
         const rows = db
           .prepare(
-            `SELECT ChapterBegin AS cb, VerseBegin AS vb, ChapterEnd AS ce, VerseEnd AS ve, Comments AS text` +
+            `SELECT VerseBegin AS vb, Comments AS text` +
               ` FROM ${conf.commVerse} WHERE Book = ? AND ChapterBegin <= ? AND ChapterEnd >= ? ORDER BY VerseBegin`
           )
-          .all(ordinal, chapter, chapter) as Array<{
-          cb: number
-          vb: number
-          ce: number
-          ve: number
-          text: string
-        }>
+          .all(ordinal, chapter, chapter) as Array<{ vb: number; text: string }>
+        const byAnchor = new Map<number, Verse>()
         for (const row of rows) {
-          const start = row.cb < chapter ? 1 : row.vb
-          const end = row.ce > chapter ? 999 : row.ve
           const text = renderEsword(row.text ?? '')
-          if (!text) continue
-          for (let v = start; v <= end; v++) out.push({ book: code, chapter, verse: v, text })
+          if (!text || byAnchor.has(row.vb)) continue
+          byAnchor.set(row.vb, { book: code, chapter, verse: row.vb, text })
         }
+        out.push(...byAnchor.values())
       }
       const intro = this.readCommentaryIntro(conf, code, ordinal, chapter)
       if (intro) out.unshift(...intro)
@@ -421,11 +415,22 @@ export class EswordProvider implements SwordProvider {
     chapter: number,
     verse: number
   ): Promise<Verse | null> {
+    const conf = this.module(module)
+    const canonical = resolveBook(book)
+    if (!conf || !canonical) return null
+    if (conf.category === 'Commentary') {
+      // e-Sword: el versiculo activo muestra la entrada que lo CUBRE
+      const list = await this.getChapter(module, book, chapter)
+      const exact = list.find((item) => item.verse === verse)
+      if (exact) return exact
+      const lower = list.filter((item) => item.verse > 0 && item.verse <= verse)
+      return lower.at(-1) ?? list[0] ?? null
+    }
     const list = await this.getChapter(module, book, chapter)
     return list.find((item) => item.verse === verse) ?? null
   }
 
-  /** Versiculos del capitulo que tienen entrada en el comentario (.cmtx/.cmti). */
+  /** Versiculos con entrada en el comentario (.cmtx/.cmti). */
   async commentaryVerses(module: string, book: string, chapter: number): Promise<number[]> {
     const conf = this.module(module)
     const canonical = resolveBook(book)
@@ -434,22 +439,14 @@ export class EswordProvider implements SwordProvider {
     const found = new Set<number>()
     try {
       if (conf.commVerse) {
+        // e-Sword: una entrada por fila, anclada en VerseBegin (el rango NO se expande)
         const rows = db
           .prepare(
-            `SELECT ChapterBegin AS cb, VerseBegin AS vb, ChapterEnd AS ce, VerseEnd AS ve` +
-              ` FROM ${conf.commVerse} WHERE Book = ? AND ChapterBegin <= ? AND ChapterEnd >= ?`
+            `SELECT VerseBegin AS vb FROM ${conf.commVerse}` +
+              ` WHERE Book = ? AND ChapterBegin <= ? AND ChapterEnd >= ?`
           )
-          .all(canonical.ordinal, chapter, chapter) as Array<{
-          cb: number
-          vb: number
-          ce: number
-          ve: number
-        }>
-        for (const row of rows) {
-          const start = row.cb < chapter ? 1 : row.vb
-          const end = row.ce > chapter ? 250 : row.ve
-          for (let v = start; v <= end && v - start < 200; v++) found.add(v)
-        }
+          .all(canonical.ordinal, chapter, chapter) as Array<{ vb: number }>
+        for (const row of rows) found.add(row.vb)
       }
       if (conf.commChapter) {
         const exists = db

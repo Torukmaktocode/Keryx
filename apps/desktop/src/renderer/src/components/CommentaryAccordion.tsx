@@ -42,8 +42,8 @@ export function CommentaryAccordion({ module, book, chapter, verse, onSelectVers
   // sigue el versiculo seleccionado: abre la entrada que lo cubra
   useEffect(() => {
     if (!verses.length) return
-    const candidates = verses.filter((v) => v === 0 || v === verse)
-    const target = verse <= 0 ? candidates[0] : candidates.at(-1) ?? verses[0]
+    const lower = verses.filter((v) => v > 0 && v <= verse)
+    const target = verse <= 0 ? verses[0] : lower.at(-1) ?? verses[0]
     if (target === openVerse) return
     setOpenVerse(target)
   }, [verses, verse])

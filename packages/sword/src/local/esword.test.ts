@@ -113,17 +113,21 @@ describe('EswordProvider multi-raiz (fixtures)', () => {
     expect(verses[0].text).toContain('En el principio')
   })
 
-  it('construye el indice de versiculos con comentario (rangos e-Sword)', async () => {
+  it('no expande los rangos: una entrada anclada en VerseBegin', async () => {
     const provider = makeProvider(PRINCIPAL, [BIBLIOTECA])!
     const verses = await provider.commentaryVerses('TestComentario', 'Gen', 1)
-    expect(verses).toEqual([1, 2, 3])
+    expect(verses).toEqual([1])
+    const chapter = await provider.getChapter('TestComentario', 'Gen', 1)
+    expect(chapter.map((v) => v.verse)).toEqual([1])
   })
 
-  it('expande los rangos al leer el capitulo del comentario', async () => {
+  it('getVerse devuelve la entrada que CUBRE el versiculo pedido', async () => {
     const provider = makeProvider(PRINCIPAL, [BIBLIOTECA])!
-    const verses = await provider.getChapter('TestComentario', 'Gen', 1)
-    expect(verses.map((v) => v.verse)).toEqual([1, 2, 3])
-    expect(verses[2].text).toContain('Comentario del range uno a tres')
+    const covered = await provider.getVerse('TestComentario', 'Gen', 1, 2)
+    expect(covered?.verse).toBe(1)
+    expect(covered?.text).toContain('Comentario del range uno a tres')
+    const exact = await provider.getVerse('TestComentario', 'Gen', 1, 1)
+    expect(exact?.verse).toBe(1)
   })
 
   it('abre libros Topicales (.refi) via lookupDict', async () => {
