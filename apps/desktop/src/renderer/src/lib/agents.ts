@@ -208,53 +208,68 @@ export async function buildDossier(
     }
   }
 
-  // ---- 2) Comentarios (por cobertura real) y Bosquejos predica
-  if (parsed) {
+  // ---- 2-7) Agentes de mina EN PARALELO: cada uno produce {entries, cites}
+  //           y el presupuesto se consume en orden canonico al ensamblar.
+  // Claves Strong extraidas del verso (agente strongs).
+  const strongKeys = verseHtml
+    ? [...verseHtml.matchAll(/data-strong="([GH]\d{1,6})"/gi)]
+        .slice(0, 6)
+        .map((m) => m[1].toUpperCase())
+    : []
+
+  interface Job {
+    kind: AgentCitation['kind']
+    title: string
+    entries: string[]
+    cites: AgentCitation[]
+  }
+
+  const commentJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'comentario', title: 'Comentario (por cobertura)', entries: [], cites: [] }
+    if (!parsed) return job
     const coverage = await safe(hook.coverage(parsed.book, parsed.chapter), [] as ModuleCoverage[])
     const commentaryByCoverage = coverage
       .filter((c) => hook.modules.some((m) => m.name === c.module && m.category === 'Commentary'))
       .slice(0, SECTION_MAX_ENTRIES)
-    const commentEntries: string[] = []
     for (const item of commentaryByCoverage) {
       const comment = await safe(
         hook.verse(item.module, parsed.book, parsed.chapter, parsed.verse ?? 1),
         null
       )
       if (!comment?.text) continue
-      commentEntries.push(`[${shortName(item.module)}] ${trimEntry(comment.text, 520)}`)
-      cite('comentario', item.module, refEntry(parsed.book, parsed.chapter, parsed.verse ?? 1))
+      job.entries.push(`[${shortName(item.module)}] ${trimEntry(comment.text, 520)}`)
+      job.cites.push({ kind: 'comentario', module: item.module, entry: refEntry(parsed.book, parsed.chapter, parsed.verse ?? 1) })
     }
-    addSection('comentario', 'Comentario (por cobertura)', commentEntries)
+    return job
+  }
 
-    const outlineMod = hook.modules.find(
-      (m) => SPECIAL_RE.bosquejo?.test(m.name) && m.category === 'Commentary'
+  const outlineJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'bosquejo', title: 'Bosquejo y sermones', entries: [], cites: [] }
+    const outlineMod = parsed
+      ? hook.modules.find((m) => SPECIAL_RE.bosquejo?.test(m.name) && m.category === 'Commentary')
+      : undefined
+    if (!parsed || !outlineMod) return job
+    const outline = await safe(
+      hook.verse(outlineMod.name, parsed.book, parsed.chapter, parsed.verse ?? 1),
+      null
     )
-    if (outlineMod) {
-      const outline = await safe(
-        hook.verse(outlineMod.name, parsed.book, parsed.chapter, parsed.verse ?? 1),
-        null
-      )
-      if (outline?.text) {
-        addSection('bosquejo', 'Bosquejo y sermones', [trimEntry(outline.text, 900)])
-        cite('bosquejo', outlineMod.name, refEntry(parsed.book, parsed.chapter, parsed.verse ?? 1))
-      }
+    if (outline?.text) {
+      job.entries.push(trimEntry(outline.text, 900))
+      job.cites.push({ kind: 'bosquejo', module: outlineMod.name, entry: refEntry(parsed.book, parsed.chapter, parsed.verse ?? 1) })
     }
+    return job
   }
 
-  // ---- 3) Palabras originales (Strong)
-  const strongKeys = verseHtml
-    ? [...verseHtml.matchAll(/data-strong="([GH]\d{1,6})"/gi)]
-        .slice(0, 6)
-        .map((m) => m[1].toUpperCase())
-    : []
-  const strongEntries: string[] = []
-  for (const key of [...new Set(strongKeys)]) {
-    const entry = await safe(hook.strongs(key), null)
-    if (!entry) continue
-    strongEntries.push(`**${entry.key}** (${entry.language}) ${trimEntry(entry.definition, 420)}`)
-    cite('strongs', entry.key, key)
+  const strongsJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'strongs', title: 'Palabras originales', entries: [], cites: [] }
+    for (const key of [...new Set(strongKeys)]) {
+      const entry = await safe(hook.strongs(key), null)
+      if (!entry) continue
+      job.entries.push(`**${entry.key}** (${entry.language}) ${trimEntry(entry.definition, 420)}`)
+      job.cites.push({ kind: 'strongs', module: entry.key, entry: key })
+    }
+    return job
   }
-  addSection('strongs', 'Palabras originales', strongEntries)
 
   // ---- 4) Temas (Nave y tematicos reales)
   const rawTheme = themeWords(query) || (parsed ? '' : query)
@@ -264,24 +279,25 @@ export async function buildDossier(
     : ''
   const themeForCtx =
     parsed && rawTheme && esBookName.includes(rawTheme.toLowerCase()) ? '' : rawTheme
-  const topicEntries: string[] = []
-  if (rawTheme) {
+
+  const themeJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'tema', title: `Temas (${rawTheme || '—'})`, entries: [], cites: [] }
+    if (!rawTheme) return job
     const topicMods = hook.modules
       .filter((m) => SPECIAL_RE.tema?.test(m.name))
-      .sort((a, b) => Number(SPECIAL_RE.tema?.test(a.name)) - Number(SPECIAL_RE.tema?.test(b.name)))
       .slice(0, 2)
     for (const mod of topicMods) {
       const entry = await safe(hook.lookup(mod.name, rawTheme), null)
       if (!entry) continue
-      topicEntries.push(`[${shortName(moduleLabel(mod))} · ${rawTheme}] ${trimEntry(entry, 520)}`)
-      cite('tema', mod.name, rawTheme)
+      job.entries.push(`[${shortName(moduleLabel(mod))} · ${rawTheme}] ${trimEntry(entry, 520)}`)
+      job.cites.push({ kind: 'tema', module: mod.name, entry: rawTheme })
     }
+    return job
   }
-  addSection('tema', `Temas (${rawTheme || '—'})`, topicEntries)
 
-  // ---- 5) Contexto historico / geografia (especialistas reales)
-  const geoEntries: string[] = []
-  if (parsed) {
+  const geoJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'historico', title: 'Contexto historico y geografico', entries: [], cites: [] }
+    if (!parsed) return job
     const esName = bookName(
       CANONICAL_BOOKS.find((b) => b.code === parsed.book) ?? CANONICAL_BOOKS[0],
       'es'
@@ -292,24 +308,24 @@ export async function buildDossier(
     for (const mod of geoMods) {
       const entry = await safe(hook.lookup(mod.name, esName), null)
       if (!entry) continue
-      geoEntries.push(`[${shortName(moduleLabel(mod))} · ${esName}] ${trimEntry(entry, 560)}`)
-      cite('historico', mod.name, esName)
+      job.entries.push(`[${shortName(moduleLabel(mod))} · ${esName}] ${trimEntry(entry, 560)}`)
+      job.cites.push({ kind: 'historico', module: mod.name, entry: esName })
     }
+    return job
   }
-  addSection('historico', 'Contexto historico y geografico', geoEntries)
 
-  // ---- 6) Contextos de profundidad (teologico / cultural / cristologico /
-  //          filosofico / aplicacion) con modulos especialistas reales.
-  const contextAgents: Array<{ kind: AgentCitation['kind']; title: string }> = [
-    { kind: 'teologico', title: 'Contexto teologico y sistematico' },
-    { kind: 'cultural', title: 'Contexto social y cultural' },
-    { kind: 'cristologico', title: 'Contexto cristologico' },
-    { kind: 'filosofico', title: 'Contexto filosofico' },
-    { kind: 'aplicacion', title: 'Puentes pastorales y aplicacion' }
-  ]
-  for (const agent of contextAgents) {
-    const entries: string[] = []
-    if (themeForCtx || verseThemes.length) {
+  const contextJobs: Array<Promise<Job>> = (
+    [
+      { kind: 'teologico', title: 'Contexto teologico y sistematico' } as const,
+      { kind: 'cultural', title: 'Contexto social y cultural' } as const,
+      { kind: 'cristologico', title: 'Contexto cristologico' } as const,
+      { kind: 'filosofico', title: 'Contexto filosofico' } as const,
+      { kind: 'aplicacion', title: 'Puentes pastorales y aplicacion' } as const
+    ] as Array<{ kind: AgentCitation['kind']; title: string }>
+  ).map((agent) =>
+    (async (): Promise<Job> => {
+      const job: Job = { kind: agent.kind, title: agent.title, entries: [], cites: [] }
+      if (!themeForCtx && !verseThemes.length) return job
       const order = SPECIAL_ORDER[agent.kind]
       const mods = hook.modules
         .filter(
@@ -334,18 +350,18 @@ export async function buildDossier(
           }
         }
         if (!entry) continue
-        entries.push(`[${shortName(moduleLabel(mod))} · ${usedTopic}] ${trimEntry(entry, 520)}`)
-        cite(agent.kind, mod.name, usedTopic)
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${usedTopic}] ${trimEntry(entry, 520)}`)
+        job.cites.push({ kind: agent.kind, module: mod.name, entry: usedTopic })
         break
       }
-    }
-    addSection(agent.kind, agent.title, entries)
-  }
+      return job
+    })()
+  )
 
-  // Ilustraciones (anecdotario mibiblioteca) — buscan por temas del verso o consulta
-  const illusEntries: string[] = []
-  const illusTopics = (rawTheme ? [rawTheme] : []).concat(verseThemes).slice(0, 3)
-  if (illusTopics.length) {
+  const illusJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'ilustracion', title: 'Ilustraciones', entries: [], cites: [] }
+    const illusTopics = (rawTheme ? [rawTheme] : []).concat(verseThemes).slice(0, 3)
+    if (!illusTopics.length) return job
     const illusMods = hook.modules
       .filter(
         (m) =>
@@ -362,13 +378,29 @@ export async function buildDossier(
         if (!topic) continue
         const entry = await safe(hook.lookup(mod.name, topic), null)
         if (!entry) continue
-        illusEntries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 480)}`)
-        cite('ilustracion', mod.name, topic)
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 480)}`)
+        job.cites.push({ kind: 'ilustracion', module: mod.name, entry: topic })
         done = true
       }
     }
+    return job
   }
-  addSection('ilustracion', 'Ilustraciones', illusEntries)
+
+  const jobs = await Promise.all([
+    commentJob(),
+    outlineJob(),
+    strongsJob(),
+    themeJob(),
+    geoJob(),
+    ...contextJobs,
+    illusJob()
+  ])
+
+  // Ensamble canonico: el presupuesto se consume en orden fijo (determinista).
+  for (const job of jobs) {
+    citations.push(...job.cites)
+    addSection(job.kind, job.title, job.entries)
+  }
 
   return {
     query,
