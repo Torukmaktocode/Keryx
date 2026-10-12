@@ -395,8 +395,52 @@ export async function runCreator(
       temperature: 0.55,
       maxTokens: 3600
     })
+
+    let markdown = result.text
+
+    // deepSermon (opt-in): borrador / crítico homilético / final con correcciones.
+    if (ctx.settings.deepSermon) {
+      const critique = await api.ai.chat({
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Actua como critico homiletico experto. Revisa el borrador SOLO contra el dosier anclado ' +
+              'que te dare. Verifica: (1) cada cita biblica es real y coincide con el texto anclado, ' +
+              '(2) no hay afirmaciones o historias que ausenten del dosier, (3) los contextos ' +
+              'historico/cultural/teologico del dosier se aprovechan, (4) la aplicacion es concreta, ' +
+              '(5) se respeta el estilo pedido. Devuelve SOLO una lista de correcciones concretas ' +
+              'numerada, cada una con el punto del sermón que corriges. Sin alargar el sermón. ' +
+              `Responde en ${language}.`
+          },
+          {
+            role: 'user',
+            content: `BORRADOR:\n\n${markdown}\n\nDOSSIER ANCLADO:\n\n${dossierForPrompt(dossier)}`
+          }
+        ],
+        temperature: 0.3,
+        maxTokens: 900
+      })
+
+      const final = await api.ai.chat({
+        messages: [
+          {
+            role: 'system',
+            content: `${MASTER_PROMPT}\n\nResponde en ${language}. Tu trabajo es reescribir el borrador aplicando las correcciones del revisor, sin quitar secciones ni reducir las citas ancladas.`
+          },
+          {
+            role: 'user',
+            content: `BORRADOR:\n\n${markdown}\n\nCORRECCIONES:\n\n${critique.text}`
+          }
+        ],
+        temperature: 0.5,
+        maxTokens: 3600
+      })
+      markdown = final.text
+    }
+
     return {
-      markdown: result.text,
+      markdown,
       passages,
       aiUsed: true,
       citations: dossier.citations,

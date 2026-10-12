@@ -338,6 +338,8 @@ export const es = {
   'settings.ai.title': 'Asistente con IA',
   'settings.ai.enable': 'Activar IA',
   'settings.ai.enableHint': 'Usa ChatGPT para ampliar el asistente (opcional)',
+  'settings.ai.deepSermon': 'Doble pasada (crítico homilético)',
+  'settings.ai.deepSermonHint': 'Borrador → crítica → final: más calidad, 3 llamadas de IA (solo creadores)',
   'settings.ai.baseUrl': 'URL del proveedor',
   'settings.ai.baseUrlHint': 'Compatible con OpenAI/ChatGPT.',
   'settings.ai.model': 'Modelo',

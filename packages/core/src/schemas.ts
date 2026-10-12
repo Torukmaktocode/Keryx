@@ -127,6 +127,7 @@ export const settingsPatchSchema = z.object({
   aiApiKey: z.string().optional(),
   bibliotecaEnabled: z.boolean().optional(),
   showStrongs: z.boolean().optional(),
+  deepSermon: z.boolean().optional(),
   study: studyLayoutSchema.optional()
 })
 

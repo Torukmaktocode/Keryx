@@ -339,6 +339,8 @@ export const en: Record<TranslationKey, string> = {
   'settings.ai.title': 'AI assistant',
   'settings.ai.enable': 'Enable AI',
   'settings.ai.enableHint': 'Use ChatGPT to extend the assistant (optional)',
+  'settings.ai.deepSermon': 'Double pass (homiletic critic)',
+  'settings.ai.deepSermonHint': 'Draft → critique → final: higher quality, 3 AI calls (creators only)',
   'settings.ai.baseUrl': 'Provider URL',
   'settings.ai.baseUrlHint': 'OpenAI/ChatGPT-compatible.',
   'settings.ai.model': 'Model',

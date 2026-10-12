@@ -126,6 +126,8 @@ export interface AppSettings {
   bibliotecaEnabled: boolean
   /** Superindices Strong# visibles en la Biblia del modo Estudio. */
   showStrongs: boolean
+  /** Doble pasada IA para creadores (borrador / criticado / final). */
+  deepSermon: boolean
   /** Layout del modo Estudio (plantilla, paneles, anchos, sincronia). */
   study: StudyLayout
 }
@@ -220,5 +222,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   aiApiKey: '',
   bibliotecaEnabled: true,
   showStrongs: false,
+  deepSermon: false,
   study: DEFAULT_STUDY
 }

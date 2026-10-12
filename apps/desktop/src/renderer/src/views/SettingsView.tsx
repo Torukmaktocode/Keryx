@@ -198,6 +198,18 @@ export function SettingsView() {
 
           <div className="settings-row">
             <label>
+              {t('settings.ai.deepSermon')}
+              <span className="hint">{t('settings.ai.deepSermonHint')}</span>
+            </label>
+            <input
+              type="checkbox"
+              checked={settings.deepSermon}
+              onChange={(e) => void update({ deepSermon: e.target.checked })}
+            />
+          </div>
+
+          <div className="settings-row">
+            <label>
               {t('settings.ai.baseUrl')}
               <span className="hint">{t('settings.ai.baseUrlHint')}</span>
             </label>
