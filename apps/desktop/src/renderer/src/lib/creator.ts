@@ -12,6 +12,7 @@ import { refLabel, stripTags } from './assistant'
 import { api } from './api'
 import { apiHook, buildDossier, dossierForPrompt, type Dossier } from './agents'
 import { parseReference } from './reference'
+import { buildSermonDocument, renderSermon } from './sermonEngine'
 import type { SearchResult } from '@keryx/core'
 
 export type CreatorKind = 'crearsermon' | 'crearestudio' | 'creardevocional'
@@ -184,6 +185,19 @@ const PERSONA_PROFILE: Record<PersonaId, PersonaProfile> = {
     directive: 'Cierra con enfasis de santificacion: la vida santa es alcanzable hoy con la gracia.'
   }
 }
+
+;(() => {
+  const g = globalThis as unknown as {
+    __personaDirective?: (p: unknown) => string
+    __personaShape?: (p: unknown) => string
+    __personaClosing?: (p: unknown) => string
+    __personaLente?: (id: string) => string
+  }
+  g.__personaDirective = (p: unknown) => personaDirective(p as Persona)
+  g.__personaShape = (p: unknown) => PERSONA_PROFILE[(p as Persona).id]?.shape ?? 'expositiva'
+  g.__personaClosing = (p: unknown) => PERSONA_PROFILE[(p as Persona).id]?.closing ?? ''
+  g.__personaLente = (id: string) => PERSONA_PROFILE[id as PersonaId]?.application ?? ''
+})()
 
 function personaDirective(persona: Persona): string {
   return PERSONA_PROFILE[persona.id]?.directive ?? ''
@@ -904,37 +918,13 @@ export async function runCreator(
   const language = ctx.locale === 'en' ? 'English' : ctx.locale === 'pt' ? 'Portuguese' : 'Spanish'
   const citationsData = { citations: dossier.citations, dossierChars: dossier.chars }
 
-  // Modo economia (default): el CUERPO del sermón lo construye el composer de
-  // codigo; la IA solo la voz (gancho/puentes/oracion) en 1 llamada corta.
+  // Modo economia (default): AST del sermón construido por codigo
+  // (buildSermonDocument) y la IA solo llena los slots de voz.
   if (kind === 'crearsermon' && !ctx.settings.deepSermon) {
-    const skeleton = composeSermonSkeleton(kind, trimmed, dossier, persona)
-    const bridgeLines = dossier.sections.filter((x) => x.kind === 'aplicacion').flatMap((x) => x.entries)
-    const commentEntries = dossier.sections.filter((x) => x.kind === 'comentario').flatMap((x) => x.entries)
-    const granIntro = firstSentence(commentEntries[0] ?? '')
-    const refLabel = dossier.section ?? trimmed
-    const datosBrief = [
-      ...dossier.sections.filter((x) => x.kind === 'geografia').flatMap((x) => x.entries),
-      ...dossier.sections.filter((x) => x.kind === 'caso').flatMap((x) => x.entries),
-      ...dossier.sections.filter((x) => x.kind === 'historico').flatMap((x) => x.entries)
-    ].slice(0, 3).map((entry) => shortEntry(entry, 170))
-    const datoReal = datosBrief[0] ? 'Dato para abrir: ' + datosBrief[0] + '. ' : ''
-    const seed = [...refLabel].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) %
-      3
-    const introTemplates = [
-      'Antes de entrar al mensaje, acomódense: ' + datoReal + 'Hoy abrimos ' + refLabel + ': ' + granIntro,
-      'Alguien dijo una vez algo que encaja perfecto con este texto. ' + datoReal + 'La frase del pasaje es esta: ' + granIntro + ' — y la tenemos en ' + refLabel + '.',
-      'Ustedes conocen la pregunta «¿y si esto me pasara a mí?». ' + datoReal + 'Pues hojeemos ' + refLabel + ': ' + granIntro
-    ]
-    const introFallback = introTemplates[seed]
-    const textoPlano = dossier.sections
-      .filter((x) => x.kind === 'texto')
-      .flatMap((x) => x.entries)[0] ?? ''
-    const meditationFallback = textoPlano
-      ? '» ' + shortEntry(textoPlano.replace(/^\s*\d+\s*/, ''), 120) + ' — ' + refLabel
-      : ''
+    const doc = buildSermonDocument(dossier, persona as unknown as { id: string; name: string; style: string }, trimmed)
     if (!ctx.settings.aiEnabled) {
       return {
-        markdown: assembleSermon(skeleton, { bridges: [] }, refLabel, bridgeLines, introFallback, meditationFallback),
+        markdown: renderSermon(doc),
         passages,
         aiUsed: false,
         notice: 'Sermón ensamblado 100% por código desde tus módulos (sin IA).',
@@ -942,6 +932,10 @@ export async function runCreator(
       }
     }
     try {
+      const datosBrief = [...dossier.sections
+        .filter((x) => ['geografia', 'caso', 'historico'].includes(x.kind))
+        .flatMap((x) => x.entries)].slice(0, 3).map((entry) => shortEntry(entry, 170))
+      const skeletonForAi = renderSermon(doc)
       const ask = [
         personaPrompt(persona),
         `Regla de voz obligatoria: ${personaDirective(persona)}`,
@@ -951,10 +945,10 @@ export async function runCreator(
         ...(datosBrief.length ? datosBrief : ['(sin datos disponibles para este pasaje)']),
         '',
         'REFERENCIA:',
-        refLabel,
+        doc.ref,
         '',
         'ESQUELETO (estructura y evidencia ya garantizadas; no las reescribas):',
-        skeleton.length > 6000 ? `${skeleton.slice(0, 6000)}…[truncado]` : skeleton,
+        skeletonForAi.length > 7000 ? `${skeletonForAi.slice(0, 7000)}…[truncado]` : skeletonForAi,
         '',
         'Devuelve EXACTAMENTE el formato de marcadores del sistema.'
       ].join('\n')
@@ -967,16 +961,27 @@ export async function runCreator(
         maxTokens: 700
       })
       const pieces = parseSnippets(result.text)
+      const voiced = {
+        ...doc,
+        gancho: { ...doc.gancho, text: pieces.hook },
+        intro: { ...doc.intro, text: pieces.intro },
+        meditacion: { ...doc.meditacion, text: pieces.meditation },
+        oracion: { ...doc.oracion, text: pieces.prayer },
+        puntos: doc.puntos.map((punto, index) => ({
+          ...punto,
+          bridge: { ...punto.bridge, text: pieces.bridges[index] }
+        }))
+      }
       return {
-        markdown: withAnchoredSources(assembleSermon(skeleton, pieces, refLabel, bridgeLines, introFallback, meditationFallback), dossier),
+        markdown: renderSermon(voiced),
         passages,
         aiUsed: true,
-        notice: 'Cuerpo 100% código; solo gancho/puentes/oración de IA (1 llamada corta).',
+        notice: 'Cuerpo 100% código; solo gancho/intro/puentes/meditación/oración de IA (1 llamada corta).',
         ...citationsData
       }
     } catch (error) {
       return {
-        markdown: assembleSermon(skeleton, { bridges: [] }, refLabel, bridgeLines, introFallback, meditationFallback),
+        markdown: renderSermon(doc),
         passages,
         aiUsed: false,
         notice: error instanceof Error ? error.message : String(error),

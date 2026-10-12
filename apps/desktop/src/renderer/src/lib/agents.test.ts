@@ -292,24 +292,21 @@ describe('buildDossier (sub-agentes 0 tokens)', () => {
   })
 
   it('libros .refi: teologia sistematica e historia por busqueda con portadas excluidas', async () => {
-    let idx = 0
     const hook = fakeHook({
-      search: async () => {
-        idx += 1
-        return idx % 2 === 1
+      search: async (_q, modules) =>
+        (modules?.[0] ?? '').includes('Hodge')
           ? [
               { module: 'm', book: 'Contenido', chapter: 0, verse: 0, text: 'indice' },
               { module: 'm', book: 'Capítulo 1: El método', chapter: 2, verse: 0, text: 'parrafo sobre amor del verso' }
             ]
           : [{ module: 'm', book: 'Portada', chapter: 0, verse: 0, text: 'portada de la historia' }]
-      }
     })
     const dossier = await buildDossier(hook, 'crearsermon', 'Juan 3:16')
     const syst = dossier.sections.find((s) => s.kind === 'sistematica')
     expect(syst?.entries[0]).toContain('Teologia Sistematica - Charles H')
     expect(syst?.entries[0]).toContain('Capítulo 1')
     const hist = dossier.sections.find((s) => s.kind === 'historia')
-    expect(hist?.entries.length ?? 0).toBe(0)
+    expect(hist).toBeUndefined()
   })
 
   it('exegesis critica por verso (Metzger/aparato/interlineal) y prioriza comentarios pesados', async () => {

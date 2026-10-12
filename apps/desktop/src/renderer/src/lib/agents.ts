@@ -48,6 +48,9 @@ export interface AgentCitation {
     | 'cita'
     | 'figura'
     | 'geografia'
+    | 'consenso'
+    | 'sintaxis'
+    | 'nombres'
 }
 
 export interface DossierSection {
@@ -106,7 +109,10 @@ const SPECIAL_RE: Record<AgentCitation['kind'], RegExp | null> = {
   caso: /donde hallarlo|nave|tematico|thompson/i,
   cita: /citas morales|frases y principio|principio - rafael/i,
   figura: /parabola|figura|lenguaje popular/i,
-  geografia: /geograf|martens|tidwel|usos y costumbre|arqueolog/i
+  geografia: /geograf|martens|tidwel|usos y costumbre|arqueolog/i,
+  consenso: /teologia sistematica|dogmatica|teologia biblica sistematica/i,
+  sintaxis: /sintaxis exegetica|ayuda para el estudio|aprendamos griego/i,
+  nombres: /nombres biblicos|hitchcock|21 nombres|enlow/i
 }
 
 /** Orden interna de especialistas: preferimos los de contenido mas extenso. */
@@ -117,7 +123,10 @@ const SPECIAL_ORDER: Partial<Record<AgentCitation['kind'], (name: string) => num
   cultural: (name) => (/usos y costumbre/i.test(name) ? 0 : 1),
   cristologico: (name) => (/nazaret/i.test(name) ? 0 : 1),
   cita: (name) => (/citas morales/i.test(name) ? 0 : 1),
-  figura: (name) => (/lenguaje popular/i.test(name) ? 0 : 1)
+  figura: (name) => (/lenguaje popular/i.test(name) ? 0 : 1),
+  consenso: (name) =>
+    name.length - name.replace(/hodge|grudem|macarthur|chafer|bavinck/i, '').length > 0 ? 0 : 1,
+  sintaxis: (name) => (/sintaxis/i.test(name) ? 0 : 1)
 }
 
 function shortName(name: string): string {
@@ -577,6 +586,87 @@ export async function buildDossier(
     return job
   }
 
+  // Teologia sistemática GENERA #1 — Consenso doctrinal: fragmentos por autor.
+
+  // Consenso doctrinal (Hodge/Grudem/MacArthur/Chafer/Bavinck): %LIKE% del
+  // tema en libros .refi del agente siste maticas; hasta 4 autores distintos.
+  const consensoJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'consenso', title: 'Consenso doctrinal', entries: [], cites: [] }
+    const topicsFor = (themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 2)
+    if (!topicsFor.length) return job
+    const mods = hook.modules
+      .filter((m) => (m.category === 'GenBook') && SPECIAL_RE.consenso?.test(m.name))
+      .slice(0, 6)
+    const seenAuthor = new Set<string>()
+    const skip = /^(contenido|portada|indice|datos)/i
+    for (const mod of mods) {
+      if (seenAuthor.size >= 4) break
+      for (const topicWord of topicsFor) {
+        const found = await safe(hook.search(topicWord, [mod.name], 2), [])
+        const hit = found.find((r) => !skip.test(r.book))
+        if (!hit) continue
+        const plain = stripTags(hit.text)
+        if (plain.length < 60) continue
+        const author = shortName(moduleLabel(mod))
+        if (seenAuthor.has(author)) continue
+        seenAuthor.add(author)
+        job.entries.push(`[${author} · ${hit.book}] ${trimEntry(hit.text, 300)}`)
+        job.cites.push({ kind: 'consenso', module: mod.name, entry: hit.book })
+        break
+      }
+    }
+    return job
+  }
+
+  // Sintaxis exegetica (Hanna/Hale): por claves STRong y topics del verso.
+  const sintaxisJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'sintaxis', title: 'Sintaxis y grammatica del NT', entries: [], cites: [] }
+    const mods = hook.modules
+      .filter((m) => m.category === 'GenBook' && SPECIAL_RE.sintaxis?.test(m.name))
+      .slice(0, 2)
+    if (!mods.length || !verseThemes.length) return job
+    for (const mod of mods) {
+      let done = false
+      const queries = (themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 2)
+      for (const query of queries) {
+        if (done) break
+        const found = await safe(hook.search(query, [mod.name], 2), [])
+        const hit = found.find((r) => !/^(contenido|portada|indice)/i.test(r.book))
+        if (!hit) continue
+        const plain = stripTags(hit.text)
+        if (plain.length < 60) continue
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${hit.book}] ${trimEntry(hit.text, 300)}`)
+        job.cites.push({ kind: 'sintaxis', module: mod.name, entry: hit.book })
+        done = true
+      }
+    }
+    return job
+  }
+
+  // Nombres hebreos: Hitchcock/21 Nombres por topicos del verso (keys H*).
+  const nombresJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'nombres', title: 'Nombres hebreos', entries: [], cites: [] }
+    const topicsFor = (themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 2)
+    if (!topicsFor.length) return job
+    const mods = hook.modules
+      .filter((m) => m.category === 'Dictionary' && SPECIAL_RE.nombres?.test(m.name))
+      .slice(0, 2)
+    for (const mod of mods) {
+      let done = false
+      for (const topic of topicsFor.flatMap(topicVariants)) {
+        if (done) break
+        const entry = await safe(hook.lookup(mod.name, topic), null)
+        if (!entry) continue
+        const plain = stripTags(entry)
+        if (plain.length < 80) continue
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 400)}`)
+        job.cites.push({ kind: 'nombres', module: mod.name, entry: topic })
+        done = true
+      }
+    }
+    return job
+  }
+
   // Citas y frases sabias reales (Enciclopedia de Citas Morales de Vila,
   // Frases y Principio de Ruiz): citatorio por tema, con atribucion.
   const citaJob = async (): Promise<Job> => {
@@ -721,6 +811,9 @@ export async function buildDossier(
     citaJob(),
     figuraJob(),
     geoVerseJob(),
+    consensoJob(),
+    sintaxisJob(),
+    nombresJob(),
     refsJob(),
     illusJob()
   ])
@@ -729,6 +822,45 @@ export async function buildDossier(
   for (const job of jobs) {
     citations.push(...job.cites)
     addSection(job.kind, job.title, job.entries)
+  }
+
+  // ---- Gap-analysis + segunda pasada dirigida (el motor inspecciona su
+  //      propia cobertura): si faltan zonas criticas, reintenta con
+  //      variantes de acentos y busqueda LIKE en diccionarios generales.
+  const kinds = new Set(sections.map((s) => s.kind))
+  const gaps: Array<{ kind: AgentCitation['kind']; title: string; moduleRe: RegExp; topics: string[] }> = []
+  const retryTopics = [
+    ...topicVariants(rawTheme),
+    ...verseThemes.flatMap((w) => topicVariants(w.toUpperCase()))
+  ]
+  if (parsed && !kinds.has('historico')) {
+    gaps.push({ kind: 'historico', title: 'Contexto historico y geografico (2a pasada)', moduleRe: /diccionario biblico|vila|holman|nelson|mundio hispano|rase/i, topics: retryTopics.slice(0, 3) })
+  }
+  if (!kinds.has('tema') && retryTopics.length) {
+    gaps.push({ kind: 'tema', title: `Temas (${rawTheme || '—'}, 2a pasada)`, moduleRe: /diccionario biblico|vila|holman|nelson|enciclop/i, topics: retryTopics.slice(0, 2) })
+  }
+  if (!kinds.has('caso') && retryTopics.length) {
+    gaps.push({ kind: 'caso', title: 'Casos biblicos reales (2a pasada)', moduleRe: /dificultades|haley|preceptos|didactico/i, topics: retryTopics.slice(0, 2) })
+  }
+  for (const gap of gaps) {
+    const entries: string[] = []
+    const mods = hook.modules
+      .filter((m) => gap.moduleRe.test(m.name) && m.category === 'Dictionary')
+      .slice(0, 2)
+    for (const mod of mods) {
+      let done = false
+      for (const topic of gap.topics) {
+        if (done) break
+        const entry = await safe(hook.lookup(mod.name, topic), null)
+        if (!entry) continue
+        const plain = stripTags(entry)
+        if (plain.length < 80) continue
+        entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 480)}`)
+        cite(gap.kind, mod.name, topic)
+        done = true
+      }
+    }
+    addSection(gap.kind, gap.title, entries)
   }
 
   return {
