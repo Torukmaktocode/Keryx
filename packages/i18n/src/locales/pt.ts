@@ -286,7 +286,7 @@ export const pt: Record<TranslationKey, string> = {
   'assistant.placeholder.creardevocional': 'Passagem ou tema: Salmos 91…',
   'assistant.persona': 'Estilo do orador',
   'assistant.personaHint':
-    'Vozes dos grandes: Peterson (padrão), Champlin, C.S. Lewis, Spurgeon, Edwards…',
+    'Vozes dos grandes: Peterson (padrão), Spurgeon, Edwards, Lewis, Lloyd-Jones…',
   'assistant.ask': 'Consultar',
   'assistant.thinking': 'Buscando…',
   'assistant.sendToEditor': 'Enviar ao editor',

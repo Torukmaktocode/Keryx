@@ -49,19 +49,42 @@ pero más limpio y en español) y modo escritura minimalista tipo iA Writer.
     esa entrada.
 - **Hermenéutica**: pestaña con guía interactiva de estudio (observación,
   interpretación, aplicación) que se envía al editor.
+- **Guía del Pasaje**: pestaña que arma el dosier del versículo con sub-agentes
+  de código (~400 ms, 0 tokens de IA): texto base, comentarios con cobertura
+  (Robertson/MacArthur los pesados van primero), Walton-Keener verso a verso,
+  Strong, lemas griegos (Ortiz por lema real), morfología Robinson
+  (`VAAI3S` = aoristo activo 3ª persona), paralelos Lambert, teología
+  sistemática (Hodge/Grudem/Chafer/Bavinck), historia (Fox/Josefo/Eusebio),
+  contextos teológico/cristológico/social(filosófico) y puentes pastorales.
+- **Exégesis "BDAG-lite"** (100% código): por cada Strong# del verso, la ficha
+  desplegable muestra el lema griego + transliteración, la entrada Ortiz
+  indexada **por lema** (no por número), **sentidos en uso** agrupados por la
+  traducción española real (con referencias clicables que saltan al versículo),
+  distribución por secciones del NT y formas gramaticales; exportación al
+  editor en Markdown.
 - Salto por referencia, navegación de teclado (`↑/↓` versículo, `←/→` capítulo)
   y envío del pasaje + comentario al editor.
 
 ### Escritura
 - Editor Markdown (CodeMirror 6) minimalista: modo enfoque por oración/párrafo,
   typewriter, conteo de palabras y lectura, autoguardado atómico, export MD/HTML.
-- El botón **Enviar al editor** desde Lector/Estudio inserta el pasaje + comentario
-  en el documento activo (o crea uno nuevo para el sermón).
+- El botón **Enviar al editor** desde Lector/Estudio/Guía inserta el pasaje,
+  comentario o exégesis en el documento activo (o crea uno nuevo).
 
-### Plantillas y consulta
-- Plantilla de predicación (10 secciones), estudio devocional y guía de 10 pasos.
-- Asistente de consulta guiado (4 preguntas) que genera el bosquejo inicial.
-- Biblioteca del predicador: anécdotas e ilustraciones de los Libros (.refi).
+### Asistente híbrido (código primero, IA solo cerebro)
+- **Sub-agentes deterministas** (0 tokens) minan 717 módulos reales y arman un
+  dosier citado `[Módulo · entrada]`; la IA nunca inventa: el dosier es su
+  única fuente y los modos no-creadores son 100% locales.
+- **Sermón "código más que IA"** (modo economía, default): el cuerpo — puntos,
+  evidencia, gran idea, contextos, ilustración — lo ensambla el composer de
+  código; la IA solo rinde la voz (gancho/puentes/oración) en 1 llamada corta
+  (~700 tokens máx de salida). Si la IA falla o está apagada, fallbacks
+  deterministas completan la voz (documento sin marcadores sueltos).
+- **`deepSermon`** (opt-in, Ajustes → IA): doble pasada de calidad
+  (borrador → crítico homilético → final aplicando correcciones), 3 llamadas
+  cortas; si cualquier paso falla, fallback local.
+- Creadores: sermón, estudio devocional y devocional, con personas de estilo
+  y aviso cuando se usó IA o salió todo de código.
 
 ### Módulos y motor
 - **SWORD** completo vía lector local (`zText`, `zCom`, `RawLD`, `RawLD4`, `zLD`,
@@ -73,15 +96,23 @@ pero más limpio y en español) y modo escritura minimalista tipo iA Writer.
   `Reference(Chapter, Content)` para libros), resolución tolerante de temas
   (acentos, numeración inicial, prefijos `\b`) y nombres únicos ante la
   interfaz cuando un mismo título existe en varias categorías.
+- **Motor exegetico Strong**: `strongsOccurrences(code)` escanea la biblia con
+  Strong (`<num>G25 …</num>` / `data-strong`) con filtro de frontera de dígito
+  (G25 no empata G251) y dirmodología limpia; `lookupLemma(module, lemma)`
+  decodifica entidades HTML (`&gamma;`…) e indexa léxicos **por lema griego
+  real** (NFD, comparación de acentos eliminada). Buses : `bible:strongs-occurrences`,
+  `dict:lemma`.
 
 ## Flujo de la aplicación
 
 ```
 Biblioteca ──abrir──▶ Estudio ──(plantilla, paneles, versículo)──▶ ℹ marcas
-     │                     │
-     │                     ├─ enviar pasaje + comentario ──▶ Escritura
-     └──abrir en Lector ───┘                                ├─ plantillas/consulta
-                                                            └─ exportar MD/HTML
+      │                     │
+      │                     ├─ Guía del Pasaje ──▶ fichas + Exégesis Strong
+      │                     │        │ enviar dosier/exégesis ──▶ Escritura
+      │                     ├─ enviar pasaje + comentario ──▶ Escritura
+      │                     └─ Asistente (dosier 0 tokens → sermón código+voz)
+      └──abrir en Lector ──────────────────────────────────▶ exportar MD/HTML
 ```
 
 1. **Biblioteca**: encuentra el recurso (biblia, comentario, diccionario, libro)

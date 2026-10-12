@@ -284,7 +284,7 @@ export const es = {
   'assistant.placeholder.creardevocional': 'Pasaje o tema: Salmos 91…',
   'assistant.persona': 'Estilo del orador',
   'assistant.personaHint':
-    'Voz de los grandes: Peterson (defecto), Champlin, C.S. Lewis, Spurgeon, Edwards…',
+    'Voz de los grandes: Peterson (defecto), Spurgeon, Edwards, Lewis, Lloyd-Jones…',
   'assistant.ask': 'Consultar',
   'assistant.thinking': 'Buscando…',
   'assistant.sendToEditor': 'Enviar al editor',

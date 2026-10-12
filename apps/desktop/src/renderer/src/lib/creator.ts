@@ -18,7 +18,6 @@ export type CreatorKind = 'crearsermon' | 'crearestudio' | 'creardevocional'
 export type PersonaId =
   | 'lewis'
   | 'peterson'
-  | 'champlin'
   | 'spurgeon'
   | 'lloydjones'
   | 'edwards'
@@ -49,12 +48,6 @@ export const PERSONAS: Persona[] = [
     name: 'Eugene H. Peterson',
     style:
       'Pastor-poeta (voz PRINCIPAL): lenguaje ordinario, concreto y sin adorno; te baja el texto a la cocina, el trafico y la mesa; discipulado lento, oracion y Escritura vividas; huye de la religion de consumo y del ruido; frases cortas, imagenes caseras, honestidad cansada pero esperanzada.'
-  },
-  {
-    id: 'champlin',
-    name: 'R. N. Champlin',
-    style:
-      'Exegeta verso a verso: analisis historico-gramatical de cada versiculo, terminos del original con transliteracion, contexto cultural del mundo antiguo, variantes textuales, silogismo doctrinal y tono doxologico.'
   },
   {
     id: 'spurgeon',
@@ -519,6 +512,22 @@ export function assembleSermon(skeleton: string, pieces: VoicePieces, ref: strin
   return out.replace(/\[\[[A-ZÑ ]+\d*\]\]/g, '')
 }
 
+/** Citas ancladas por código al final del documento (nunca dependen de la IA). */
+function withAnchoredSources(markdown: string, dossier: Dossier): string {
+  const byModule = new Map<string, string[]>()
+  for (const citation of dossier.citations) {
+    const list = byModule.get(citation.module) ?? []
+    if (!list.includes(citation.entry)) list.push(citation.entry)
+    byModule.set(citation.module, list)
+  }
+  if (!byModule.size || markdown.includes('## Fuentes ancladas')) return markdown
+  const sources = ['', '## Fuentes ancladas', '']
+  for (const [module, entries] of byModule) {
+    sources.push(`- [${module} · ${entries.slice(0, 4).join(' · ')}${entries.length > 4 ? ' …' : ''}]`)
+  }
+  return `${markdown.trimEnd()}\n${sources.join('\n')}`
+}
+
 /* ----------------------------------------------------------------- entrada */
 
 export async function runCreator(
@@ -530,6 +539,33 @@ export async function runCreator(
   const trimmed = query.trim()
   if (!trimmed) return { markdown: '', passages: [], aiUsed: false }
 
+  /** Localizador por texto: si la consulta no es una referencia, busca las
+   * palabras clave en la biblia activa y devuelve la primera ubicación real. */
+  const locatePassage = async (): Promise<{ book: string; chapter: number; verse?: number } | undefined> => {
+    const direct = parseReference(trimmed)
+    if (direct) return direct
+    const bibleName =
+      ctx.settings.priorityModules.find((name) =>
+        ctx.modules.some((m) => m.name === name && m.category === 'Bible')
+      ) ?? ctx.modules.find((m) => m.category === 'Bible')?.name
+    if (!bibleName) return undefined
+    const words = [...new Set(trimmed.split(/[^\p{L}]{2,}/u).filter((word) => word.length >= 4))]
+      .sort((a, b) => b.length - a.length)
+    try {
+      for (const word of words.slice(0, 6)) {
+        const hits = await api.bible.search({ query: word, modules: [bibleName], limit: 10 })
+        if (hits.length) {
+          const hit = hits[0]
+          return { book: hit.book, chapter: hit.chapter, verse: hit.verse || undefined }
+        }
+      }
+    } catch {
+      return undefined
+    }
+    return undefined
+  }
+
+  const located = await locatePassage()
   const dossier = await buildDossier(
     apiHook({
       modules: ctx.modules,
@@ -538,7 +574,8 @@ export async function runCreator(
       selectedModule: ''
     }),
     kind,
-    trimmed
+    trimmed,
+    located && !parseReference(trimmed) ? located : undefined
   )
 
   const passages: AssistantPassage[] = dossier.citations
@@ -587,7 +624,7 @@ export async function runCreator(
       })
       const pieces = parseSnippets(result.text)
       return {
-        markdown: assembleSermon(skeleton, pieces, dossier.section ?? trimmed, bridgeLines),
+        markdown: withAnchoredSources(assembleSermon(skeleton, pieces, dossier.section ?? trimmed, bridgeLines), dossier),
         passages,
         aiUsed: true,
         notice: 'Cuerpo 100% código; solo gancho/puentes/oración de IA (1 llamada corta).',
@@ -672,6 +709,9 @@ export async function runCreator(
       })
       markdown = final.text
     }
+
+    // Citas ancladas SIEMPRE al final (por código, nunca depende de la IA).
+    markdown = withAnchoredSources(markdown, dossier)
 
     return {
       markdown,
