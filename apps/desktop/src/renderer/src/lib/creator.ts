@@ -36,6 +36,59 @@ export interface Persona {
 }
 
 /** Los grandes predicadores y escritores teologos de la historia. */
+/** Biografia breve de cada orador: quien es, como habla (frases y modismos
+ * tipicos) y regla de la voz en la prédica. Todo determinista (sin IA). */
+const PERSONA_BIO: Record<PersonaId, { bio: string; idioms: string }> = {
+  lewis: {
+    bio: 'Ese Oxford irlándes convertido en apologista: profesor en Oxford y Cambridge, escribió "Mero Cristianismo" y Las Crónicas de Narnia. Humor seco, lógica transparente, fe razonada.',
+    idioms: 'Habla de "el mero cristianismo", la "alegría del anhelo (Sehnsucht)", los "cuerpos que tienen almas", y de "hacer pensar como cristiano".'
+  },
+  peterson: {
+    bio: 'Pastor de Maryland y Montana, traductor al lenguaje llano de toda la Biblia ("The Message"). Pastor-poeta: devuelto a la vida común.',
+    idioms: 'Habla de la "cocina, el tráfico y la mesa", "practicar la resurrección", el "sabado lento", y desconfía del "consumo religioso".'
+  },
+  spurgeon: {
+    bio: 'El Príncipe de los Predicadores: Metropolitan Tabernacle de Londres, convertido a los 15, predicó a miles desde los 19 y fundó colegios de pastores.',
+    idioms: 'Enciende con "el texto", "la sangre y la justicia", "¡Oh alma cansada!", y serumá alumbotron por "el gran pecador y el grande Salvador".'
+  },
+  lloydjones: {
+    bio: 'El "Doctor": médico de Harley Street que dejó la medicina para Westminster Chapel, Londres. Dicático, doctrinal, sin prisa.',
+    idioms: 'Diagnostica como médico: "el corazón del problema", "repasemos el argumento", y predica versículo por versículo durante años.'
+  },
+  edwards: {
+    bio: 'Teólogo del Gran Despertar en Massachusetts, rector de Princeton. Intensidad serena: la majestad de Dios y los afectos.',
+    idioms: 'Habla de "los afectos", "el sensorio divino", "sostener la mente bajo la luz del texto", y de la belleza de la santidad.'
+  },
+  calvino: {
+    bio: 'Crisol de Ginebra: reformador expositivo, escribió la Institución de la Religión Cristiana a los 26 y sermones versículo por verso.',
+    idioms: 'Habla de "la soberanía de Dios", "sola escritura", "las promesas que no mienten", en sobriedad expositiva.'
+  },
+  lutero: {
+    bio: 'Monje agustino que desató la Reforma en Wittenberg (1517) con 95 tesis; traducto de la Biblia al alemán del pueblo.',
+    idioms: 'Frase célebre: "Aquí estoy, no puedo hacer de otra manera"; aplica la ley que confronta y el evangelio que consuela; humor gordo.'
+  },
+  tozer: {
+    bio: 'Pastor autodidacta de Chicago (Southside Alliance), autor de "La Búsqueda de Dios" y "El conocimiento del Santo". Voz profética del siglo XX.',
+    idioms: 'Habla de "persiguiendo a Dios", "la santidad", y advertía de la "iglesia ligera". Sus oraciones eran largas y reverentes.'
+  },
+  keller: {
+    bio: 'Fundó Redeemer Presbyterian Church en el Nueva York de los 2000, junto a Central Park. Apólogo a los escépticos urbanos; autor de "La Oración".',
+    idioms: 'Habla de "idolatías del corazón", Extensiones de "el evangelio re-centra la vida", y dirige mensaje a tres oyentes a la vez.'
+  },
+  robinson: {
+    bio: 'Padre de la homilética moderna: presidente de Gordon-Conwell y Denver Seminary, autor de "Preparación y Exposición de Sermones Homiléticos".',
+    idioms: 'Habla de "la idea central (big idea)", "el sujeto emerge del texto", y de medir los pasos de respuesta.'
+  },
+  agustin: {
+    bio: 'Obispo de Hipona (Norte de África, siglos IV-V). Converso de la retórica, escribir las Confesiones y La Ciudad de Dios: padre de la teología occidental.',
+    idioms: 'Frase célebre: "Nos hiciste para Ti, y nuestro corazón está inquieto hasta que descanse en Ti"; predica con confesión y amor de la Iglesia.'
+  },
+  wesley: {
+    bio: 'Predicador itinerante del avivamiento inglés (3 sermones a caballo por día a la edad de 80); fundó las sociedades metodistas.',
+    idioms: 'Frase célebre: "El mundo es mi parroquia"; habla de "santificación", "la gracia preveniente", y de la vida santa alcanzada hoy.'
+  }
+}
+
 /** Directivas deterministas por orador: cambiar la voz cambia el CUERPO del
  * sermón (aplicación, cierre, tono de la evidencia) incluso sin IA. */
 const PERSONA_DIRECTIVE: Record<PersonaId, string> = {
@@ -472,6 +525,12 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
     '## Gancho',
     '',
     '[[GANCHO]]',
+    '',
+    '## La voz de hoy',
+    '',
+    `> **${persona.name}** — ${PERSONA_BIO[persona.id]?.bio ?? persona.style}`,
+    `> *Así habla:* ${PERSONA_BIO[persona.id]?.idioms ?? '—'}`,
+    `> *Regla en esta prédica:* ${personaDirective(persona)}`,
     ''
   ]
 
