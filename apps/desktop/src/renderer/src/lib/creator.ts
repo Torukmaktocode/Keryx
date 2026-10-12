@@ -36,6 +36,39 @@ export interface Persona {
 }
 
 /** Los grandes predicadores y escritores teologos de la historia. */
+/** Directivas deterministas por orador: cambiar la voz cambia el CUERPO del
+ * sermón (aplicación, cierre, tono de la evidencia) incluso sin IA. */
+const PERSONA_DIRECTIVE: Record<PersonaId, string> = {
+  lewis:
+    'Aplica con razonamiento cálido y una analogía cotidiana (estilo "Mero Cristianismo"); cierra mostrando cómo el anhelo profundo apunta al evangelio.',
+  peterson:
+    'Baja cada punto a la vida ordinaria (cocina, tráfico, mesa); frases cortas y sin adorno; cierra con discipulado lento, no con atajos.',
+  spurgeon:
+    'Cierra con llamado evangelístico directo: la cruz al centro, advertencia sobre el pecado y oferta apasionada de gracia.',
+  lloydjones:
+    'Sigue la lógica doctrinal punto por punto y termina confrontando el diagnóstico del corazón humano antes del consuelo.',
+  edwards:
+    'Despierta los afectos con la majestad de Dios y confronta la autocomplacencia con intensidad serena.',
+  calvino:
+    'Cierra reafirmando la soberanía y promesa de Dios, con sobriedad expositiva y sin efectos retóricos vacíos.',
+  lutero:
+    'Aplica la distinción ley-evangelio en cada punto: confronta con la ley y consuela con el evangelio, en lenguaje llano.',
+  tozer:
+    'Exhorta a la santidad personal y al romper con lo mundano; busca reverencia y asombro.',
+  keller:
+    'Aplica a tres oyentes a la vez (escéptico, religioso, cansado) y conecta el texto con Cristo en cada punto.',
+  robinson:
+    'Cada punto nace del texto con su idea central definida; cierra midiendo la respuesta de la congregación.',
+  agustin:
+    'Concluye en clave del corazón inquieto: aplica con confesión y amor a la Iglesia.',
+  wesley:
+    'Cierra con énfasis de santificación: la vida santa es alcanzable hoy con la gracia; exhorta al disciplina del espíritu.'
+}
+
+function personaDirective(persona: Persona): string {
+  return PERSONA_DIRECTIVE[persona.id] ?? ''
+}
+
 export const PERSONAS: Persona[] = [
   {
     id: 'lewis',
@@ -434,7 +467,7 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
   const lines: string[] = [
     `# ${TITLE_FOR.crearsermon}: ${ref}`,
     '',
-    `> Voz sugerida: **${persona.name}** · Ensamblado por sub-agentes de código · Fuentes ancladas: **${dossier.citations.length}** de ${new Set(dossier.citations.map((c) => c.module)).size} módulos.`,
+    `> Voz: **${persona.name}** — ${personaDirective(persona)} · Ensamblado por sub-agentes de codigo · Fuentes ancladas: **${dossier.citations.length}** de ${new Set(dossier.citations.map((c) => c.module)).size} módulos.`,
     '',
     '## Gancho',
     '',
@@ -481,6 +514,7 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
   }
 
   lines.push('## Aplicación', '')
+  lines.push(`> **Regla de la voz (${persona.name}):** ${personaDirective(persona)}`, '')
   if (bridgeLines.length) {
     lines.push(...bridgeLines.slice(0, 2).map((entry) => `- ${shortEntry(entry, 260)}`), '')
   } else {
@@ -605,6 +639,7 @@ export async function runCreator(
     try {
       const ask = [
         personaPrompt(persona),
+        `Regla de voz obligatoria: ${personaDirective(persona)}`,
         '',
         'REFERENCIA:',
         dossier.section ?? trimmed,
