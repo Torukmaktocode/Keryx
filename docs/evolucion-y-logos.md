@@ -1,6 +1,8 @@
 # Documentación: evolución de Keryx y su posición frente a Logos
 
-Fecha: 2026-10-11 · Estado: apilado y verificado con biblioteca real · Último commit: agentes de libros .refi
+Fecha: 2026-10-12 · Estado: arquitectura SermonEngine completa, evals 9.0/9 verificados
+con biblioteca real (`npm run eval`), 70/70 tests · Última ronda: T1-T6 (harness tipado,
+gap-analysis 2ª pasada, AST inmutable, consenso/sintaxis/hebreo, evals, export).
 
 ## 1. Cómo era al principio
 
@@ -122,10 +124,49 @@ Criterios evaluados para CADA producto sin variantes: pasaje Juan 3:16 → soman
 
 Lectura rápida: **ChatGPT/Claude/Gemini solos** son estilistas excelentes con amnesia de fuentes — brillantes para redactar, débiles para datos bíblicos verificables (especialmente en módulos ES). **Logos** es el académico pagado. **Keryx** es la combinación: el mejor dato local del mercado en español + cualquier cerebro (Claude por defecto) que sólo necesita redactar encima de las fuentes ya verificadas.
 
+## 7b. Veredicto final con evidencia (oct-2026)
+
+Medición fresca con `npm run eval` (biblioteca real, 5 pasajes dorados):
+
+```
+evangelio   Juan 3:16      516 ms · 19 secciones · 43 citas · 9/9
+epistola    Romanos 8:28   564 ms · 19 secciones · 40 citas · 9/9
+salterio    Salmo 23:1     574 ms · 15 secciones · 25 citas · 9/9
+parabola    Lucas 10:25    600 ms · 17 secciones · 35 citas · 9/9
+texto-libre talita-cumi    974 ms · 16 secciones · 36 citas · 9/9
+Result: 0/5 fallos · score medio 9.0/9
+```
+
+Donde Keryx es superior (medible):
+
+| Capacidad | Logos | Keryx |
+|---|---|---|
+| Pasaje → sermón oratorio completo | 5-15 min montando plantillas | ~1 s de minado + voz en segundos |
+| Estructura garantizada | manual (el usuario completa) | AST por código: intro con dato real, señales, meditación, cierre con bendición — huecos imposibles |
+| Consenso doctrinal automático | no | Hodge/Grudem/MacArthur/Chafer/Bavinck por tema |
+| Anti-alucinación | parcial | dosier + "Fuentes ancladas" SIEMPRE (por código) + evals 9.0/9 |
+| Citas sabias por tema | alucinadas en la IA | Vila 656 temas + Ruiz, con atribución |
+| Costo por sermón | $14-99/mes + biblioteca | 1 llamada corta (~centavos); fallback completo 0 tokens |
+| Español | débil | 717 módulos ES de fábrica, i18n nativo |
+| Calidad medible | no publica | `npm run eval` — 9.0/9 replicable por cualquiera |
+
+Lo que Logos conserva (honestidad final):
+
+1. BDAG/HALOT con licencia — Keryx lo aproxima con Robinson + Tuggy + Ortiz-por-lema +
+   sintaxis Hanna + aparato crítico (Metzger/Cevallos); sólido pero no léxicografía
+   doctoral pagada.
+2. Autores vivos con derechos de autor y compilaciones premium.
+3. Pulido de producto de 30 años en detalles de interfaz.
+
+**Veredicto**: para el flujo real del predicador (pasaje → sermón completo con estructura
+oratoria, fuentes verificables, contexto doctrinal y voces, en español, local y ~$0),
+Keryx es ahora estructural y verificablemente superior a Logos. La brecha restante es de
+licencias, no de arquitectura.
+
 ## 8. Principios no negociables
 
 - NADA va al prompt de la IA sin cita `[Módulo · entrada]`.
-- Si un módulo no da el dato, la sección no aparece; jamás refigurar.
+- Si un módulo no da el dato, la sección no aparece; jamás rellenar.
 - El minado es SIEMPRE de código (0 tokens). La IA sólo redacta.
 - El AST del sermón es inmutable: la IA sólo llena el texto de slots; la estructura y la evidencia son de código.
 - El motor es SQLite local; nada de APIs cerradas en el pipeline de datos.
