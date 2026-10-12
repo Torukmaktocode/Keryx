@@ -16,6 +16,7 @@ import { parseReference } from './reference'
 export type CreatorKind = 'crearsermon' | 'crearestudio' | 'creardevocional'
 
 export type PersonaId =
+  | 'none'
   | 'lewis'
   | 'peterson'
   | 'spurgeon'
@@ -51,6 +52,16 @@ interface PersonaProfile {
 }
 
 const PERSONA_PROFILE: Record<PersonaId, PersonaProfile> = {
+  none: {
+    bio: 'Tu propia voz: sin estilo prestado. El esqueleto del sermón es tuyo para llenarlo con tu idioma, tus exemplear y tu iglesia.',
+    idioms: 'Los tuyos: no se impone ninguna muletilla ni tono.',
+    phrases: [],
+    shape: 'Expositiva neutra: texto / significado / aplicación — a tu manera',
+    opening: '',
+    closing: '',
+    application: 'La aplicación la escribes tu: la Guía del Pasaje y el dosier sostiene los datos.',
+    directive: ''
+  },
   lewis: {
     bio: 'Apologista de Oxford y Cambridge, irlandes; autor de "Mero Cristianismo" y de Narnia. Logica calida, humor seco, fe razonada.',
     idioms: 'Habla del "mero cristianismo", del anhelo (Sehnsucht), de que somos "almas que tienen un cuerpo", y de pensar como cristiano.',
@@ -179,6 +190,11 @@ function personaDirective(persona: Persona): string {
 
 export const PERSONAS: Persona[] = [
   {
+    id: 'none',
+    name: 'Ninguno — mi propio estilo',
+    style: 'Sin estilo prestado: la voz del sermón es la tuya. El cuerpo anclado se mantiene y tú escribes a tu manera.'
+  },
+  {
     id: 'lewis',
     name: 'C. S. Lewis',
     style:
@@ -283,6 +299,9 @@ export const MASTER_PROMPT = [
 ].join('\n')
 
 function personaPrompt(persona: Persona): string {
+  if (persona.id === 'none') {
+    return 'ESTILO DEL ORADOR: el propio predicador. Usa tu voz natural y la de tu congregacion; no imites a nadie. El cuerpo del sermon ya esta anclado; solo redacta la voz human en tus propias palabras.'
+  }
   return `ESTILO DEL ORADOR: ${persona.name}. ${persona.style}\nEscribe/predica COMO ${persona.name}: su voz, su enfoque y sus prioridades.`
 }
 
@@ -575,21 +594,28 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
   const lines: string[] = [
     `# ${TITLE_FOR.crearsermon}: ${ref}`,
     '',
-    `> Voz: **${persona.name}** — ${personaDirective(persona)} · Ensamblado por sub-agentes de codigo · Fuentes ancladas: **${dossier.citations.length}** de ${new Set(dossier.citations.map((c) => c.module)).size} módulos.`,
+    `> Voz: **${persona.id === 'none' ? 'tu propio estilo' : persona.name}** — ${personaDirective(persona) || 'sin estilo prestado'} · Ensamblado por sub-agentes de codigo · Fuentes ancladas: **${dossier.citations.length}** de ${new Set(dossier.citations.map((c) => c.module)).size} módulos.`,
     '',
     '## Gancho',
     '',
     '[[GANCHO]]',
-    '',
-    '## La voz de hoy',
-    '',
-    `> **${persona.name}** — ${PERSONA_PROFILE[persona.id]?.bio ?? persona.style}`,
-    `> *Así habla:* ${PERSONA_PROFILE[persona.id]?.idioms ?? '—'}`,
-    `> *Frases suyas:* ${PERSONA_PROFILE[persona.id]?.phrases.join(' · ') ?? '—'}`,
-    `> *Forma:* ${PERSONA_PROFILE[persona.id]?.shape ?? '—'}`,
-    `> *Regla en esta prédica:* ${personaDirective(persona)}`,
     ''
   ]
+
+  if (persona.id !== 'none') {
+    lines.push(
+      '## La voz de hoy',
+      '',
+      `> **${persona.name}** — ${PERSONA_PROFILE[persona.id]?.bio ?? persona.style}`,
+      `> *Así habla:* ${PERSONA_PROFILE[persona.id]?.idioms ?? '—'}`,
+      `> *Frases suyas:* ${PERSONA_PROFILE[persona.id]?.phrases.join(' · ') ?? '—'}`,
+      `> *Forma:* ${PERSONA_PROFILE[persona.id]?.shape ?? '—'}`,
+      `> *Regla en esta prédica:* ${personaDirective(persona)}`,
+      ''
+    )
+  } else {
+    lines.push('## La voz de hoy', '', '> Tu propia voz: el cuerpo anclado queda intacto; escribe a tu manera.', '')
+  }
 
   lines.push(`## Texto: ${ref}`, '')
   if (textLines.length) lines.push(...textLines.map((entry) => `> ${entry}`), '')
@@ -609,7 +635,9 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
   }
 
   lines.push('## El mensaje', '')
-  lines.push(`> Forma de la voz: ${PERSONA_PROFILE[persona.id]?.shape ?? 'expositiva'}`, '')
+  if (persona.id !== 'none') {
+    lines.push(`> Forma de la voz: ${PERSONA_PROFILE[persona.id]?.shape ?? 'expositiva'}`, '')
+  }
   if (!points.length) {
     lines.push('1. **El texto dice:**', `   ${shortEntry(evidences[0] ?? ref)}`, '')
     lines.push('2. **Qué significa:**', `   ${shortEntry(topicLines[0] ?? stepGran(gran))}`, '')
@@ -631,17 +659,23 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
   }
 
   lines.push('## Aplicación', '')
-  lines.push(`> **Lente de la voz (${persona.name}):** ${PERSONA_PROFILE[persona.id]?.application ?? personaDirective(persona)}`, '')
+  if (persona.id !== 'none') {
+    lines.push(`> **Lente de la voz (${persona.name}):** ${PERSONA_PROFILE[persona.id]?.application ?? personaDirective(persona)}`, '')
+  }
   if (bridgeLines.length) {
     lines.push(...bridgeLines.slice(0, 2).map((entry) => `- ${shortEntry(entry, 260)}`), '')
   } else {
     lines.push('- **En casa:** [concreto con los tuyos.]', '- **En el trabajo:** [concreto con colegas.]', '- **En la iglesia:** [concreto con la congregación.]', '')
   }
+  if (persona.id !== 'none') {
+    lines.push(
+      '## Cierre de la voz',
+      '',
+      `**${persona.name}:** ${PERSONA_PROFILE[persona.id]?.closing ?? ''}`,
+      ''
+    )
+  }
   lines.push(
-    '## Cierre de la voz',
-    '',
-    `**${persona.name}:** ${PERSONA_PROFILE[persona.id]?.closing ?? ''}`,
-    '',
     '## Oración final',
     '',
     '[[ORACION]]',
