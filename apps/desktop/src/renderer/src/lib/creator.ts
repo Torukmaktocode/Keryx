@@ -340,6 +340,185 @@ export function composeFromDossier(
   return lines.join('\n')
 }
 
+/* ---------------------------------------------------------- esqueleto codig */
+
+const SNIPPET_SYSTEM =
+  'Eres un redactor homiletico de voces cortas y vivas. Te daran el ESQUELETO de un sermon ya ' +
+  'construido con fuentes biblicas ancladas por codigo (sub-agentes, 0 tokens). Tu trabajo SOLO ' +
+  'es de voz humana: (1) gancho inicial de 40-60 palabras que enfrenta la necesidad humana del texto, ' +
+  '(2) puente ligero de 1-2 frases ANTES de cada punto empezado (no repitas contenido, solo transicion), ' +
+  '(3) oracion final de 3-5 lineas en primera plural, citando la referencia del texto. NO agregues datos, ' +
+  'NO inventes referencias, NO reescribas puntos ni evidencia. Formato EXACTO de marcadores:\n' +
+  '==GANCHO==\n...\n==PUENTE 1==\n...\n==PUENTE 2==\n...\n==PUENTE 3==\n...\n==ORACION==\n...'
+
+interface VoicePieces {
+  hook?: string
+  bridges: string[]
+  prayer?: string
+}
+
+function parseSnippets(text: string): VoicePieces {
+  const grab = (marker: string): string => {
+    const match = new RegExp(`==\\s*${marker}\\s*==\\n?([\\s\\S]*?)(?=$|==\\s*(?:PUENTE|GANCHO|ORACION))`, 'i').exec(text)
+    return (match?.[1] ?? '').trim()
+  }
+  const bridges: string[] = []
+  for (let index = 1; index <= 5; index += 1) {
+    const value = grab(`PUENTE ${index}`)
+    if (!value) break
+    bridges.push(value)
+  }
+  return { hook: grab('GANCHO') || undefined, bridges, prayer: grab('ORACION') || undefined }
+}
+
+const FALLBACK_BRIDGES = [
+  '¿Y esto qué tiene que ver contigo? Veamos el primer punto.',
+  'Ahora bien: este dato trae consecuencias directas para tu vida.',
+  'Llegamos a lo esencial: cómo vivir esto esta semana.'
+]
+
+const FALLBACK_HOOKS = [
+  'Hay una frase en la Escritura que confronta algo que casi todos callamos:',
+  'Todos sentimos la misma grieta interior. El texto de hoy la nombra con precisión:',
+  'Comencemos con la Palabra misma, porque ella no rodea: va al punto.'
+]
+
+function defaultPrayer(ref: string): string {
+  return `Dios, gracias porque tu Palabra habló primero a otro mundo y hoy nos habla con la misma autoridad. Grábala en nosotros. Que lo que oyeron de ${ref} se vuelva vida esta semana antes que llegue el domingo. Amén.`
+}
+
+function pointTitles(outlineLines: string[], commentLines: string[]): string[] {
+  const raw = outlineLines
+    .join('\n')
+    .split('\n')
+    .map((line) => line.replace(/^[#*>-\s]+/, '').trim())
+    .filter((line) => /^\d+[).]\s+.{8,90}$/.test(line) || /^[IVX]+\.\s+.{8,90}$/i.test(line))
+  const titles = raw
+    .slice(0, 3)
+    .map((line) => line.replace(/^\d+[).\s]+|^[IVX]+\.\s+/i, '').trim())
+  if (titles.length >= 2) return titles
+  return commentLines
+    .slice(0, 3)
+    .map((line) => firstSentence(line.replace(/^[^:]{0,36}:/, '')))
+    .filter(Boolean)
+}
+
+function shortEntry(entry: string, max = 330): string {
+  const plain = entry.replace(/\[\[?[^\]]+\]\]?/g, '').trim()
+  if (plain.length <= max) return plain
+  const cut = plain.slice(0, max)
+  return `${cut.slice(0, cut.lastIndexOf(' '))}, …`
+}
+
+function depthShort(list: string[], max = 280): string {
+  const plain = list.join(' — ')
+  if (plain.length <= max) return plain
+  return `${plain.slice(0, max)}…`
+}
+
+/** Esqueleto del sermón 100% código: estructura, puntos, evidencia, citas. Los
+ * marcadores de voz ([[GANCHO]] etc.) los llena assembleSermon. */
+export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier: Dossier, persona: Persona): string {
+  if (kind !== 'crearsermon') return ''
+  const parsed = parseReference(query)
+  const ref = dossier.section ?? (parsed ? refEntry2(parsed.book, parsed.chapter, parsed.verse) : query)
+  const textLines = sectionEntries(dossier, 'texto')
+  const commentLines = sectionEntries(dossier, 'comentario')
+  const outlineLines = sectionEntries(dossier, 'bosquejo')
+  const strongLines = sectionEntries(dossier, 'strongs')
+  const topicLines = sectionEntries(dossier, 'tema')
+  const historyLines = sectionEntries(dossier, 'historico')
+  const culturalLines = sectionEntries(dossier, 'cultural')
+  const theoLines = sectionEntries(dossier, 'teologico')
+  const christLines = sectionEntries(dossier, 'cristologico')
+  const bridgeLines = sectionEntries(dossier, 'aplicacion')
+  const illusLines = sectionEntries(dossier, 'ilustracion')
+
+  const gran = firstSentence(commentLines[0] ?? topicLines[0] ?? '')
+  const points = pointTitles(outlineLines, commentLines)
+  const evidences = commentLines.length ? commentLines : []
+
+  const lines: string[] = [
+    `# ${TITLE_FOR.crearsermon}: ${ref}`,
+    '',
+    `> Voz sugerida: **${persona.name}** · Ensamblado por sub-agentes de código · Fuentes ancladas: **${dossier.citations.length}** de ${new Set(dossier.citations.map((c) => c.module)).size} módulos.`,
+    '',
+    '## Gancho',
+    '',
+    '[[GANCHO]]',
+    ''
+  ]
+
+  lines.push(`## Texto: ${ref}`, '')
+  if (textLines.length) lines.push(...textLines.map((entry) => `> ${entry}`), '')
+
+  lines.push('## Gran idea', '', gran || '[Lean el texto en voz alta: se busca la frase que resuma el mensaje de hoy.]', '')
+  lines.push('## Contexto', '')
+  if (historyLines.length) lines.push(`- **Histórico:** ${depthShort(historyLines)}`)
+  if (culturalLines.length) lines.push(`- **Cultural:** ${depthShort(culturalLines)}`)
+  if (theoLines.length) lines.push(`- **Teológico:** ${depthShort(theoLines)}`)
+  if (christLines.length) lines.push(`- **Christológico:** ${depthShort(christLines)}`)
+  if (historyLines.length || culturalLines.length || theoLines.length || christLines.length) lines.push('')
+  else lines.push('[Punto por completar: activa más módulos de la Guía del Pasaje para este contexto.]', '')
+
+  if (strongLines.length) {
+    lines.push('## Palabras originales', '')
+    lines.push(...strongLines.slice(0, 2).map((entry) => `- ${shortEntry(entry, 240)}`), '')
+  }
+
+  lines.push('## El mensaje', '')
+  if (!points.length) {
+    lines.push('1. **El texto dice:**', `   ${shortEntry(evidences[0] ?? ref)}`, '')
+    lines.push('2. **Qué significa:**', `   ${shortEntry(topicLines[0] ?? stepGran(gran))}`, '')
+    lines.push('3. **Cómo vivimos hoy:**', '   Conecta la gran idea con casa, trabajo y congregación.', '', '[[PUENTE 1]]', '', '[[PUENTE 3]]', '')
+  } else {
+    const page = points.length
+    points.forEach((title, index) => {
+      const evidence = shortEntry(evidences[index] ?? illusLines[index] ?? '')
+      lines.push(`### ${index + 1}. ${title}`)
+      if (evidence) lines.push('', `${evidence}`)
+      lines.push('', `*Puente:* [[PUENTE ${index + 1}]]`, '')
+    })
+    void page
+  }
+
+  if (illusLines.length) {
+    lines.push('## Ilustración', '')
+    lines.push(shortEntry(illusLines[0], 420), '')
+  }
+
+  lines.push('## Aplicación', '')
+  if (bridgeLines.length) {
+    lines.push(...bridgeLines.slice(0, 2).map((entry) => `- ${shortEntry(entry, 260)}`), '')
+  } else {
+    lines.push('- **En casa:** [concreto con los tuyos.]', '- **En el trabajo:** [concreto con colegas.]', '- **En la iglesia:** [concreto con la congregación.]', '')
+  }
+  lines.push('## Oración final', '', '[[ORACION]]', '', `> Dosier: ${dossier.chars} caracteres de módulos reales [cita verifiable por apartado].`)
+  return lines.join('\n')
+}
+
+function stepGran(gran: string): string {
+  return gran ? `La frase exegética: ${gran}` : 'Sintetiza el versiculo en una sola oración exegética.'
+}
+
+function refEntry2(book: string, chapter: number, verse?: number): string {
+  return `${book} ${chapter}${verse ? `:${verse}` : ''}`
+}
+
+/** ensambla sermon: código base + voz (IA o fallback determinista). Nunca deja marcadores. */
+export function assembleSermon(skeleton: string, pieces: VoicePieces, ref: string, bridgeLines: string[] = []): string {
+  const bridgeDefault = (index: number): string =>
+    (bridgeLines[index % Math.max(1, bridgeLines.length)] ? shortEntry(bridgeLines[index % Math.max(1, bridgeLines.length)], 160) : '') ||
+    FALLBACK_BRIDGES[index % FALLBACK_BRIDGES.length]
+  let out = skeleton
+  out = out.replace('[[GANCHO]]', (pieces.hook ?? '').trim() || `${FALLBACK_HOOKS[0]} «${ref}».`)
+  for (let index = 1; index <= 6; index += 1) {
+    out = out.replaceAll(`[[PUENTE ${index}]]`, '⇒ ' + ((pieces.bridges[index - 1] ?? '').trim() || bridgeDefault(index - 1)))
+  }
+  out = out.replace('[[ORACION]]', (pieces.prayer ?? '').trim() || defaultPrayer(ref))
+  return out.replace(/\[\[[A-ZÑ ]+\d*\]\]/g, '')
+}
+
 /* ----------------------------------------------------------------- entrada */
 
 export async function runCreator(
@@ -369,12 +548,67 @@ export async function runCreator(
   const persona = getPersona(personaId)
   const local = composeFromDossier(kind, ctx, trimmed, dossier, persona)
 
+  const language = ctx.locale === 'en' ? 'English' : ctx.locale === 'pt' ? 'Portuguese' : 'Spanish'
+  const citationsData = { citations: dossier.citations, dossierChars: dossier.chars }
+
+  // Modo economia (default): el CUERPO del sermón lo construye el composer de
+  // codigo; la IA solo la voz (gancho/puentes/oracion) en 1 llamada corta.
+  if (kind === 'crearsermon' && !ctx.settings.deepSermon) {
+    const skeleton = composeSermonSkeleton(kind, trimmed, dossier, persona)
+    const bridgeLines = dossier.sections.filter((s) => s.kind === 'aplicacion').flatMap((s) => s.entries)
+    if (!ctx.settings.aiEnabled) {
+      return {
+        markdown: assembleSermon(skeleton, { bridges: [] }, dossier.section ?? trimmed, bridgeLines),
+        passages,
+        aiUsed: false,
+        notice: 'Sermón ensamblado 100% por código desde tus módulos (sin IA).',
+        ...citationsData
+      }
+    }
+    try {
+      const ask = [
+        personaPrompt(persona),
+        '',
+        'REFERENCIA:',
+        dossier.section ?? trimmed,
+        '',
+        'ESQUELETO (estructura y evidencia ya garantizadas; no las reescribas):',
+        skeleton.length > 6000 ? `${skeleton.slice(0, 6000)}…[truncado]` : skeleton,
+        '',
+        'Devuelve EXACTAMENTE el formato de marcadores del sistema.'
+      ].join('\n')
+      const result = await api.ai.chat({
+        messages: [
+          { role: 'system', content: `${SNIPPET_SYSTEM}\n\nResponde en ${language}.` },
+          { role: 'user', content: ask }
+        ],
+        temperature: 0.6,
+        maxTokens: 700
+      })
+      const pieces = parseSnippets(result.text)
+      return {
+        markdown: assembleSermon(skeleton, pieces, dossier.section ?? trimmed, bridgeLines),
+        passages,
+        aiUsed: true,
+        notice: 'Cuerpo 100% código; solo gancho/puentes/oración de IA (1 llamada corta).',
+        ...citationsData
+      }
+    } catch (error) {
+      return {
+        markdown: assembleSermon(skeleton, { bridges: [] }, dossier.section ?? trimmed, bridgeLines),
+        passages,
+        aiUsed: false,
+        notice: error instanceof Error ? error.message : String(error),
+        ...citationsData
+      }
+    }
+  }
+
   if (!ctx.settings.aiEnabled) {
-    return { markdown: local, passages, aiUsed: false, citations: dossier.citations, dossierChars: dossier.chars }
+    return { markdown: local, passages, aiUsed: false, ...citationsData }
   }
 
   try {
-    const language = ctx.locale === 'en' ? 'English' : ctx.locale === 'pt' ? 'Portuguese' : 'Spanish'
     const user = [
       personaPrompt(persona),
       addendum(kind),
@@ -443,8 +677,7 @@ export async function runCreator(
       markdown,
       passages,
       aiUsed: true,
-      citations: dossier.citations,
-      dossierChars: dossier.chars
+      ...citationsData
     }
   } catch (error) {
     return {
@@ -452,8 +685,7 @@ export async function runCreator(
       passages,
       aiUsed: false,
       notice: error instanceof Error ? error.message : String(error),
-      citations: dossier.citations,
-      dossierChars: dossier.chars
+      ...citationsData
     }
   }
 }
