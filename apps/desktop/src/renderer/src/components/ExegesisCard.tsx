@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { bookName, CANONICAL_BOOKS, type StrongsOccurrence } from '@keryx/core'
+import type { StrongsOccurrence, SwordModule } from '@keryx/core'
 import { api } from '../lib/api'
-import type { SwordModule } from '@keryx/core'
+import { roman, clusterSenses, bookSectionCounts, bookLabel, greekLemmaOf, transliterateGreek, type Sense } from '../lib/greek'
 
 interface Props {
   code: string
   word: string
   definition: string | null
   modules: SwordModule[]
+  onOpenRef?: (book: string, chapter: number, verse: number) => void
   onSend?: (markdown: string) => void
 }
 
@@ -17,7 +18,56 @@ interface LemmaHit {
   definition: string
 }
 
-export function ExegesisCard({ code, word, definition, modules, onSend }: Props) {
+function useLemmaHits(modules: SwordModule[], lemma: string): LemmaHit[] {
+  const [hits, setHits] = useState<LemmaHit[]>([])
+  useEffect(() => {
+    if (!lemma) return
+    let alive = true
+    const lexicos = modules.filter((m) => /ortiz|greco/i.test(m.name)).slice(0, 1)
+    void (async () => {
+      const results: LemmaHit[] = []
+      for (const mod of lexicos) {
+        const hit = await api.dict.lookupLemma({ module: mod.name, lemma }).catch(() => null)
+        if (hit?.definition) results.push({ module: mod.name, topic: hit.topic, definition: hit.definition })
+      }
+      if (alive) setHits(results)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [lemma, modules])
+  return hits
+}
+
+function LemmaList({ senses, onOpenRef }: { senses: Sense[]; onOpenRef?: Props['onOpenRef'] }) {
+  return (
+    <ol className="bdag-senses">
+      {senses.map((sense, index) => (
+        <li key={`${sense.gloss}-${index}`}>
+          <span className="bdag-gloss">{sense.gloss}</span>
+          <span className="bdag-count" title="usos con esta traducción">
+            {sense.count}
+          </span>
+          <span className="bdag-refs">
+            {sense.refs.slice(0, 8).map((row, i) => (
+              <button
+                key={`${row.book}${row.chapter}${row.verse}-${i}`}
+                className="bdag-ref"
+                onClick={() => onOpenRef?.(row.book, row.chapter, row.verse)}
+                title={`${bookLabel(row.book)} ${row.chapter}:${row.verse} — ${row.word}`}
+              >
+                {bookLabel(row.book).slice(0, 3)} {row.chapter}:{row.verse}
+              </button>
+            ))}
+            {sense.refs.length > 8 && <span className="bdag-more">+{sense.refs.length - 8}</span>}
+          </span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+export function ExegesisCard({ code, word, definition, modules, onOpenRef, onSend }: Props) {
   const [occ, setOcc] = useState<StrongsOccurrence[] | null>(null)
   const [open, setOpen] = useState(false)
 
@@ -36,10 +86,20 @@ export function ExegesisCard({ code, word, definition, modules, onSend }: Props)
     }
   }, [code])
 
-  const lemma = /G/.test(code) ? (definition ?? '').match(/([\u0370-\u03ff])[\u0370-\u03ff\s,;·’']+/u)?.[0] ?? '' : ''
-  const lemmaClean = lemma.trim().split(/[\s,]/)[0]
+  const lemma = useMemo(() => greekLemmaOf(definition ?? ''), [definition])
+  const translit = useMemo(() => transliterateGreek(lemma), [lemma])
+  const lemmaHits = useLemmaHits(modules, lemma)
 
-  const lemmaHits = useLemmaHits(modules, lemmaClean)
+  const senses = useMemo(() => (occ ? clusterSenses(occ) : []), [occ])
+  const sections = useMemo(() => (occ ? bookSectionCounts(occ) : []), [occ])
+  const forms = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const row of occ ?? []) {
+      const key = row.morphology.replace(/^(greek|hebrew)\s*/, '') || '—'
+      map.set(key, (map.get(key) ?? 0) + 1)
+    }
+    return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
+  }, [occ])
 
   const byBook = useMemo(() => {
     const map = new Map<string, StrongsOccurrence[]>()
@@ -51,85 +111,130 @@ export function ExegesisCard({ code, word, definition, modules, onSend }: Props)
     return [...map.entries()]
   }, [occ])
 
-  const senses = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const row of occ ?? []) {
-      const key = (row.word.replace(/[.,;:]+$/, '') || '—').trim()
-      map.set(key, (map.get(key) ?? 0) + 1)
-    }
-    return [...map.entries()].sort((a, b) => b[1] - a[1])
-  }, [occ])
-
-  const morphology = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const row of occ ?? []) {
-      const key = row.morphology.replace(/^(greek|hebrew)\s*/, '') || '—'
-      map.set(key, (map.get(key) ?? 0) + 1)
-    }
-    return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
-  }, [occ])
-
   const markdown = useMemo(() => {
-    const lines: string[] = [`## Exégesis ${code} — ${word}`]
+    const lines = [`## Exégesis ${code} (${lemma ? `${lemma} — ${translit}` : word})`]
     if (definition) lines.push(`**Strong:** ${definition}`)
     for (const hit of lemmaHits) {
-      lines.push(`**${hit.topic}** (${hit.module}): ${hit.definition}`)
+      lines.push(`**Lema (${hit.topic}):** ${hit.definition}`)
     }
     if (senses.length) {
-      lines.push('**Sentidos por traducción:** ' + senses.map(([w, n]) => `${w} ×${n}`).join(' · '))
+      lines.push(
+        '**Sentidos en uso:**',
+        ...senses.map((sense, index) => `${roman(index + 1)}. ${sense.gloss} ×${sense.count} — ${sense.refs.slice(0, 8).map((row) => `${bookLabel(row.book)} ${row.chapter}:${row.verse}`).join(', ')}`)
+      )
+      lines.push('')
     }
-    if (morphology.length) {
-      lines.push('**Formas:** ' + morphology.map(([m, n]) => `${m} ×${n}`).join(' · '))
+    if (forms.length) {
+      lines.push(
+        '**Formas:** ' +
+          forms.map(([morph, n]) => `${morph || '—'} ×${n}`).join(' · ')
+      )
+    }
+    if (sections.length) {
+      lines.push('**Distribución:** ' + sections.map((s) => `${s.section} ${s.count}`).join(' · '))
     }
     if (byBook.length) {
-      lines.push('**Ocurrencias:** ' + byBook.map(([b, rows]) => `${b} (${rows.map((r) => `${r.chapter}:${r.verse}`).slice(0, 12).join(' ')})`).join(' · '))
+      lines.push(
+        '**Libros:** ' +
+          byBook.map(([b, rows]) => `${bookLabel(b)} (${rows.length})`).join(' · ')
+      )
     }
-    return lines.join('\n\n')
-  }, [code, word, definition, lemmaHits, senses, morphology, byBook])
+    return lines.join('\n')
+  }, [code, word, lemma, translit, definition, lemmaHits, senses, forms, sections, byBook])
 
   return (
-    <div className={`exeg-card ${open ? 'open' : ''}`}>
-      <button className="exeg-head" onClick={() => setOpen(!open)}>
-        <span className="exeg-code">{code}</span>
-        <span className="exeg-word">{word}</span>
-        <span className="exeg-count">{occ?.length ?? '…'}</span>
+    <article className={`bdag ${open ? 'open' : ''}`}>
+      <button className="bdag-head" onClick={() => setOpen(!open)}>
+        <span className="bdag-code">{code}</span>
+        <span className="bdag-titles">
+          {lemma ? (
+            <>
+              <b className="bdag-lemma">{lemma}</b>
+              <span className="bdag-translit">{translit}</span>
+            </>
+          ) : (
+            <b className="bdag-word">{word}</b>
+          )}
+        </span>
+        <span className="bdag-total">{occ?.length ?? '…'} usos</span>
       </button>
+
       {open && (
-        <div className="exeg-body">
-          {definition && <p className="exeg-def">{definition}</p>}
-          {lemmaHits.length > 0 && (
-            <div className="exeg-lemma">
-              {lemmaHits.map((hit) => (
-                <p key={hit.module}>
-                  <b>{hit.topic}</b> · {hit.module}: {hit.definition.slice(0, 220)}…
-                </p>
-              ))}
+        <div className="bdag-body">
+          {definition && <p className="bdag-strong">{definition}</p>}
+
+          {lemmaHits.map((hit) => (
+            <div className="bdag-lex" key={hit.module}>
+              <span className="bdag-lex-source">{hit.module}</span>
+              <span className="bdag-lex-topic">{hit.topic}</span>
+              <p>{hit.definition}</p>
+            </div>
+          ))}
+
+          {senses.length > 0 && (
+            <div className="bdag-block">
+              <h4>Sentidos en uso</h4>
+              <LemmaList senses={senses} onOpenRef={onOpenRef} />
             </div>
           )}
-          {senses.length > 0 && (
-            <p className="exeg-senses">
-              {senses.slice(0, 10).map(([w, n]) => `${w} ×${n}`).join(' · ')}
-            </p>
+
+          <div className="bdag-grid">
+            {sections.length > 0 && (
+              <div className="bdag-block">
+                <h4>Distribución</h4>
+                <ul className="bdag-sections">
+                  {sections.map((s) => (
+                    <li key={s.section}>
+                      <span>{s.section}</span>
+                      <span className="bdag-bar" style={{ width: `${Math.min(100, s.count)}px` }} />
+                      <span className="bdag-n">{s.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {forms.length > 0 && (
+              <div className="bdag-block">
+                <h4>Formas gramaticales</h4>
+                <ul className="bdag-forms">
+                  {forms.map(([morph, n]) => (
+                    <li key={morph}>
+                      <code>{morph || '—'}</code>
+                      <span className="bdag-n">{n}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {byBook.length > 0 && (
+            <details className="bdag-occ">
+              <summary>Concordancias ({byBook.length} libros)</summary>
+              <ul>
+                {byBook.map(([book, rows]) => (
+                  <li key={book}>
+                    <b>{bookLabel(book)}</b> {rows.length} —{' '}
+                    {rows
+                      .map((row) => (
+                        <button
+                          key={`o${row.chapter}${row.verse}${row.word}`}
+                          className="bdag-ref"
+                          onClick={() => onOpenRef?.(row.book, row.chapter, row.verse)}
+                        >
+                          {row.chapter}:{row.verse}
+                        </button>
+                      ))
+                      .slice(0, 40)}
+                  </li>
+                ))}
+              </ul>
+            </details>
           )}
-          {morphology.length > 0 && (
-            <p className="exeg-morph">
-              {morphology.map(([m, n]) => `${m || '—'} ×${n}`).join(' · ')}
-            </p>
-          )}
-          <ul className="exeg-occ">
-            {byBook.map(([book, rows]) => (
-              <li key={book}>
-                <b>{bookName(CANONICAL_BOOKS.find((b) => b.code === book) ?? CANONICAL_BOOKS[0], 'es')}</b>{' '}
-                {rows
-                  .map((row) => `${row.chapter}:${row.verse}${row.word ? `·${row.word}` : ''}`)
-                  .slice(0, 30)
-                  .join(' ')}
-              </li>
-            ))}
-          </ul>
+
           {onSend && (
             <button
-              className="btn small"
+              className="btn primary small bdag-send"
               onClick={() => {
                 onSend(markdown)
               }}
@@ -139,28 +244,6 @@ export function ExegesisCard({ code, word, definition, modules, onSend }: Props)
           )}
         </div>
       )}
-    </div>
+    </article>
   )
-}
-
-/** Lema → Ortiz (verificado por lema real). Cache por sesión. */
-function useLemmaHits(modules: SwordModule[], lemma: string): LemmaHit[] {
-  const [hits, setHits] = useState<LemmaHit[]>([])
-  useEffect(() => {
-    if (!lemma) return
-    let alive = true
-    const lexicos = modules.filter((m) => /ortiz|greco/i.test(m.name)).slice(0, 2)
-    void (async () => {
-      const results: LemmaHit[] = []
-      for (const mod of lexicos) {
-        const hit = await api.dict.lookupLemma({ module: mod.name, lemma }).catch(() => null)
-        if (hit?.definition) results.push({ module: mod.name, topic: hit.topic, definition: hit.definition })
-      }
-      if (alive) setHits(results)
-    })()
-    return () => {
-      alive = false
-    }
-  }, [lemma, modules])
-  return hits
 }

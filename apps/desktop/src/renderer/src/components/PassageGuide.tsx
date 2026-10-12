@@ -161,6 +161,9 @@ export function PassageGuide({ book, chapter, verse, bookLabel }: Props) {
               word="—"
               definition={null}
               modules={modules}
+              onOpenRef={(refBook, refChapter, refVerse) => {
+                void useAppStore.getState().setNav(refBook, refChapter, refVerse)
+              }}
               onSend={(md) => void sendToWriting(md, `Exégesis ${code}`)}
             />
           ))}
