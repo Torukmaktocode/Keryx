@@ -12,6 +12,7 @@ import { refLabel, stripTags } from './assistant'
 import { api } from './api'
 import { apiHook, buildDossier, dossierForPrompt, type Dossier } from './agents'
 import { parseReference } from './reference'
+import type { SearchResult } from '@keryx/core'
 
 export type CreatorKind = 'crearsermon' | 'crearestudio' | 'creardevocional'
 
@@ -725,6 +726,67 @@ function withAnchoredSources(markdown: string, dossier: Dossier): string {
 
 /* ----------------------------------------------------------------- entrada */
 
+const QUERY_STOP = new Set([
+  'sobre', 'hablar', 'dijo', 'quiere', 'hacer', 'predicar', 'sermon', 'estudio',
+  'pasaje', 'texto', 'detalle', 'mensaje', 'sense'
+])
+
+export interface PassageHint {
+  book: string
+  chapter: number
+  verse?: number
+}
+
+export function queryTokensOf(query: string): string[] {
+  return [...new Set(
+    query
+      .toLowerCase()
+      .split(/[^\p{L}]+/u)
+      .filter((word) => word.length >= 4 && !QUERY_STOP.has(word))
+  )].sort((a, b) => b.length - a.length)
+}
+
+/** Puntaje multi-palabra: gana el versiculo que cumple MAS palabras de la
+ * consulta. Ej: "talita cumi niña mano" puntua Marcos 5:41 (4) sobre un
+ * verso cualquiera con "hablar" (1). Empate: la palabra mas rara primero. */
+export async function locatePassageByTokens(
+  tokens: string[],
+  _module: string,
+  search: (query: string) => Promise<Array<SearchResult>>
+): Promise<PassageHint | undefined> {
+  if (!tokens.length) return undefined
+  const perToken = new Map<string, Array<SearchResult>>()
+  for (const word of tokens.slice(0, 8)) {
+    let hits: Array<SearchResult> = []
+    try {
+      hits = (await search(word)) ?? []
+    } catch {
+      hits = []
+    }
+    if (hits.length) perToken.set(word, hits)
+  }
+  if (!perToken.size) return undefined
+  let best: { hit: SearchResult; score: number } | null = null
+  for (const [, hits] of perToken) {
+    for (const hit of hits) {
+      const text = (hit.text ?? '').toLowerCase()
+      let score = 0
+      for (const word of perToken.keys()) {
+        if (text.includes(word)) score += 1
+      }
+      if (!best || score > best.score) best = { hit, score }
+    }
+  }
+  if (!best) return undefined
+  return {
+    book: best.hit.book,
+    chapter: best.hit.chapter,
+    verse: best.hit.verse || undefined
+  }
+}
+
+
+
 export async function runCreator(
   ctx: AssistantContext,
   kind: CreatorKind,
@@ -734,28 +796,23 @@ export async function runCreator(
   const trimmed = query.trim()
   if (!trimmed) return { markdown: '', passages: [], aiUsed: false }
 
-  /** Localizador por texto: si la consulta no es una referencia, busca las
-   * palabras clave en la biblia activa y devuelve la primera ubicación real. */
-  const locatePassage = async (): Promise<{ book: string; chapter: number; verse?: number } | undefined> => {
+  /** Localizador por texto: los resultados se PUNTUAN por cuantas palabras de
+   * la consulta cumple cada versiculo (la frase real gana sobre palabras
+   * comunes sueltas). Devuelve la ubicacion con mejor puntaje. */
+  const locatePassage = async (): Promise<PassageHint | undefined> => {
     const direct = parseReference(trimmed)
     if (direct) return direct
-    const bibleName =
-      ctx.settings.priorityModules.find((name) =>
+    const bibles = [
+      ...(ctx.settings.priorityModules ?? []).filter((name) =>
         ctx.modules.some((m) => m.name === name && m.category === 'Bible')
-      ) ?? ctx.modules.find((m) => m.category === 'Bible')?.name
-    if (!bibleName) return undefined
-    const words = [...new Set(trimmed.split(/[^\p{L}]{2,}/u).filter((word) => word.length >= 4))]
-      .sort((a, b) => b.length - a.length)
-    try {
-      for (const word of words.slice(0, 6)) {
-        const hits = await api.bible.search({ query: word, modules: [bibleName], limit: 10 })
-        if (hits.length) {
-          const hit = hits[0]
-          return { book: hit.book, chapter: hit.chapter, verse: hit.verse || undefined }
-        }
-      }
-    } catch {
-      return undefined
+      ),
+      ...ctx.modules.filter((m) => m.category === 'Bible').map((m) => m.name)
+    ].slice(0, 2)
+    for (const bibleName of bibles) {
+      const found = await locatePassageByTokens(queryTokensOf(trimmed), bibleName, async (query) =>
+        api.bible.search({ query, modules: [bibleName], limit: 60 })
+      )
+      if (found) return found
     }
     return undefined
   }

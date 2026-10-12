@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeAll } from 'vitest'
-import { runCreator, composeSermonSkeleton, assembleSermon } from './creator'
+import { runCreator, composeSermonSkeleton, assembleSermon, locatePassageByTokens, queryTokensOf, type PassageHint } from './creator'
 import type { AssistantContext } from './assistant'
 import type { AppSettings, SwordModule } from '@keryx/core'
 
@@ -47,6 +47,29 @@ function mkCtx(overrides: { deepSermon?: boolean; aiEnabled?: boolean }): Assist
   } as unknown as AppSettings
   return { modules, locale: 'es', settings } as unknown as AssistantContext
 }
+
+describe('localizador por texto (puntaje multi-palabra)', () => {
+  it('la frase real gana sobre palabras sueltas', async () => {
+    const search = async (query: string) => {
+      if (query === 'hablar') {
+        return [{ module: 'RV60', book: 'Gen', chapter: 11, verse: 6, text: '…nada les impedira que hayan concebido hablar…' }]
+      }
+      return [{ module: 'RV60', book: 'Mark', chapter: 5, verse: 41, text: 'Tomando la mano de la niña, le dijo: Talita, cumi; que traducido es: Niña, a ti te digo, levantate.' }]
+    }
+    const hint = await locatePassageByTokens(
+      queryTokensOf('hablar sobre tomó la mano de la niña y le dijo talita cumi'),
+      'RV60',
+      search
+    )
+    expect(hint?.book).toBe('Mark')
+    expect(hint?.chapter).toBe(5)
+    expect(hint?.verse).toBe(41)
+  })
+
+  it('sin tokens utiles no explota', async () => {
+    expect(await locatePassageByTokens([], 'RV60', async () => [])).toBeUndefined()
+  })
+})
 
 describe('esqueleto + ensamble (codigo primero)', () => {
   it('el esqueleto trae texto, puntos, evidencia y marcadores de voz', async () => {
