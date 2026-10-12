@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeAll } from 'vitest'
-import { runCreator, composeSermonSkeleton, assembleSermon, locatePassageByTokens, queryTokensOf, type PassageHint } from './creator'
+import { runCreator, composeSermonSkeleton, assembleSermon, locatePassageByTokens, queryTokensOf } from './creator'
 import type { AssistantContext } from './assistant'
 import type { AppSettings, SwordModule } from '@keryx/core'
 
