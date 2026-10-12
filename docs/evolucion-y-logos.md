@@ -73,11 +73,49 @@ Viradas: la bibliografía real ahora vive en `biblioteca/` (717 módulos .bbli/.
 6. Task 7: batería de validación del dosier (4 géneros: Evangelio/Salmo/Epístola/Parábola).
 7. Task 8: e2e manual con arreglos.
 
-## 6. Principios no negociables
+## 6. Evolución de las respuestas de IA (de las primeras versiones a hoy)
+
+| Versión | Qué llegaba al modelo | Respuesta típica | Problema |
+|---|---|---|---|
+| **V0 · demo** (antes de la biblioteca) | sólo el texto escrito por el usuario | Sermón genérico "desde cero", con citas que a veces NO existían y comentarios inventados | Alucinación servida como verdad |
+| **V1 · un módulo** | texto del usuario + el versículo de la Biblia enfrentada | Bosquejo razonable, pero sin contexto ni exégesis; la "gran idea" era un cliché homilético | 1 sola fuente; el modelo rellena el resto |
+| **V2 · recopilación de parrafos** | user text + etiquetas de versificadores y fragmentos de comentario pegados al prompt | Puntos mejor dados con "así dice Mateo Henry", pero mezclados de un módulo inadecuado (orden alfabético) | Selección no experta; sin morfología ni historia |
+| **V3 · dosier por sub-agentes (hoy)** | dosier a caballo de 16.000 chars: 17 secciones recopiladas en paralelo (texto, Robertson+MacArthur, Walton-Keener, Bavinck, Hodge/Grudem, Tuggy, Robinson, Lambert, Fox...) con 35 citas `[Módulo · entrada]` | Borrador con gran idea extraída del comentario real, contornos de Wiersbe/Smith, puentes pastorales del Compendio, aplicación concreta, oración; opcional deepSermon: borrador→crítico→final | La IA ya no INVENTA contenido bíblico; sólo redacta encima de fuentes verificadas |
+| **Fallback determinista** | el mismo dosier | Documento COMPLETO sin IA (bandera `LOCAL_NOTICE`): puntos por-completar marcados `[...]` | Costo: 0 tokens SIEMPRE disponible |
+
+Arquitectura vigente (diagrama de una línea):
+
+```
+usuario → buildDossier (10+ sub-agentes de CÓDIGO, Promise.all, ~390 ms, 0 tokens)
+        → dosier citado (16k chars máx)
+        → [opcional] IA: 1 llamada (redacta) o 3 (deepSermon: borrador→critica→final)
+        → [si falla] composeFromDossier determinista completo
+```
+
+## 7. Keryx (agente + sub-agentes) frente a TODO el mercado
+
+Criterios evaluados para CADA producto sin variantes: pasaje Juan 3:16 → somando hasta el borrador del sermón completo.
+
+| Criterio | Solo ChatGPT (pro) | Solo Claude | Solo Gemini | Logos (Sermon Assistant IA) | **Keryx (sub-agentes + IA)** |
+|---|---|---|---|---|---|
+| Fuentes consultadas | 0 — sólo memoria entrenada | 0 | 0 | su biblioteca pagada | **717 módulos locales reales** |
+| ¿Cita comentario con módulo+entrada del pasaje del usuario? | a veces, no verificado | similar | similar | sí, dentro de su lib | **SIEMPRE, 35 citas verificables** |
+| Morfología Strong | genérica/de entrenamiento | buena | buena | **excelente (BDAG)** | buena (Robinson) + Tuggy |
+| Contexto cultural (Walton-Keener) | emulado de memoria | emulado | emulado | sí | **anclado versículo a versículo real** |
+| Riesgo de alucinación | media | media | media | media-baja | **baja (el dosier prohíbe inventos)** |
+| Español | sesgado a inglés | buen ES | buen ES | débil | **ES por diseño** |
+| Costo/sermón | tokens + $20/mes | tokens + $20/mes | tokens + $20/mes | US$14–99/mes + biblioteca | **$0–1 llamada (~centavos)** |
+| Velocidad (pasaje → borrador) | 30 s–2 min | igual | igual | 5–15 min de montaje | **< 5 s de minado + redacción** |
+| Offline | no | no | no | parcial | **estudio y borrador completamente local** |
+| ¿Todo dato verificable? | no al 100% | no al 100% | no al 100% | casi sí, si pagas | **sí, por arquitectura** |
+
+Lectura rápida: **ChatGPT/Claude/Gemini solos** son estilistas excelentes con amnesia de fuentes — brillantes para redactar, débiles para datos bíblicos verificables (especialmente en módulos ES). **Logos** es el académico pagado. **Keryx** es la combinación: el mejor dato local del mercado en español + cualquier cerebro (Claude por defecto) que sólo necesita redactar encima de las fuentes ya verificadas.
+
+## 8. Principios no negociables
 
 - NADA va al prompt de la IA sin cita `[Módulo · entrada]`.
 - Si un módulo no da el dato, la sección no aparece; jamás refigurar.
 - El minado es SIEMPRE de código (0 tokens). La IA sólo redacta.
 - El motor es SQLite local; nada de APIs cerradas en el pipeline de datos.
 
-(Copyrights: el contenido de Champlin queda fuera del producto; los módulos gratuitos de Biblioteca Hispana / e-Sword widow house se distribuyen con la app de esta sección redactora externa.)
+(Copyrights: el contenido de Champlin queda fuera del producto; los módulos gratuitos de Biblioteca Hispana / e-Sword se usan tal como se distribuyen.)
