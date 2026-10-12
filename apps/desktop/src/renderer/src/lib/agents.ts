@@ -42,6 +42,8 @@ export interface AgentCitation {
     | 'idiomas'
     | 'morfologia'
     | 'critico'
+    | 'sistematica'
+    | 'historia'
 }
 
 export interface DossierSection {
@@ -94,7 +96,9 @@ const SPECIAL_RE: Record<AgentCitation['kind'], RegExp | null> = {
   aplicacion: /pastoral|evangelizaci|catequis|doctrina social|evangelismo/i,
   idiomas: /tuggy|lexico griego/i,
   morfologia: /morfologico robinson|morphological analysis/i,
-  critico: /metzger|aparato critico|interlineal|cevallos|codigo textual|codigo real|hebraico|gratn/i
+  critico: /metzger|aparato critico|interlineal|cevallos|codigo textual|codigo real|hebraico|gratn/i,
+  sistematica: /teologia sistematica|dogmatica|teologia biblica sistematica/i,
+  historia: /\bhistoria del cristianismo\b|josefo|martires|eusebio/i
 }
 
 /** Orden interna de especialistas: preferimos los de contenido mas extenso. */
@@ -485,6 +489,56 @@ export async function buildDossier(
     return job
   }
 
+  // Teologias Sistematicas GENBOOK (Hodge, Grudem, MacArthur, Chafer...):
+  // buscan el tema/letras del verso dentro del cuerpo del libro .refi.
+  // Historia (Josefo/Gonzalez/Fox) se ancla mejor por el NOMBRE del libro biblico.
+  const bookJobs = (
+    kind: AgentCitation['kind'],
+    modRe: RegExp,
+    title: string,
+    prefersBookName = false
+  ): Promise<Job> =>
+    (async (): Promise<Job> => {
+      const job: Job = { kind, title, entries: [], cites: [] }
+      const esName = parsed
+        ? bookName(CANONICAL_BOOKS.find((b) => b.code === parsed.book) ?? CANONICAL_BOOKS[0], 'es')
+        : ''
+      const topicsForBook = (
+        prefersBookName && esName ? [esName] : []
+      )
+        .concat((themeForCtx ? [themeForCtx] : []).concat(verseThemes))
+        .slice(0, 2)
+      if (!topicsForBook.length) return job
+      const bookMods = hook.modules
+        .filter((m) => m.category === 'GenBook' && modRe.test(m.name))
+        .slice(0, 2)
+      const skip = /^(contenido|portada|indice|datos)/i
+      for (const mod of bookMods) {
+        let done = false
+        for (const topicWord of topicsForBook) {
+          if (done) break
+          const found = await safe(hook.search(topicWord, [mod.name], 4), [])
+          const hit = found.find((r) => !skip.test(r.book))
+          if (!hit) continue
+          job.entries.push(`[${shortName(moduleLabel(mod))} · ${hit.book}] ${trimEntry(hit.text, 520)}`)
+          job.cites.push({ kind, module: mod.name, entry: hit.book })
+          done = true
+        }
+      }
+      return job
+    })()
+
+  const sistematicaJob = (): Promise<Job> =>
+    bookJobs('sistematica', SPECIAL_RE.sistematica ?? /teologia sistematica|dogmatica/i, 'Teologia sistematica')
+
+  const historiaJob = (): Promise<Job> =>
+    bookJobs(
+      'historia',
+      SPECIAL_RE.historia ?? /josefo|martires/i,
+      'Historia y contexto cristiano',
+      true
+    )
+
   const illusJob = async (): Promise<Job> => {
     const job: Job = { kind: 'ilustracion', title: 'Ilustraciones', entries: [], cites: [] }
     const illusTopics = (rawTheme ? [rawTheme] : []).concat(verseThemes).slice(0, 3)
@@ -542,6 +596,8 @@ export async function buildDossier(
     ...contextJobs,
     waltonJob(),
     criticoJob(),
+    sistematicaJob(),
+    historiaJob(),
     refsJob(),
     illusJob()
   ])

@@ -112,6 +112,8 @@ export const pt: Record<TranslationKey, string> = {
   'guide.idiomas': 'Palavras gregas do NT (Tuggy)',
   'guide.morfologia': 'Morfologia gramatical (Robinson)',
   'guide.critico': 'Exegese crítica e interlinear',
+  'guide.sistematica': 'Teologia sistemática',
+  'guide.historia': 'História e contexto cristão',
   'guide.ilustracion': 'Ilustrações',
   'guide.referencia': 'Referências cruzadas',
   'guide.noData': 'Sem fichas ancoradas para esta passagem.',

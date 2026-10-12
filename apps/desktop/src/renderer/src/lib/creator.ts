@@ -210,6 +210,8 @@ export function composeFromDossier(
   const philoLines = sectionEntries(dossier, 'filosofico')
   const bridgeLines = sectionEntries(dossier, 'aplicacion')
   const critLines = sectionEntries(dossier, 'critico')
+  const systLines = sectionEntries(dossier, 'sistematica')
+  const histLines = sectionEntries(dossier, 'historia')
 
   const lines: string[] = [
     `# ${TITLE_FOR[kind]}: ${ref}`,
@@ -263,6 +265,12 @@ export function composeFromDossier(
   }
   if (critLines.length) {
     lines.push('## Exegesis critica e interlineal', '', ...critLines.map((entry) => `- ${entry}`), '')
+  }
+  if (systLines.length) {
+    lines.push('## Teologia sistematica', '', ...systLines.map((entry) => `- ${entry}`), '')
+  }
+  if (histLines.length) {
+    lines.push('## Historia y contexto cristiano', '', ...histLines.map((entry) => `- ${entry}`), '')
   }
 
   // 3) Palabras originales

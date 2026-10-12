@@ -131,6 +131,28 @@ function fakeHook(overrides: Partial<AgentHook> = {}): AgentHook {
         version: '',
         installed: true,
         source: 'local'
+      },
+      {
+        name: 'Teologia Sistematica - Charles Hodge',
+        description: '',
+        category: 'GenBook',
+        lang: 'es',
+        driver: 'e-Sword .refi',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Historia del Cristianismo - Justo Gonzalez',
+        description: '',
+        category: 'GenBook',
+        lang: 'es',
+        driver: 'e-Sword .refi',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
       }
     ],
     locale: 'es',
@@ -234,6 +256,27 @@ describe('buildDossier (sub-agentes 0 tokens)', () => {
     const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
     const refs = dossier.sections.find((s) => s.kind === 'referencia')
     expect(refs?.entries[0]).toContain('Lambert')
+  })
+
+  it('libros .refi: teologia sistematica e historia por busqueda con portadas excluidas', async () => {
+    let idx = 0
+    const hook = fakeHook({
+      search: async () => {
+        idx += 1
+        return idx % 2 === 1
+          ? [
+              { module: 'm', book: 'Contenido', chapter: 0, verse: 0, text: 'indice' },
+              { module: 'm', book: 'Capítulo 1: El método', chapter: 2, verse: 0, text: 'parrafo sobre amor del verso' }
+            ]
+          : [{ module: 'm', book: 'Portada', chapter: 0, verse: 0, text: 'portada de la historia' }]
+      }
+    })
+    const dossier = await buildDossier(hook, 'crearsermon', 'Juan 3:16')
+    const syst = dossier.sections.find((s) => s.kind === 'sistematica')
+    expect(syst?.entries[0]).toContain('Teologia Sistematica - Charles H')
+    expect(syst?.entries[0]).toContain('Capítulo 1')
+    const hist = dossier.sections.find((s) => s.kind === 'historia')
+    expect(hist?.entries.length ?? 0).toBe(0)
   })
 
   it('exegesis critica por verso (Metzger/aparato/interlineal) y prioriza comentarios pesados', async () => {

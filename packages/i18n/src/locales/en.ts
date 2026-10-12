@@ -112,6 +112,8 @@ export const en: Record<TranslationKey, string> = {
   'guide.idiomas': 'NT Greek words (Tuggy)',
   'guide.morfologia': 'Grammatical morphology (Robinson)',
   'guide.critico': 'Critical exegesis and interlinear',
+  'guide.sistematica': 'Systematic theology',
+  'guide.historia': 'History and Christian context',
   'guide.ilustracion': 'Illustrations',
   'guide.referencia': 'Cross references',
   'guide.noData': 'No anchored cards for this passage.',

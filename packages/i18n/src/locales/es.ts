@@ -110,6 +110,8 @@ export const es = {
   'guide.idiomas': 'Palabras griegas del NT (Tuggy)',
   'guide.morfologia': 'Morfología gramatical (Robinson)',
   'guide.critico': 'Exégesis crítica e interlineal',
+  'guide.sistematica': 'Teología sistemática',
+  'guide.historia': 'Historia y contexto cristiano',
   'guide.ilustracion': 'Ilustraciones',
   'guide.referencia': 'Referencias cruzadas',
   'guide.noData': 'Sin fichas ancladas para este pasaje.',

@@ -21,7 +21,9 @@ const KIND_TITLE_KEY: Record<DossierSection['kind'], string> = {
   aplicacion: 'guide.aplicacion',
   idiomas: 'guide.idiomas',
   morfologia: 'guide.morfologia',
-  critico: 'guide.critico'
+  critico: 'guide.critico',
+  sistematica: 'guide.sistematica',
+  historia: 'guide.historia'
 }
 
 interface Props {
