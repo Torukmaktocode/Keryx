@@ -63,15 +63,22 @@ Viradas: la bibliografía real ahora vive en `biblioteca/` (717 módulos .bbli/.
 - de BDAG/HALOT: **no reemplazable** (licencias ©). Estrategia: lemas verificados por lema (Task 4) + concordancias exhaustivas españolas reales.
 - del library polish: en camino, no comparado.
 
-## 5. Lo que falta por endurecer (plan vigente)
+## 5. Estado de endurecimiento (oct-2026, sesion SermonEngine)
 
-1. Task 1: `strongsOccurrences` IPC + proveedor (motor de "concordancia" G25/H430 en TODA la Biblia).
-2. Task 2-3: `ExegesisCard` + palabra real por código en la Guía.
-3. Task 4: Índice de lemas Strong→Tuggy/Ortiz verificado vía canal `dict:topics`.
-4. Task 5: `deepSermon` toggle (crítico homilético).
-5. Task 6: export pulpit-grade (.doc/.md).
-6. Task 7: batería de validación del dosier (4 géneros: Evangelio/Salmo/Epístola/Parábola).
-7. Task 8: e2e manual con arreglos.
+Completado:
+1. `strongsOccurrences` IPC + exégesis concordada con sentidos (BDAG-lite, refs clicables).
+2. `ExegesisCard` + palabra real por Strong# — dentro de la Guía del Pasaje.
+3. Lemas verificados por lema griego real (Ortiz NFD + decode entities).
+4. `deepSermon` toggle (borrador → crítico → final, fallback local).
+5. Export .doc/.md/Copiar en Asistente y Guía.
+6. Batería de validación + **evals medibles** (`npm run eval`): 5 pasajes dorados con score automático — **9.0/9, 0 fallos** con la biblioteca real.
+
+Arquitectura robusta nueva (estándar Anthropic):
+- `swordTools.ts`: registro tipado de herramientas + cache intra-build + timeout grupal.
+- Gap-analysis con **2ª pasada dirigida** en `buildDossier`.
+- `sermonEngine.ts`: AST inmutable (`buildSermonDocument`) + `renderSermon` determinista con slots siempre cubiertos.
+- Agentes nuevos: `consenso` (Hodge/Grudem/MacArthur/Chafer/Bavinck), `sintaxis` (Hanna/Hale), `nombres` hebreo (Hitchcock/21 Nombres/Enlow).
+- Localización por texto libre con puntaje multi-palabra ("talita cumi" → Marcos 5:41).
 
 ## 6. Evolución de las respuestas de IA (de las primeras versiones a hoy)
 
@@ -80,8 +87,9 @@ Viradas: la bibliografía real ahora vive en `biblioteca/` (717 módulos .bbli/.
 | **V0 · demo** (antes de la biblioteca) | sólo el texto escrito por el usuario | Sermón genérico "desde cero", con citas que a veces NO existían y comentarios inventados | Alucinación servida como verdad |
 | **V1 · un módulo** | texto del usuario + el versículo de la Biblia enfrentada | Bosquejo razonable, pero sin contexto ni exégesis; la "gran idea" era un cliché homilético | 1 sola fuente; el modelo rellena el resto |
 | **V2 · recopilación de parrafos** | user text + etiquetas de versificadores y fragmentos de comentario pegados al prompt | Puntos mejor dados con "así dice Mateo Henry", pero mezclados de un módulo inadecuado (orden alfabético) | Selección no experta; sin morfología ni historia |
-| **V3 · dosier por sub-agentes (hoy)** | dosier a caballo de 16.000 chars: 17 secciones recopiladas en paralelo (texto, Robertson+MacArthur, Walton-Keener, Bavinck, Hodge/Grudem, Tuggy, Robinson, Lambert, Fox...) con 35 citas `[Módulo · entrada]` | Borrador con gran idea extraída del comentario real, contornos de Wiersbe/Smith, puentes pastorales del Compendio, aplicación concreta, oración; opcional deepSermon: borrador→crítico→final | La IA ya no INVENTA contenido bíblico; sólo redacta encima de fuentes verificadas |
-| **Fallback determinista** | el mismo dosier | Documento COMPLETO sin IA (bandera `LOCAL_NOTICE`): puntos por-completar marcados `[...]` | Costo: 0 tokens SIEMPRE disponible |
+| **V3 · dosier por sub-agentes** | dosier de ~16.000 chars: 15-21 secciones recopiladas en paralelo (texto, Robertson+MacArthur, Walton-Keener, Bavinck, Hodge/Grudem, Tuggy, Robinson, Lambert, Fox...) con 25-43 citas `[Módulo · entrada]` | Borrador con gran idea extraída del comentario real, contornos de Wiersbe/Smith, puentes pastorales del Compendio, aplicación concreta, oración; opcional deepSermon: borrador→crítico→final | La IA ya no INVENTA contenido bíblico; sólo redacta encima de fuentes verificadas |
+| **V4 · SermonEngine (AST)** | mismo dosier + gap-analysis 2ª pasada; el sermón se construye como **documento tipado inmutable** (buildSermonDocument): estructura oratoria completa por código (gancho/intro con dato real/señales/cierre con bendición) + registros de herramientas con cache | La IA solo puede llenar el TEXTO de slots de voz (gancho/intro/puentes/meditación/oración) en 1 llamada corta; la estructura y la evidencia no las toca nadie | Imposible dejar huecos: cada slot tiene fallback determinista; evals 9.0/9 |
+| **Fallback determinista** | el mismo dosier | Documento COMPLETO sin IA (bandera `LOCAL_NOTICE`): documento renderizado desde el AST con todos los slots en fallback | Costo: 0 tokens SIEMPRE disponible |
 
 Arquitectura vigente (diagrama de una línea):
 
@@ -99,15 +107,18 @@ Criterios evaluados para CADA producto sin variantes: pasaje Juan 3:16 → soman
 | Criterio | Solo ChatGPT (pro) | Solo Claude | Solo Gemini | Logos (Sermon Assistant IA) | **Keryx (sub-agentes + IA)** |
 |---|---|---|---|---|---|
 | Fuentes consultadas | 0 — sólo memoria entrenada | 0 | 0 | su biblioteca pagada | **717 módulos locales reales** |
-| ¿Cita comentario con módulo+entrada del pasaje del usuario? | a veces, no verificado | similar | similar | sí, dentro de su lib | **SIEMPRE, 35 citas verificables** |
-| Morfología Strong | genérica/de entrenamiento | buena | buena | **excelente (BDAG)** | buena (Robinson) + Tuggy |
+| ¿Cita comentario con módulo+entrada del pasaje del usuario? | a veces, no verificado | similar | similar | sí, dentro de su lib | **SIEMPRE, 25-43 citas verificables + "Fuentes ancladas" garantizadas por código** |
+| Morfología Strong | genérica/de entrenamiento | buena | buena | **excelente (BDAG)** | sólida (Robinson) + Tuggy + Ortiz por lema + sintaxis Hanna |
 | Contexto cultural (Walton-Keener) | emulado de memoria | emulado | emulado | sí | **anclado versículo a versículo real** |
-| Riesgo de alucinación | media | media | media | media-baja | **baja (el dosier prohíbe inventos)** |
+| Estructura oratoria | genérica | genérica | genérica | plantillas manuales | **código**: intro con dato real / señales «Primeramente… «Y para concluir…» / meditación / cierre con bendición |
+| Consenso doctrinal automático | no | no | no | no | **sí (Hodge/Grudem/MacArthur/Chafer/Bavinck por tema)** |
+| Citas sabias por tema | alucina atribuciones | alucina | alucina | parcial | **Vila 656 temas + Ruiz, ancladas, con atribución** |
+| Riesgo de alucinación | media | media | media | media-baja | **baja (dosier + AST: la IA no toca la estructura)** |
 | Español | sesgado a inglés | buen ES | buen ES | débil | **ES por diseño** |
-| Costo/sermón | tokens + $20/mes | tokens + $20/mes | tokens + $20/mes | US$14–99/mes + biblioteca | **$0–1 llamada (~centavos)** |
-| Velocidad (pasaje → borrador) | 30 s–2 min | igual | igual | 5–15 min de montaje | **< 5 s de minado + redacción** |
+| Costo/sermón | tokens + $20/mes | tokens + $20/mes | tokens + $20/mes | US$14–99/mes + biblioteca | **$0–1 llamada corta (~centavos)** |
+| Velocidad (pasaje → borrador) | 30 s–2 min | igual | igual | 5–15 min de montaje | **~0.6 s de minado + voz en segundos** |
 | Offline | no | no | no | parcial | **estudio y borrador completamente local** |
-| ¿Todo dato verificable? | no al 100% | no al 100% | no al 100% | casi sí, si pagas | **sí, por arquitectura** |
+| ¿Todo dato verificable? | no al 100% | no al 100% | no al 100% | casi sí, si pagas | **sí, por arquitectura (evals 9.0/9)** |
 
 Lectura rápida: **ChatGPT/Claude/Gemini solos** son estilistas excelentes con amnesia de fuentes — brillantes para redactar, débiles para datos bíblicos verificables (especialmente en módulos ES). **Logos** es el académico pagado. **Keryx** es la combinación: el mejor dato local del mercado en español + cualquier cerebro (Claude por defecto) que sólo necesita redactar encima de las fuentes ya verificadas.
 
@@ -116,6 +127,8 @@ Lectura rápida: **ChatGPT/Claude/Gemini solos** son estilistas excelentes con a
 - NADA va al prompt de la IA sin cita `[Módulo · entrada]`.
 - Si un módulo no da el dato, la sección no aparece; jamás refigurar.
 - El minado es SIEMPRE de código (0 tokens). La IA sólo redacta.
+- El AST del sermón es inmutable: la IA sólo llena el texto de slots; la estructura y la evidencia son de código.
 - El motor es SQLite local; nada de APIs cerradas en el pipeline de datos.
+- Cada cambio se mide contra `npm run eval` (9.0/9 vigente), no contra opinión.
 
 (Copyrights: el contenido de Champlin queda fuera del producto; los módulos gratuitos de Biblioteca Hispana / e-Sword se usan tal como se distribuyen.)

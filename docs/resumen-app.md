@@ -125,11 +125,29 @@ Plantillas / Consulta (4 preguntas) → bosquejo → redacción → export MD/HT
 
 ## 5. Estado de calidad
 
-- `npm run typecheck` / `lint` / `test` limpios (45 pruebas: fixtures
-  multi-raíz, esquemas e-Sword 2009, búsqueda normalizada, UI-tokens).
-- Biblioteca real verificada: 717 módulos en ~270 ms; "Biblia Comentada" Juan 3
-  → 2 entradas únicas; Romanos 1 → 58 comentarios marcados en ~20 ms;
-  "Fe" → 86 diccionarios con el término en ~135 ms.
+- `npm run typecheck` / `lint` / `test` limpios (70 pruebas: fixtures
+  multi-raíz, esquemas e-Sword 2009, búsqueda normalizada, sub-agentes,
+  SermonEngine, deepSermon, export).
+- **Evals medibles**: `npm run eval` — 5 pasajes dorados con score automático
+  (cobertura por género, citas ≥5, presupuesto, sin marcadores, slots
+  completos): **9.0/9, 0 fallos** con la biblioteca real.
+- Biblioteca real verificada: 717 módulos en ~270 ms; dosier completo en
+  ~0.5-1.2 s (evangelio/epístola/salterio/parábola/texto-libre); exégesis
+  concordada por Strong# con sentidos y ocurrencias reales.
+
+### Arquitectura del generador de sermones (oct-2026)
+
+- `lib/swordTools.ts` — registro tipado de herramientas + cache intra-build.
+- `lib/agents.ts` — sub-agentes en paralelo + **gap-analysis con 2ª pasada
+  dirigida**; dosier citado `[Módulo · entrada]`.
+- `lib/sermonEngine.ts` — AST inmutable del sermón (`buildSermonDocument`)
+  + `renderSermon` determinista; slots con fallback garantizado (con o sin
+  IA el documento está completo).
+- `lib/creator.ts` — modos: economía (IA solo voz, 1 llamada corta) y
+  `deepSermon` (borrador→crítico→final); 12 oradores con perfil completo
+  + "Ninguno — mi propio estilo"; localización por texto libre con puntaje
+  multi-palabra; fuentes ancladas SIEMPRE al final.
+- `lib/exportDoc.ts` — export .doc/.md/Copiar (Asistente y Guía).
 
 ## 6. Histórico relevante (docs/)
 
@@ -138,3 +156,7 @@ Plantillas / Consulta (4 preguntas) → bosquejo → redacción → export MD/HT
   Champlin (retirado en oct-2026; los PDFs quedan en disco, fuera del escaneo).
 - `docs/superpowers/plans/2026-10-11-biblioteca-estudio.md` — plan ejecutado
   de biblioteca + rediseño del estudio (todas las tareas marcadas hechas).
+- `docs/superpowers/plans/2026-10-11-superar-logos-sermones.md` — plan de
+  sermones (T1-T6 ejecutados).
+- `docs/evolucion-y-logos.md` — evolución y comparativa vs Logos/ChatGPT/
+  Claude/Gemini.

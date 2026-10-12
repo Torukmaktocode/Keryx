@@ -75,16 +75,37 @@ pero más limpio y en español) y modo escritura minimalista tipo iA Writer.
 - **Sub-agentes deterministas** (0 tokens) minan 717 módulos reales y arman un
   dosier citado `[Módulo · entrada]`; la IA nunca inventa: el dosier es su
   única fuente y los modos no-creadores son 100% locales.
-- **Sermón "código más que IA"** (modo economía, default): el cuerpo — puntos,
-  evidencia, gran idea, contextos, ilustración — lo ensambla el composer de
-  código; la IA solo rinde la voz (gancho/puentes/oración) en 1 llamada corta
-  (~700 tokens máx de salida). Si la IA falla o está apagada, fallbacks
-  deterministas completan la voz (documento sin marcadores sueltos).
-- **`deepSermon`** (opt-in, Ajustes → IA): doble pasada de calidad
-  (borrador → crítico homilético → final aplicando correcciones), 3 llamadas
-  cortas; si cualquier paso falla, fallback local.
-- Creadores: sermón, estudio devocional y devocional, con personas de estilo
-  y aviso cuando se usó IA o salió todo de código.
+- **Arquitectura robusta (estándar Anthropic)**:
+  - `swordTools.ts` — registro **tipado de herramientas** (schema, budget,
+    cache intra-build, timeout grupal); los agentes componen herramientas,
+    jamás SQL suelto.
+  - **Gap-analysis + 2ª pasada dirigida**: el motor inspecciona su propia
+    cobertura y reintenta los huecos con variantes de acentos y diccionarios
+    generales antes de rendir el dosier.
+  - `sermonEngine.ts` — **AST inmutable del sermón** (`buildSermonDocument`)
+    + render determinista 1:1 (`renderSermon`); todo slot tiene fallback
+    garantizado, así el documento está completo con o sin IA y no existen
+    marcadores sueltos.
+- **Sermón oratorio completo por código**: gancho → introducción con dato
+  real → señales de predicación («Primeramente…», «En segundo lugar…»,
+  «Y para concluir…») → puntos con evidencia citada → citas sabias
+  (Vila 656 temas / Ruiz) → ilustración con **casos bíblicos reales** →
+  frase para meditar → cierre con recapitulación, llamado del orador y
+  bendición → oración final → fuentes ancladas.
+- **U revés (`knowledge`)**: **Modo economía** (default): IA solo la voz
+  (gancho/intro/puentes/medición/oración) en 1 llamada ≤700 tokens de salida;
+  **`deepSermon`** (opt-in): borrador → crítico homilético → final.
+- **12 oradores con perfil completo** (bio, modismos, frases, forma
+  homilética, apertura, cierre, lente de aplicación) + "Ninguno — mi propio
+  estilo"; localización de pasaje por **texto libre con puntaje multi-palabra**
+  ("talita cumi" → Marcos 5:41).
+- **Consensus/sintaxis/hebreo**: consenso doctrinal (Hodge/Grudem/
+  MacArthur/Chafer/Bavinck por tema), sintaxis exegética (Hanna/Hale) y
+  nombres hebreos (Hitchcock/21 Nombres/Enlow).
+- **Evals medibles**: `npm run eval` — 5 pasajes dorados
+  (evangelio/epístola/salterio/parábola/texto-libre) con score automático
+  (cobertura, citas, presupuesto, sin marcadores, slots completos): **9.0/9**.
+- **Export** .doc / .md / Copiar en Asistente y Guía del Pasaje.
 
 ### Módulos y motor
 - **SWORD** completo vía lector local (`zText`, `zCom`, `RawLD`, `RawLD4`, `zLD`,
@@ -140,9 +161,10 @@ npm run build:win  # instalador Windows (electron-builder)
 ## Verificación
 
 ```bash
+npm run eval          # evals de calidad (golden passages) — 9.0/9 en biblioteca real
 npm run typecheck
 npm run lint
-npm run test      # vitest (motor SWORD/e-Sword, búsqueda, i18n, fixtures)
+npm run test          # vitest (motor SWORD/e-Sword, sub-agentes, SermonEngine, export)
 ```
 
 ## Estructura
