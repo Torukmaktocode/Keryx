@@ -25,7 +25,10 @@ const KIND_TITLE_KEY: Record<DossierSection['kind'], string> = {
   critico: 'guide.critico',
   sistematica: 'guide.sistematica',
   historia: 'guide.historia',
-  caso: 'guide.caso'
+  caso: 'guide.caso',
+  cita: 'guide.cita',
+  figura: 'guide.figura',
+  geografia: 'guide.geografia'
 }
 
 interface Props {

@@ -508,18 +508,19 @@ const SNIPPET_SYSTEM =
   '(3) puente ligero de 1-2 frases ANTES de cada punto (no repitas contenido, solo transicion), ' +
   '(4) oracion final de 3-5 lineas en primera plural, citando la referencia del texto. ' +
   'NO agregues datos, NO inventes referencias, NO reescribas puntos ni evidencia. Formato EXACTO de marcadores:\n' +
-  '==GANCHO==\n...\n==INTRO==\n...\n==PUENTE 1==\n...\n==PUENTE 2==\n...\n==ORACION==\n...'
+  '==GANCHO==\n...\n==INTRO==\n...\n==PUENTE 1==\n...\n==PUENTE 2==\n...\n==MEDITACION==\n...\n==ORACION==\n...'
 
 interface VoicePieces {
   hook?: string
   intro?: string
   bridges: string[]
+  meditation?: string
   prayer?: string
 }
 
 function parseSnippets(text: string): VoicePieces {
   const grab = (marker: string): string => {
-    const match = new RegExp(`==\\s*${marker}\\s*==\\n?([\\s\\S]*?)(?=$|==\\s*(?:PUENTE|GANCHO|INTRO|ORACION))`, 'i').exec(text)
+    const match = new RegExp(`==\\s*${marker}\\s*==\\n?([\\s\\S]*?)(?=$|==\\s*(?:PUENTE|GANCHO|INTRO|ORACION|MEDITACION))`, 'i').exec(text)
     return (match?.[1] ?? '').trim()
   }
   const bridges: string[] = []
@@ -532,6 +533,7 @@ function parseSnippets(text: string): VoicePieces {
     hook: grab('GANCHO') || undefined,
     intro: grab('INTRO') || undefined,
     bridges,
+    meditation: grab('MEDITACION') || undefined,
     prayer: grab('ORACION') || undefined
   }
 }
@@ -612,6 +614,10 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
     '## Gancho',
     '',
     '[[GANCHO]]',
+    '',
+    '## Introducción',
+    '',
+    '[[INTRO]]',
     ''
   ]
 
@@ -657,13 +663,21 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
     lines.push('3. **Cómo vivimos hoy:**', '   Conecta la gran idea con casa, trabajo y congregación.', '', '*Puente:* [[PUENTE 1]]', '', '*Puente:* [[PUENTE 3]]', '')
   } else {
     const page = points.length
+    const SIGNALS = ['Primeramente…', 'En segundo lugar…', 'Y para concluir…']
     points.forEach((title, index) => {
       const evidence = shortEntry(evidences[index] ?? illusLines[index] ?? '')
+      lines.push(`> *Señal para predicar:* «${SIGNALS[index] ?? `Para el punto ${index + 1}, te pido que mires…`}»`, '')
       lines.push(`### ${index + 1}. ${title}`)
       if (evidence) lines.push('', `${evidence}`)
       lines.push('', `*Puente:* [[PUENTE ${index + 1}]]`, '')
     })
     void page
+  }
+
+  const citaLines = sectionEntries(dossier, 'cita')
+  if (citaLines.length) {
+    lines.push('## Citas (frases sabias)', '')
+    lines.push(...citaLines.slice(0, 2).map((entry) => shortEntry(entry, 320)), '')
   }
 
   if (illusLines.length || casoLines.length) {
@@ -694,6 +708,29 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
       ''
     )
   }
+  lines.push('## Frase para meditar', '', '[[MEDITACION]]', '')
+  lines.push('> **Señal para predicar:** «Y para concluir…»', '')
+
+  const recap = gran || 'Vuelve al texto central y repítelo a la congregación.'
+  if (persona.id !== 'none') {
+    lines.push(
+      '## Cierre del sermón',
+      '',
+      `- Recapitulación: ${recap}`,
+      `- Llamado de ${persona.name}: ${PERSONA_PROFILE[persona.id]?.closing ?? personaDirective(persona)}`,
+      '- **Benedicción:** El Señor te bendiga y te guarde; haga resplandecer su rostro sobre ti y se favorable a ti.',
+      ''
+    )
+  } else {
+    lines.push(
+      '## Cierre del sermón',
+      '',
+      `- Recapitulación: ${recap}`,
+      '- Tu llamado de cierre: resume el mensaje en una frase y vendita la invitación concreta para esta semana.',
+      '- **Benedicción:** El Señor te bendiga y te guarde; haga resplandecer su rostro sobre ti y se favorable a ti.',
+      ''
+    )
+  }
   lines.push(
     '## Oración final',
     '',
@@ -713,7 +750,14 @@ function refEntry2(book: string, chapter: number, verse?: number): string {
 }
 
 /** ensambla sermon: código base + voz (IA o fallback determinista). Nunca deja marcadores. */
-export function assembleSermon(skeleton: string, pieces: VoicePieces, ref: string, bridgeLines: string[] = [], introFallback = ''): string {
+export function assembleSermon(
+  skeleton: string,
+  pieces: VoicePieces,
+  ref: string,
+  bridgeLines: string[] = [],
+  introFallback = '',
+  meditationFallback = ''
+): string {
   const bridgeDefault = (index: number): string =>
     (bridgeLines[index % Math.max(1, bridgeLines.length)] ? shortEntry(bridgeLines[index % Math.max(1, bridgeLines.length)], 160) : '') ||
     FALLBACK_BRIDGES[index % FALLBACK_BRIDGES.length]
@@ -723,6 +767,7 @@ export function assembleSermon(skeleton: string, pieces: VoicePieces, ref: strin
   for (let index = 1; index <= 6; index += 1) {
     out = out.replaceAll(`[[PUENTE ${index}]]`, '⇒ ' + ((pieces.bridges[index - 1] ?? '').trim() || bridgeDefault(index - 1)))
   }
+  out = out.replace('[[MEDITACION]]', (pieces.meditation ?? '').trim() || meditationFallback || `Lleva contigo esta semana el núcleo de ${ref}.`)
   out = out.replace('[[ORACION]]', (pieces.prayer ?? '').trim() || defaultPrayer(ref))
   return out.replace(/\[\[[A-ZÑ ]+\d*\]\]/g, '')
 }
@@ -866,12 +911,30 @@ export async function runCreator(
     const bridgeLines = dossier.sections.filter((x) => x.kind === 'aplicacion').flatMap((x) => x.entries)
     const commentEntries = dossier.sections.filter((x) => x.kind === 'comentario').flatMap((x) => x.entries)
     const granIntro = firstSentence(commentEntries[0] ?? '')
-    const introFallback =
-      'Hoy abrimos ' + (dossier.section ?? trimmed) + ': ' + granIntro +
-      ' El texto no vino a decorar la semana: vino a ordenarla.'
+    const refLabel = dossier.section ?? trimmed
+    const datosBrief = [
+      ...dossier.sections.filter((x) => x.kind === 'geografia').flatMap((x) => x.entries),
+      ...dossier.sections.filter((x) => x.kind === 'caso').flatMap((x) => x.entries),
+      ...dossier.sections.filter((x) => x.kind === 'historico').flatMap((x) => x.entries)
+    ].slice(0, 3).map((entry) => shortEntry(entry, 170))
+    const datoReal = datosBrief[0] ? 'Dato para abrir: ' + datosBrief[0] + '. ' : ''
+    const seed = [...refLabel].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) %
+      3
+    const introTemplates = [
+      'Antes de entrar al mensaje, acomódense: ' + datoReal + 'Hoy abrimos ' + refLabel + ': ' + granIntro,
+      'Alguien dijo una vez algo que encaja perfecto con este texto. ' + datoReal + 'La frase del pasaje es esta: ' + granIntro + ' — y la tenemos en ' + refLabel + '.',
+      'Ustedes conocen la pregunta «¿y si esto me pasara a mí?». ' + datoReal + 'Pues hojeemos ' + refLabel + ': ' + granIntro
+    ]
+    const introFallback = introTemplates[seed]
+    const textoPlano = dossier.sections
+      .filter((x) => x.kind === 'texto')
+      .flatMap((x) => x.entries)[0] ?? ''
+    const meditationFallback = textoPlano
+      ? '» ' + shortEntry(textoPlano.replace(/^\s*\d+\s*/, ''), 120) + ' — ' + refLabel
+      : ''
     if (!ctx.settings.aiEnabled) {
       return {
-        markdown: assembleSermon(skeleton, { bridges: [] }, dossier.section ?? trimmed, bridgeLines, introFallback),
+        markdown: assembleSermon(skeleton, { bridges: [] }, refLabel, bridgeLines, introFallback, meditationFallback),
         passages,
         aiUsed: false,
         notice: 'Sermón ensamblado 100% por código desde tus módulos (sin IA).',
@@ -883,8 +946,12 @@ export async function runCreator(
         personaPrompt(persona),
         `Regla de voz obligatoria: ${personaDirective(persona)}`,
         `Forma: ${PERSONA_PROFILE[persona.id]?.shape ?? 'expositiva'}. Frases típicas del orador (tono, no copiar literal): ${PERSONA_PROFILE[persona.id]?.phrases.join(' | ') ?? ''}`,
+        '',
+        'DATOS REALES ANCLADOS (úsalos tal cual en la intro o en un puente; son verificados, no inventes otros):',
+        ...(datosBrief.length ? datosBrief : ['(sin datos disponibles para este pasaje)']),
+        '',
         'REFERENCIA:',
-        dossier.section ?? trimmed,
+        refLabel,
         '',
         'ESQUELETO (estructura y evidencia ya garantizadas; no las reescribas):',
         skeleton.length > 6000 ? `${skeleton.slice(0, 6000)}…[truncado]` : skeleton,
@@ -901,7 +968,7 @@ export async function runCreator(
       })
       const pieces = parseSnippets(result.text)
       return {
-        markdown: withAnchoredSources(assembleSermon(skeleton, pieces, dossier.section ?? trimmed, bridgeLines, introFallback), dossier),
+        markdown: withAnchoredSources(assembleSermon(skeleton, pieces, refLabel, bridgeLines, introFallback, meditationFallback), dossier),
         passages,
         aiUsed: true,
         notice: 'Cuerpo 100% código; solo gancho/puentes/oración de IA (1 llamada corta).',
@@ -909,7 +976,7 @@ export async function runCreator(
       }
     } catch (error) {
       return {
-        markdown: assembleSermon(skeleton, { bridges: [] }, dossier.section ?? trimmed, bridgeLines, introFallback),
+        markdown: assembleSermon(skeleton, { bridges: [] }, refLabel, bridgeLines, introFallback, meditationFallback),
         passages,
         aiUsed: false,
         notice: error instanceof Error ? error.message : String(error),

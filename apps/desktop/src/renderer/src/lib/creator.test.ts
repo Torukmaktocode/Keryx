@@ -99,15 +99,32 @@ describe('esqueleto + ensamble (codigo primero)', () => {
 
   it('modo economia: 1 llamada, cuerpo de codigo, voz insertada', async () => {
     state.chat = vi.fn(async () => ({
-      text: '==GANCHO==\nMirad el asombro.\n==PUENTE 1==\nVamos con calma.\n==ORACION==\nDios, gracias.',
+      text: '==GANCHO==\nMirad el asombro.\n==INTRO==\nLo que veremos hoy cambia la semana.\n==PUENTE 1==\nVamos con calma.\n==ORACION==\nDios, gracias.',
       role: 'assistant'
     })) as unknown as typeof state.chat
     const result = await runCreator(mkCtx({}), 'crearsermon', 'Juan 3:16', 'escudero')
     expect(state.chat).toHaveBeenCalledTimes(1)
     expect(result.aiUsed).toBe(true)
     expect(result.markdown).toContain('Mirad el asombro')
+    expect(result.markdown).toContain('cambia la semana')
     expect(result.markdown).toContain('## Gran idea')
     expect(result.markdown).not.toContain('[[')
+  })
+
+  it('estructura oratoria completa: senales, meditacion y cierre con bendicion', async () => {
+    state.chat = vi.fn(async () => ({
+      text: '==GANCHO==\nHook.\n==ORACION==\nSuya es la gloria.',
+      role: 'assistant'
+    })) as unknown as typeof state.chat
+    const result = await runCreator(mkCtx({}), 'crearsermon', 'Marcos 5:41', 'escudero')
+    expect(result.markdown).toContain('## Introducción')
+    expect(result.markdown).toContain('«Primeramente')
+    expect(result.markdown).toContain('## Frase para meditar')
+    expect(result.markdown).toContain('Y para concluir')
+    expect(result.markdown).toContain('«Y para concluir…»')
+    expect(result.markdown).toContain('## Cierre del sermón')
+    expect(result.markdown).toContain('Benedicción')
+    expect(result.markdown).toContain('## Oración final')
   })
 
   it('IA apagada: esqueleto completo con fallbacks, hasta 0 llamadas', async () => {

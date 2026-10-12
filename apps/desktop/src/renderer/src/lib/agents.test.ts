@@ -164,6 +164,28 @@ function fakeHook(overrides: Partial<AgentHook> = {}): AgentHook {
         version: '',
         installed: true,
         source: 'local'
+      },
+      {
+        name: 'Enciclopedia de Citas Morales - Samuel Vila',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
+      },
+      {
+        name: 'Lenguaje Popular Religioso',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
       }
     ],
     locale: 'es',
@@ -335,6 +357,21 @@ describe('buildDossier (sub-agentes 0 tokens)', () => {
     const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
     const caso = dossier.sections.find((s) => s.kind === 'caso')
     expect(caso?.entries[0]).toContain('Donde Hallarlo')
+  })
+
+  it('citas sabias (Vila) y figuras (Lenguaje Popular) ancladas por tema', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    const citas = dossier.sections.find((s) => s.kind === 'cita')
+    expect(citas?.entries[0]).toContain('Vila')
+    const figura = dossier.sections.find((s) => s.kind === 'figura')
+    expect(figura?.entries[0]).toContain('Lenguaje Popular Re')
+  })
+
+  it('geografia del verso: lugares y usos encontrados por tema', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    const geo = dossier.sections.find((s) => s.kind === 'geografia')
+    expect(geo?.entries.length).toBeGreaterThan(0)
+    expect(geo?.entries[0]).toMatch(/Martens|Geografia|Usos|Arqueolog/i)
   })
 })
 

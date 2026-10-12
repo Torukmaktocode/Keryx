@@ -45,6 +45,9 @@ export interface AgentCitation {
     | 'sistematica'
     | 'historia'
     | 'caso'
+    | 'cita'
+    | 'figura'
+    | 'geografia'
 }
 
 export interface DossierSection {
@@ -100,7 +103,10 @@ const SPECIAL_RE: Record<AgentCitation['kind'], RegExp | null> = {
   critico: /metzger|aparato critico|interlineal|cevallos|codigo textual|codigo real|hebraico|gratn/i,
   sistematica: /teologia sistematica|dogmatica|teologia biblica sistematica/i,
   historia: /\bhistoria del cristianismo\b|josefo|martires|eusebio/i,
-  caso: /donde hallarlo|nave|tematico|thompson/i
+  caso: /donde hallarlo|nave|tematico|thompson/i,
+  cita: /citas morales|frases y principio|principio - rafael/i,
+  figura: /parabola|figura|lenguaje popular/i,
+  geografia: /geograf|martens|tidwel|usos y costumbre|arqueolog/i
 }
 
 /** Orden interna de especialistas: preferimos los de contenido mas extenso. */
@@ -109,7 +115,9 @@ const SPECIAL_ORDER: Partial<Record<AgentCitation['kind'], (name: string) => num
     /ferguson/i.test(name) ? 0 : /enciclopedico/i.test(name) ? 1 : 2,
   filosofico: (name) => (/brugger/i.test(name) ? 0 : /herder|rosental/i.test(name) ? 1 : 2),
   cultural: (name) => (/usos y costumbre/i.test(name) ? 0 : 1),
-  cristologico: (name) => (/nazaret/i.test(name) ? 0 : 1)
+  cristologico: (name) => (/nazaret/i.test(name) ? 0 : 1),
+  cita: (name) => (/citas morales/i.test(name) ? 0 : 1),
+  figura: (name) => (/lenguaje popular/i.test(name) ? 0 : 1)
 }
 
 function shortName(name: string): string {
@@ -569,6 +577,85 @@ export async function buildDossier(
     return job
   }
 
+  // Citas y frases sabias reales (Enciclopedia de Citas Morales de Vila,
+  // Frases y Principio de Ruiz): citatorio por tema, con atribucion.
+  const citaJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'cita', title: 'Citas y frases sabias', entries: [], cites: [] }
+    if (!parsed) return job
+    const esName = bookName(
+      CANONICAL_BOOKS.find((b) => b.code === parsed.book) ?? CANONICAL_BOOKS[0],
+      'es'
+    )
+    const topicsFor = ([esName] as string[]).concat(themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 3)
+    const mods = hook.modules
+      .filter((m) => m.category === 'Dictionary' && SPECIAL_RE.cita?.test(m.name))
+      .sort((a, b) => Number(/citas morales/i.test(b.name)) - Number(/citas morales/i.test(a.name)))
+      .slice(0, 2)
+    for (const mod of mods) {
+      let done = false
+      for (const topic of topicsFor.flatMap(topicVariants)) {
+        if (done) break
+        const entry = await safe(hook.lookup(mod.name, topic), null)
+        if (!entry) continue
+        const plain = stripTags(entry)
+        if (plain.length < 80) continue
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 520)}`)
+        job.cites.push({ kind: 'cita', module: mod.name, entry: topic })
+        done = true
+      }
+    }
+    return job
+  }
+
+  // Parabolas y figuras del lenguaje: como predico Jesus (analogia).
+  const figuraJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'figura', title: 'Parabolas y figuras del lenguaje', entries: [], cites: [] }
+    const topicsFor = (themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 3)
+    if (!topicsFor.length) return job
+    const mods = hook.modules
+      .filter((m) => m.category === 'Dictionary' && SPECIAL_RE.figura?.test(m.name))
+      .sort((a, b) => Number(/lenguaje popular/i.test(b.name)) - Number(/lenguaje popular/i.test(a.name)))
+      .slice(0, 2)
+    for (const mod of mods) {
+      let done = false
+      for (const topic of [...topicsFor.flatMap(topicVariants), 'PARABOLA'].slice(0, 5)) {
+        if (done) break
+        const entry = await safe(hook.lookup(mod.name, topic), null)
+        if (!entry) continue
+        const plain = stripTags(entry)
+        if (plain.length < 80) continue
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 480)}`)
+        job.cites.push({ kind: 'figura', module: mod.name, entry: topic })
+        done = true
+      }
+    }
+    return job
+  }
+
+  // Geografia e historia de los Lugares nombrados EN el verso (Galilea, etc).
+  const geoVerseJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'geografia', title: 'Geografia e historia del verso', entries: [], cites: [] }
+    const topicsFor = (themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 3)
+    if (!topicsFor.length) return job
+    const mods = hook.modules
+      .filter((m) => m.category === 'Dictionary' && SPECIAL_RE.geografia?.test(m.name))
+      .slice(0, 3)
+    for (const mod of mods) {
+      let done = false
+      for (const topic of topicsFor.flatMap(topicVariants)) {
+        if (done) break
+        const entry = await safe(hook.lookup(mod.name, topic), null)
+        if (!entry) continue
+        const plain = stripTags(entry)
+        if (plain.length < 80) continue
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 500)}`)
+        job.cites.push({ kind: 'geografia', module: mod.name, entry: topic })
+        done = true
+      }
+    }
+    return job
+  }
+
   // Casos biblicos REALES para ilustrar a partir de Nave / Donde Hallarlo /
   // Thompson / concordancias tematicas: solo entradas con contenido real.
   const casoJob = async (): Promise<Job> => {
@@ -631,6 +718,9 @@ export async function buildDossier(
     sistematicaJob(),
     historiaJob(),
     casoJob(),
+    citaJob(),
+    figuraJob(),
+    geoVerseJob(),
     refsJob(),
     illusJob()
   ])
@@ -651,7 +741,7 @@ export async function buildDossier(
 }
 
 function refEntry(book: string, chapter: number, verse?: number): string {
-  return `${book}${chapter}${verse ? `:${verse}` : ''}`
+  return `${book} ${chapter}${verse ? `:${verse}` : ''}`
 }
 
 function pickBibleModule(hook: AgentHook): SwordModule | null {
