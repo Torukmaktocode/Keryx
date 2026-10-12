@@ -282,7 +282,10 @@ export function renderSermon(doc: SermonDocument): string {
   for (const [module, entries] of byModule) {
     push(`- [${module} · ${entries.slice(0, 4).join(' · ')}${entries.length > 4 ? ' …' : ''}]`)
   }
-  return lines.join('\n').replace(/\n{3,}/g, '\n\n')
+  return lines
+    .join('\n')
+    .replace(/\[\[([^\]]*)\]\]/g, '$1')
+    .replace(/\n{3,}/g, '\n\n')
 }
 
 function slotText(slot: Slot): string {

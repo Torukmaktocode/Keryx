@@ -4,6 +4,7 @@ import type { DossierSection } from '../lib/agents'
 import { apiHook, buildDossier } from '../lib/agents'
 import { useAppStore } from '../store/appStore'
 import { Icon } from './Icon'
+import { downloadDocument } from '../lib/exportDoc'
 import { ExegesisCard } from './ExegesisCard'
 
 const KIND_TITLE_KEY: Record<DossierSection['kind'], string> = {
@@ -122,6 +123,17 @@ export function PassageGuide({ book, chapter, verse, bookLabel }: Props) {
           }}
         >
           {t('guide.send')}
+        </button>
+        <button
+          className="btn ghost small"
+          onClick={() => {
+            const md = dossier.sections
+              .map((section) => `## ${t(KIND_TITLE_KEY[section.kind] as TranslationKey)}\n\n${section.entries.map((e) => `- ${e}`).join('\n')}`)
+              .join('\n\n')
+            downloadDocument(`Guia ${bookLabel} ${chapter}-${verse}`, `# Guía del Pasaje — ${bookLabel} ${chapter}:${verse}\n\n${md}`, 'doc')
+          }}
+        >
+          Exportar
         </button>
       </div>
 

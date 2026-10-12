@@ -17,6 +17,7 @@
     "build:linux": "npm run build:linux --workspace @keryx/desktop",
     "typecheck": "npm run typecheck --workspace @keryx/desktop",
     "lint": "eslint .",
+    "eval": "npx tsx scripts/eval-sermons.mts",
     "format": "prettier --write .",
     "test": "vitest run"
   },

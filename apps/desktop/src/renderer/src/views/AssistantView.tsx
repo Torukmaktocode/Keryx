@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { downloadDocument, copyToClipboard } from '../lib/exportDoc'
 import { useI18n } from '@keryx/i18n'
 import type { AiStatus } from '@keryx/core'
 import { api } from '../lib/api'
@@ -162,6 +163,30 @@ export function AssistantView() {
                   }}
                 >
                   {t('assistant.sendToEditor')}
+                </button>
+                <button
+                  className="btn ghost small"
+                  onClick={() => {
+                    downloadDocument(query || 'documento', result.markdown, 'doc')
+                  }}
+                >
+                  .doc
+                </button>
+                <button
+                  className="btn ghost small"
+                  onClick={() => {
+                    downloadDocument(query || 'documento', result.markdown, 'md')
+                  }}
+                >
+                  .md
+                </button>
+                <button
+                  className="btn ghost small"
+                  onClick={() => {
+                    copyToClipboard(result.markdown)
+                  }}
+                >
+                  Copiar
                 </button>
               </div>
               {result.citations && result.citations.length > 0 && (
