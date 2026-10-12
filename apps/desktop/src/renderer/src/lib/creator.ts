@@ -36,90 +36,145 @@ export interface Persona {
 }
 
 /** Los grandes predicadores y escritores teologos de la historia. */
-/** Biografia breve de cada orador: quien es, como habla (frases y modismos
- * tipicos) y regla de la voz en la prédica. Todo determinista (sin IA). */
-const PERSONA_BIO: Record<PersonaId, { bio: string; idioms: string }> = {
+/** Perfil completo de cada orador: biografia breve, modismos, frases tipicas,
+ * forma homiletica preferida, como abre, como cierra y lente de aplicacion.
+ * Todo determinista (0 tokens): la voz cambia el cuerpo del sermOn. */
+interface PersonaProfile {
+  bio: string
+  idioms: string
+  phrases: string[]
+  shape: string
+  opening: string
+  closing: string
+  application: string
+  directive: string
+}
+
+const PERSONA_PROFILE: Record<PersonaId, PersonaProfile> = {
   lewis: {
-    bio: 'Ese Oxford irlándes convertido en apologista: profesor en Oxford y Cambridge, escribió "Mero Cristianismo" y Las Crónicas de Narnia. Humor seco, lógica transparente, fe razonada.',
-    idioms: 'Habla de "el mero cristianismo", la "alegría del anhelo (Sehnsucht)", los "cuerpos que tienen almas", y de "hacer pensar como cristiano".'
+    bio: 'Apologista de Oxford y Cambridge, irlandes; autor de "Mero Cristianismo" y de Narnia. Logica calida, humor seco, fe razonada.',
+    idioms: 'Habla del "mero cristianismo", del anhelo (Sehnsucht), de que somos "almas que tienen un cuerpo", y de pensar como cristiano.',
+    phrases: ['El cristianismo, si es falso, no importa; si es verdadero, lo es todo.', 'Ten paciencia con los que aun no ven.'],
+    shape: 'Apologetica: pregunta honesta / razonamiento / esperanza',
+    opening: 'Comencemos por la pregunta que todos evadimos:',
+    closing: 'El anhelo que sentimos hoy es la senal de que fuimos hechos para otro mundo.',
+    application: 'La aplicacion va por la razon: examina la escusa que te frena y nombrg el anhelo que el evangelio contesta.',
+    directive: 'Aplica con razonamiento calido y una analogia cotidiana entre mayusculas entitled por el anhelo con el evangelio.'
   },
   peterson: {
-    bio: 'Pastor de Maryland y Montana, traductor al lenguaje llano de toda la Biblia ("The Message"). Pastor-poeta: devuelto a la vida común.',
-    idioms: 'Habla de la "cocina, el tráfico y la mesa", "practicar la resurrección", el "sabado lento", y desconfía del "consumo religioso".'
+    bio: 'Pastor de Maryland y Montana, tradujo la Biblia al lenguaje llano ("The Message"). Pastor-poeta de la vida comun.',
+    idioms: 'La cocina, el trafico y la mesa; "practicar la resurreccion"; desconfia del consumo religioso.',
+    phrases: ['La vida con Dios es larga y lenta.', 'Empieza donde estas.'],
+    shape: 'Narrativa de la vida ordinaria: relato / cocina-mesa / caminar lento',
+    opening: 'Ayer, entre el trafico y la olla de la sopa, el texto me desarmo:',
+    closing: 'Ve a la mesa y practica la resurreccion en lo ordinario.',
+    application: 'La aplicacion baja al suelo de todos los dias: los platos, la escuela, la sopa de la casa.',
+    directive: 'Baja cada punto a la vida ordinaria (cocina, trafico, mesa); frases cortas y sin adorno; discipulado lento.'
   },
   spurgeon: {
-    bio: 'El Príncipe de los Predicadores: Metropolitan Tabernacle de Londres, convertido a los 15, predicó a miles desde los 19 y fundó colegios de pastores.',
-    idioms: 'Enciende con "el texto", "la sangre y la justicia", "¡Oh alma cansada!", y serumá alumbotron por "el gran pecador y el grande Salvador".'
+    bio: 'El Principe de los Predicadores: Metropolitan Tabernacle de Londres; convertido a los 15, predico a miles desde los 19.',
+    idioms: 'El texto como trono, la sangre y la justicia, "Oh alma cansada", el gran pecador y el grande Salvador.',
+    phrases: ['Ven tal como eres.', 'El texto predica por si mismo; mi tarea es abrirle la puerta.'],
+    shape: 'Centrada en el texto: texto / doctrina / aplicacion / llamado', 
+    opening: 'Vengamos al texto mismo, porque el texto va al punto:',
+    closing: 'Ven a Cristo como estas; lleva el texto contigo como un tesoro toda la semana.',
+    application: 'La aplicacion termina evangelistica: advertencia sobre el pecado y oferta apasionada de gracia.',
+    directive: 'Cierra con llamado evangelistico directo: la cruz al centro, advertencia del pecado y oferta apasionada de gracia.'
   },
   lloydjones: {
-    bio: 'El "Doctor": médico de Harley Street que dejó la medicina para Westminster Chapel, Londres. Dicático, doctrinal, sin prisa.',
-    idioms: 'Diagnostica como médico: "el corazón del problema", "repasemos el argumento", y predica versículo por versículo durante años.'
+    bio: 'El "Doctor": medico de Harley Street que dejo la medicina por Westminster Chapel. Docente doctrinal, sin prisa.',
+    idioms: 'Diagnostica como medico: "el corazon del problema", "repasemos el argumento", versiculo por versiculo por anos.',
+    phrases: ['El problema nunca es el primero que parece.', 'El evangelio no consuela a quien no se dejo diagnosticar.'],
+    shape: 'Diagnostico y consuelo: sintomas / diagnostico / gracia',
+    opening: 'Pongamos el diagnostico antes del remedio:',
+    closing: 'Solo quien vio su miseria reconoce la gracia como gracia.',
+    application: 'La aplicacion confronta el corazon con un diagnostico honesto antes de dar la cura.',
+    directive: 'Sigue la logica doctrinal punto por punto y confronta el corazon antes del consuelo.'
   },
   edwards: {
-    bio: 'Teólogo del Gran Despertar en Massachusetts, rector de Princeton. Intensidad serena: la majestad de Dios y los afectos.',
-    idioms: 'Habla de "los afectos", "el sensorio divino", "sostener la mente bajo la luz del texto", y de la belleza de la santidad.'
+    bio: 'Teologo del Gran Despertar en Massachusetts; rector de Princeton. Intensidad serena: majestad y afectos.',
+    idioms: 'Los afectos, "el sentido divino", la belleza de la santidad, saborear lo que la mente entiende.',
+    phrases: ['No basta conocer: hay que saborear.', 'La majestad de Dios no se explica: se siente.'],
+    shape: 'Doctrina / impresion de los afectos / bienaventuranza',
+    opening: 'Detengamosnos ante la majestad de lo que el texto declara:',
+    closing: 'Que tu alma saboree hoy lo que tu mente entendi.',
+    application: 'La aplicacion apunta a los afectos: no solo saber la verdad, sino temblar el alma ante ella.',
+    directive: 'Despierta los afectos con la majestad de Dios y confronta la autocomplacencia con intensidad serena.'
   },
   calvino: {
-    bio: 'Crisol de Ginebra: reformador expositivo, escribió la Institución de la Religión Cristiana a los 26 y sermones versículo por verso.',
-    idioms: 'Habla de "la soberanía de Dios", "sola escritura", "las promesas que no mienten", en sobriedad expositiva.'
+    bio: 'Reformador de Ginebra; la Institucion escrita a los 26; sermones versiculo por versiculo. Sobriedad expositiva.',
+    idioms: 'La soberania de Dios, sola escritura, las promesas que no mienten.',
+    phrases: ['Dios no miente ni cambia.', 'La Escritura es la regla de toda verdad.'],
+    shape: 'Expositiva sobria: verso / doctrina / exhortacion',
+    opening: 'El texto dice una sola cosa y la dice clara:',
+    closing: 'Sujetate a la promesa: Dios no miente.',
+    application: 'La aplicacion reafirma la soberania y la promesa, con exhortacion sobria.',
+    directive: 'Cierra reafirmando la soberania y promesa de Dios, con sobriedad expositiva.'
   },
   lutero: {
-    bio: 'Monje agustino que desató la Reforma en Wittenberg (1517) con 95 tesis; traducto de la Biblia al alemán del pueblo.',
-    idioms: 'Frase célebre: "Aquí estoy, no puedo hacer de otra manera"; aplica la ley que confronta y el evangelio que consuela; humor gordo.'
+    bio: 'Monje que desato la Reforma en Wittenberg (1517); traductor de la Biblia al aleman del pueblo.',
+    idioms: '"Aqui estoy, no puedo hacer de otra manera"; la ley acusa, el evangelio consuela; humor directo.',
+    phrases: ['La ley acusa; el evangelio revive.', 'La Biblia en tu idioma, en tu casa.'],
+    shape: 'Ley y evangelio en cada punto',
+    opening: 'Escucha primero lo que te acusa, para que sepas lo que te salva:',
+    closing: 'Cristo hizo todo por ti: descansa, esta hecho.',
+    application: 'La aplicacion distingue ley y evangelio: confronta el pecado y consuela con la gracia, en lenguaje llano.',
+    directive: 'Aplica la distincion ley-evangelio en cada punto: confronta con la ley y consuela con el evangelio.'
   },
   tozer: {
-    bio: 'Pastor autodidacta de Chicago (Southside Alliance), autor de "La Búsqueda de Dios" y "El conocimiento del Santo". Voz profética del siglo XX.',
-    idioms: 'Habla de "persiguiendo a Dios", "la santidad", y advertía de la "iglesia ligera". Sus oraciones eran largas y reverentes.'
+    bio: 'Pastor autodidacta de Chicago; autor de "La Busqueda de Dios" y "El conocimiento del Santo". Voz profetica del siglo XX.',
+    idioms: 'Persiguiendo a Dios, la santidad personal, la advertencia contra la "iglesia ligera", oraciones largas.',
+    phrases: ['Lo que pienses de Dios es lo mas importante de ti.', 'Dios no busca adoradores de alquiler.'],
+    shape: 'Reverencia / asombro / rompimiento con lo mundano',
+    opening: 'Arrodillemos el corazon antes de abrir la boca:',
+    closing: 'Deja lo mundano esta semana y persigue a Dios.',
+    application: 'La aplicacion exhorta a la santidad y al rompimiento con lo mundano, elevando la reverencia.',
+    directive: 'Exhorta a la santidad personal y al romper con lo mundano; busca reverencia y asombro.'
   },
   keller: {
-    bio: 'Fundó Redeemer Presbyterian Church en el Nueva York de los 2000, junto a Central Park. Apólogo a los escépticos urbanos; autor de "La Oración".',
-    idioms: 'Habla de "idolatías del corazón", Extensiones de "el evangelio re-centra la vida", y dirige mensaje a tres oyentes a la vez.'
+    bio: 'Fundo Redeemer Presbyterian en Manhattan; apologo de los escepticos urbanos; autor de "La Oracion".',
+    idioms: 'Las idolatrias del corazon, "el evangelio re-centra la vida", hablarle a tres oyentes a la vez.',
+    phrases: ['Un idolo es algo bueno convertido en absoluto.', 'La religion dice: haz y logra; la gracia dice: esta hecho, vive.'],
+    shape: 'Cristocentrica: problema / Cristo en el texto / tres oyentes',
+    opening: 'Digamos la verdad: el problema no esta afuera, espera afuera de tu puerta:',
+    closing: 'Elige a que le obedece tu vida esta semana.',
+    application: 'La aplicacion apunta al esceptico, al religioso y al cansado a la vez, conectando el texto con Cristo.',
+    directive: 'Aplica a tres oyentes a la vez (esceptico, religioso, cansado) y conecta el texto con Cristo en cada punto.'
   },
   robinson: {
-    bio: 'Padre de la homilética moderna: presidente de Gordon-Conwell y Denver Seminary, autor de "Preparación y Exposición de Sermones Homiléticos".',
-    idioms: 'Habla de "la idea central (big idea)", "el sujeto emerge del texto", y de medir los pasos de respuesta.'
+    bio: 'Padre de la homiletica moderna; presdio Gordon-Conwell y Denver Seminary; padre de la metodologia "big idea".',
+    idioms: 'La idea central (big idea); sujeto y complemento que emergen del texto; pasos de respuesta.',
+    phrases: ['Predica la idea central, no tres ideas.', 'El texto manda el punto.'],
+    shape: 'Idea central: sujeto / complemento / pasos de respuesta',
+    opening: 'Antes de opinar, clarifiquemos la idea central que el texto sostiene:',
+    closing: 'Decide esta semana que haras con la idea central.',
+    application: 'La aplicacion mide respuesta: pasos concretos que obedecen la idea central.',
+    directive: 'Cada punto nace del texto con su idea central definida; cierra midiendo la respuesta de la congregacion.'
   },
   agustin: {
-    bio: 'Obispo de Hipona (Norte de África, siglos IV-V). Converso de la retórica, escribir las Confesiones y La Ciudad de Dios: padre de la teología occidental.',
-    idioms: 'Frase célebre: "Nos hiciste para Ti, y nuestro corazón está inquieto hasta que descanse en Ti"; predica con confesión y amor de la Iglesia.'
+    bio: 'Obispo de Hipona (siglos IV-V); de la retorica a la gracia; las Confesiones y La Ciudad de Dios.',
+    idioms: 'El corazon inquieto, la confesion, el amor a la Iglesia, la Ciudad de Dios frente a la ciudad del hombre.',
+    phrases: ['Nos hiciste para Ti, y el corazon anda inquieto.', 'Ama, y haz lo que quieras.'],
+    shape: 'Confesional: inquietud / gracia / descanso',
+    opening: 'Empiezo confesando: este texto tambien me precede:',
+    closing: 'El corazon inquieto descansa solo en Ti.',
+    application: 'La aplicacion va en clave de confesion y amor a la Iglesia; termina en el descanso de Dios.',
+    directive: 'Concluye en clave del corazon inquieto: aplica con confession y amor a la Iglesia.'
   },
   wesley: {
-    bio: 'Predicador itinerante del avivamiento inglés (3 sermones a caballo por día a la edad de 80); fundó las sociedades metodistas.',
-    idioms: 'Frase célebre: "El mundo es mi parroquia"; habla de "santificación", "la gracia preveniente", y de la vida santa alcanzada hoy.'
+    bio: 'Predicador itinerante del avivamiento ingles; a caballo, tres sermones por dia hasta los 80; sociedades metodistas.',
+    idioms: '"El mundo es mi parroquia", la santificacion practica, la gracia preveniente.',
+    phrases: ['La santidad es alcanzable hoy.', 'Ve y no peques mas.'],
+    shape: 'Avivamiento: conviccion / santificacion / caminar en gracia',
+    opening: 'El mundo es mi parroquia, y hoy esta parroquia es esta sala:',
+    closing: 'La gracia ya te alcanzo: camina en santidad la semana.',
+    application: 'La aplicacion llama a la santificacion practica: vida santa alcanzable hoy por la gracia.',
+    directive: 'Cierra con enfasis de santificacion: la vida santa es alcanzable hoy con la gracia.'
   }
 }
 
-/** Directivas deterministas por orador: cambiar la voz cambia el CUERPO del
- * sermón (aplicación, cierre, tono de la evidencia) incluso sin IA. */
-const PERSONA_DIRECTIVE: Record<PersonaId, string> = {
-  lewis:
-    'Aplica con razonamiento cálido y una analogía cotidiana (estilo "Mero Cristianismo"); cierra mostrando cómo el anhelo profundo apunta al evangelio.',
-  peterson:
-    'Baja cada punto a la vida ordinaria (cocina, tráfico, mesa); frases cortas y sin adorno; cierra con discipulado lento, no con atajos.',
-  spurgeon:
-    'Cierra con llamado evangelístico directo: la cruz al centro, advertencia sobre el pecado y oferta apasionada de gracia.',
-  lloydjones:
-    'Sigue la lógica doctrinal punto por punto y termina confrontando el diagnóstico del corazón humano antes del consuelo.',
-  edwards:
-    'Despierta los afectos con la majestad de Dios y confronta la autocomplacencia con intensidad serena.',
-  calvino:
-    'Cierra reafirmando la soberanía y promesa de Dios, con sobriedad expositiva y sin efectos retóricos vacíos.',
-  lutero:
-    'Aplica la distinción ley-evangelio en cada punto: confronta con la ley y consuela con el evangelio, en lenguaje llano.',
-  tozer:
-    'Exhorta a la santidad personal y al romper con lo mundano; busca reverencia y asombro.',
-  keller:
-    'Aplica a tres oyentes a la vez (escéptico, religioso, cansado) y conecta el texto con Cristo en cada punto.',
-  robinson:
-    'Cada punto nace del texto con su idea central definida; cierra midiendo la respuesta de la congregación.',
-  agustin:
-    'Concluye en clave del corazón inquieto: aplica con confesión y amor a la Iglesia.',
-  wesley:
-    'Cierra con énfasis de santificación: la vida santa es alcanzable hoy con la gracia; exhorta al disciplina del espíritu.'
-}
-
 function personaDirective(persona: Persona): string {
-  return PERSONA_DIRECTIVE[persona.id] ?? ''
+  return PERSONA_PROFILE[persona.id]?.directive ?? ''
 }
 
 export const PERSONAS: Persona[] = [
@@ -528,8 +583,10 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
     '',
     '## La voz de hoy',
     '',
-    `> **${persona.name}** — ${PERSONA_BIO[persona.id]?.bio ?? persona.style}`,
-    `> *Así habla:* ${PERSONA_BIO[persona.id]?.idioms ?? '—'}`,
+    `> **${persona.name}** — ${PERSONA_PROFILE[persona.id]?.bio ?? persona.style}`,
+    `> *Así habla:* ${PERSONA_PROFILE[persona.id]?.idioms ?? '—'}`,
+    `> *Frases suyas:* ${PERSONA_PROFILE[persona.id]?.phrases.join(' · ') ?? '—'}`,
+    `> *Forma:* ${PERSONA_PROFILE[persona.id]?.shape ?? '—'}`,
     `> *Regla en esta prédica:* ${personaDirective(persona)}`,
     ''
   ]
@@ -552,10 +609,11 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
   }
 
   lines.push('## El mensaje', '')
+  lines.push(`> Forma de la voz: ${PERSONA_PROFILE[persona.id]?.shape ?? 'expositiva'}`, '')
   if (!points.length) {
     lines.push('1. **El texto dice:**', `   ${shortEntry(evidences[0] ?? ref)}`, '')
     lines.push('2. **Qué significa:**', `   ${shortEntry(topicLines[0] ?? stepGran(gran))}`, '')
-    lines.push('3. **Cómo vivimos hoy:**', '   Conecta la gran idea con casa, trabajo y congregación.', '', '[[PUENTE 1]]', '', '[[PUENTE 3]]', '')
+    lines.push('3. **Cómo vivimos hoy:**', '   Conecta la gran idea con casa, trabajo y congregación.', '', '*Puente:* [[PUENTE 1]]', '', '*Puente:* [[PUENTE 3]]', '')
   } else {
     const page = points.length
     points.forEach((title, index) => {
@@ -573,13 +631,23 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
   }
 
   lines.push('## Aplicación', '')
-  lines.push(`> **Regla de la voz (${persona.name}):** ${personaDirective(persona)}`, '')
+  lines.push(`> **Lente de la voz (${persona.name}):** ${PERSONA_PROFILE[persona.id]?.application ?? personaDirective(persona)}`, '')
   if (bridgeLines.length) {
     lines.push(...bridgeLines.slice(0, 2).map((entry) => `- ${shortEntry(entry, 260)}`), '')
   } else {
     lines.push('- **En casa:** [concreto con los tuyos.]', '- **En el trabajo:** [concreto con colegas.]', '- **En la iglesia:** [concreto con la congregación.]', '')
   }
-  lines.push('## Oración final', '', '[[ORACION]]', '', `> Dosier: ${dossier.chars} caracteres de módulos reales [cita verifiable por apartado].`)
+  lines.push(
+    '## Cierre de la voz',
+    '',
+    `**${persona.name}:** ${PERSONA_PROFILE[persona.id]?.closing ?? ''}`,
+    '',
+    '## Oración final',
+    '',
+    '[[ORACION]]',
+    '',
+    `> Dosier: ${dossier.chars} caracteres de módulos reales [cita verifiable por apartado].`
+  )
   return lines.join('\n')
 }
 
@@ -699,7 +767,7 @@ export async function runCreator(
       const ask = [
         personaPrompt(persona),
         `Regla de voz obligatoria: ${personaDirective(persona)}`,
-        '',
+        `Forma: ${PERSONA_PROFILE[persona.id]?.shape ?? 'expositiva'}. Frases típicas del orador (tono, no copiar literal): ${PERSONA_PROFILE[persona.id]?.phrases.join(' | ') ?? ''}`,
         'REFERENCIA:',
         dossier.section ?? trimmed,
         '',
