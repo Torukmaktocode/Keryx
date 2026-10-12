@@ -148,6 +148,15 @@ export type ChapterRequest = z.infer<typeof chapterRequestSchema>
 export type VerseRequest = z.infer<typeof verseRequestSchema>
 export type SearchRequest = z.infer<typeof searchRequestSchema>
 export type CompareRequest = z.infer<typeof compareRequestSchema>
+export const dictLemmaSchema = z.object({
+  module: z.string(),
+  lemma: z.string().min(1)
+})
+export const strongsOccurrencesSchema = z.object({
+  code: z.string().min(2).max(8),
+  limit: z.number().int().positive().max(2000).optional()
+})
+
 export type DictLookupInput = z.infer<typeof dictLookupSchema>
 export type SettingsPatch = z.infer<typeof settingsPatchSchema>
 export type AiChatInput = z.infer<typeof aiChatSchema>

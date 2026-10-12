@@ -118,6 +118,17 @@ export class SwordService {
     return this.provider.lookupDict(module, key)
   }
 
+  lookupLemma(module: string, lemma: string): Promise<{ topic: string; definition: string } | null> {
+    return this.provider.lookupLemma(module, lemma)
+  }
+
+  strongsOccurrences(
+    code: string,
+    limit = 600
+  ): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>> {
+    return this.provider.strongsOccurrences(code, limit)
+  }
+
   strongs(key: string): Promise<StrongsEntry | null> {
     return this.provider.strongs(key)
   }

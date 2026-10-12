@@ -867,6 +867,73 @@
   flex-wrap: wrap;
 }
 
+/* ===== Exégesis Strong (BDAG-lite) ===== */
+.exeg-list {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exeg-card {
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--glass);
+}
+
+.exeg-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: 0;
+  color: inherit;
+  padding: 8px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.exeg-code {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.exeg-count {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.exeg-body {
+  padding: 0 12px 10px;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.exeg-def {
+  margin: 4px 0;
+  opacity: 0.85;
+}
+
+.exeg-lemma p,
+.exeg-senses,
+.exeg-morph {
+  margin: 4px 0;
+  font-size: 12.5px;
+  opacity: 0.9;
+}
+
+.exeg-occ {
+  margin: 6px 0 0;
+  padding-left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
 /* ===== Marcas Strong# (superíndices clicables) ===== */
 .show-strongs w[data-strong]::after {
   content: attr(data-strong);

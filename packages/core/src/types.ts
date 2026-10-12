@@ -78,6 +78,14 @@ export interface StrongsEntry {
 }
 
 /** Marcas al estilo e-Sword: que modulos tienen contenido para la referencia/tema. */
+export interface StrongsOccurrence {
+  book: string
+  chapter: number
+  verse: number
+  word: string
+  morphology: string
+}
+
 export interface ModuleCoverage {
   module: string
   /** Comentarios: versiculos cubiertos del capitulo. Diccionarios: 1 si existe entrada. */

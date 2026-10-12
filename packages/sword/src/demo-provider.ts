@@ -95,6 +95,10 @@ export class DemoSwordProvider implements SwordProvider {
   async dictCoverage(): Promise<ModuleCoverage[]> {
     return []
   }
+  async lookupLemma(): Promise<{ topic: string; definition: string } | null> {
+    return null
+  }
+
   async strongsOccurrences(): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>> {
     return []
   }

@@ -8,6 +8,8 @@ import {
   dictCoverageSchema,
   compareRequestSchema,
   dictLookupSchema,
+  dictLemmaSchema,
+  strongsOccurrencesSchema,
   documentCreateSchema,
   documentIdSchema,
   documentSaveSchema,
@@ -135,6 +137,14 @@ export async function registerIpc(
     return sword.lookupDict(req.module, req.key)
   })
   register(IPC.dictStrongs, (args) => sword.strongs(String(args[0])))
+  register(IPC.dictLemma, (args) => {
+    const req = dictLemmaSchema.parse(args[0])
+    return sword.lookupLemma(req.module, req.lemma)
+  })
+  register(IPC.bibleStrongsOccurrences, (args) => {
+    const req = strongsOccurrencesSchema.parse(args[0])
+    return sword.strongsOccurrences(req.code, req.limit)
+  })
   register(IPC.dictCoverage, (args) => {
     const req = dictCoverageSchema.parse(args[0])
     return sword.dictCoverage(req.term)

@@ -25,6 +25,7 @@ export interface SwordProvider {
   commentaryCoverage(book: string, chapter: number): Promise<ModuleCoverage[]>
   dictCoverage(term: string): Promise<ModuleCoverage[]>
   /** Guia Exegética: ocurrencias reales de un codigo Strong en la biblia. */
+  lookupLemma(module: string, lemma: string): Promise<{ topic: string; definition: string } | null>
   strongsOccurrences(
     code: string,
     limit?: number

@@ -4,6 +4,7 @@ import type { DossierSection } from '../lib/agents'
 import { apiHook, buildDossier } from '../lib/agents'
 import { useAppStore } from '../store/appStore'
 import { Icon } from './Icon'
+import { ExegesisCard } from './ExegesisCard'
 
 const KIND_TITLE_KEY: Record<DossierSection['kind'], string> = {
   texto: 'guide.texto',
@@ -75,6 +76,15 @@ export function PassageGuide({ book, chapter, verse, bookLabel }: Props) {
     return [...byModule.entries()]
   }, [dossier])
 
+  const strongCodes = useMemo(
+    () =>
+      (dossier?.citations ?? [])
+        .filter((c) => c.kind === 'strongs')
+        .map((c) => c.entry)
+        .filter((e) => /^[GH]\d{1,5}$/.test(e)),
+    [dossier]
+  )
+
   if (loading) {
     return (
       <div className="guide">
@@ -141,6 +151,21 @@ export function PassageGuide({ book, chapter, verse, bookLabel }: Props) {
         ))}
         {dossier.sections.length === 0 && <p className="empty">{t('guide.noData')}</p>}
       </div>
+
+      {strongCodes.length > 0 && (
+        <div className="exeg-list">
+          {strongCodes.slice(0, 6).map((code) => (
+            <ExegesisCard
+              key={code}
+              code={code}
+              word="—"
+              definition={null}
+              modules={modules}
+              onSend={(md) => void sendToWriting(md, `Exégesis ${code}`)}
+            />
+          ))}
+        </div>
+      )}
 
       {citations.length > 0 && (
         <div className="guide-sources">

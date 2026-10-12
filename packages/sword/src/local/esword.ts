@@ -762,7 +762,73 @@ export class EswordProvider implements SwordProvider {
     }
   }
 
-  /** Resolucion por nombre: cualquier diccionario "Strong*" de la biblioteca */
+  private lemmaCache = new Map<string, Map<string, string>>()
+
+  // entidades HTML con nombres griegos que usan los lexicos Biblioteca Hispana
+  private static greekEntities: Record<string, string> = {
+    alpha: '\u03b1', beta: '\u03b2', gamma: '\u03b3', delta: '\u03b4', epsilon: '\u03b5',
+    zeta: '\u03b6', eta: '\u03b7', theta: '\u03b8', iota: '\u03b9', kappa: '\u03ba',
+    lambda: '\u03bb', mu: '\u03bc', nu: '\u03bd', xi: '\u03be', omicron: '\u03bf',
+    pi: '\u03c0', rho: '\u03c1', sigma: '\u03c3', sigmaf: '\u03c2', tau: '\u03c4',
+    upsilon: '\u03c5', phi: '\u03c6', chi: '\u03c7', psi: '\u03c8', omega: '\u03c9',
+    nbsp: ' ', laquo: '\u00ab', raquo: '\u00bb', quot: '\u0022', amp: '\u0026'
+  }
+
+  private decodeEntities(text: string): string {
+    return text
+      .replace(/&#x([0-9a-fA-F]+);/g, (_m, hex) => String.fromCodePoint(parseInt(hex, 16)))
+      .replace(/&#(\d+);/g, (_m, dec) => String.fromCodePoint(parseInt(dec, 10)))
+      .replace(/&([a-zA-Z]+);/g, (m, name: string) =>
+        Object.prototype.hasOwnProperty.call(EswordProvider.greekEntities, name.toLowerCase())
+          ? EswordProvider.greekEntities[name.toLowerCase()]
+          : m
+      )
+  }
+
+  private normalizeLemma(raw: string): string {
+    return raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+  }
+
+  private lemmaIndexFor(moduleName: string, path: string, dictTable: string): Map<string, string> {
+    const cached = this.lemmaCache.get(moduleName)
+    if (cached) return cached
+    const map = new Map<string, string>()
+    try {
+      const db = this.open(path)
+      const greek = /[\u0370-\u03ff\u1f00-\u1fff]+/
+      const rows = db
+        .prepare(`SELECT Topic AS topic, Definition AS def FROM ${dictTable}`)
+        .all() as Array<{ topic: unknown; def: unknown }>
+      for (const row of rows) {
+        const def = String(row.def ?? '')
+        const match = greek.exec(this.decodeEntities(stripHtml(def)))
+        const lemma = match ? this.normalizeLemma(match[0]) : ''
+        if (lemma && !map.has(lemma)) {
+          map.set(
+            lemma,
+            `[${stripHtml(String(row.topic ?? ''))}] ${this.decodeEntities(stripHtml(def)).slice(0, 620)}`
+          )
+        }
+      }
+    } catch {
+      // libreria sin la tabla: indice vacio
+    }
+    this.lemmaCache.set(moduleName, map)
+    return map
+  }
+
+  /** Entrada de lexico por LEMA griego real (normalizado sin acentos). */
+  async lookupLemma(module: string, lemma: string): Promise<{ topic: string; definition: string } | null> {
+    const conf = this.module(module)
+    if (!conf || !conf.dictTable) return null
+    const normalized = this.normalizeLemma(lemma)
+    if (!normalized) return null
+    const hit = this.lemmaIndexFor(conf.name, conf.path, conf.dictTable).get(normalized)
+    if (!hit) return null
+    const topic = hit.slice(1, hit.indexOf(']'))
+    return { topic, definition: hit.slice(hit.indexOf(']') + 1).trim() }
+  }
+
   async strongs(key: string): Promise<StrongsEntry | null> {
     const names = ['Strongs', 'StrongsPlus', 'Strong']
     const strongModules = this.modules.filter(
@@ -815,17 +881,22 @@ export class EswordProvider implements SwordProvider {
         text: string
       }>
       const out: Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }> = []
-      const pattern = new RegExp(`([^\\n<>]{1,30}?)\\s*<num>\\s*${normalized}([^<]*)<\\/num>`, 'gi')
+      const pattern = new RegExp(`([^\\n<>]{1,30}?)\\s*<num>\\s*${normalized}(?![\\d])([^<]*)<\\/num>`, 'gi')
       for (const row of rows) {
         pattern.lastIndex = 0
         let match = pattern.exec(row.text ?? '')
         while (match) {
+          // dentro del mismo <num> pueden venir varios codigos Strong
+          // (G3588 G2316 DNSM NNSM): se cachan solo tokens morfologicos.
+          const morphTokens = (match[2] ?? '')
+            .split(/\s+/)
+            .filter((t) => t && !/^[GH]?\d{1,5}$/i.test(t))
           out.push({
             book: CANONICAL_BOOKS[row.book - 1]?.code ?? String(row.book),
             chapter: row.chapter,
             verse: row.verse,
             word: stripHtml(match[1] ?? '').slice(0, 40),
-            morphology: `${language}${match[2] ?? ''}`.trim().slice(0, 40)
+            morphology: `${language} ${morphTokens.join(' ')}`.trim().slice(0, 40)
           })
           if (out.length >= limit) return out
           match = pattern.exec(row.text ?? '')

@@ -64,11 +64,16 @@ export interface KeryxApi {
       chapter: number
       modules: string[]
     }): Promise<Result<CompareColumn[]>>
+    strongsOccurrences(req: {
+      code: string
+      limit?: number
+    }): Promise<Result<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>>>
   }
   dict: {
     lookup(req: { module: string; key: string }): Promise<Result<string | null>>
     strongs(key: string): Promise<Result<StrongsEntry | null>>
     coverage(req: { term: string }): Promise<Result<ModuleCoverage[]>>
+    lookupLemma(req: { module: string; lemma: string }): Promise<Result<{ topic: string; definition: string } | null>>
   }
   documents: {
     list(): Promise<Result<DocumentMeta[]>>

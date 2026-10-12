@@ -108,6 +108,14 @@ export class CompositeSwordProvider implements SwordProvider {
     return [...merged.values()].sort((a, b) => a.module.localeCompare(b.module))
   }
 
+  async lookupLemma(module: string, lemma: string): Promise<{ topic: string; definition: string } | null> {
+    for (const provider of this.providers) {
+      const result = await provider.lookupLemma(module, lemma)
+      if (result) return result
+    }
+    return null
+  }
+
   async strongsOccurrences(
     code: string,
     limit = 600

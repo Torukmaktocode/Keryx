@@ -67,13 +67,19 @@ export const api = {
       book: string
       chapter: number
       modules: string[]
-    }): Promise<CompareColumn[]> => unwrap(raw.bible.compare(req))
+    }): Promise<CompareColumn[]> => unwrap(raw.bible.compare(req)),
+    strongsOccurrences: (req: { code: string; limit?: number }) =>
+      unwrap<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>>(
+        raw.bible.strongsOccurrences(req)
+      )
   },
   dict: {
     lookup: (req: { module: string; key: string }): Promise<string | null> =>
       unwrap(raw.dict.lookup(req)),
     strongs: (key: string): Promise<StrongsEntry | null> => unwrap(raw.dict.strongs(key)),
-    coverage: (req: { term: string }): Promise<ModuleCoverage[]> => unwrap(raw.dict.coverage(req))
+    coverage: (req: { term: string }): Promise<ModuleCoverage[]> => unwrap(raw.dict.coverage(req)),
+    lookupLemma: (req: { module: string; lemma: string }) =>
+      unwrap<{ topic: string; definition: string } | null>(raw.dict.lookupLemma(req))
   },
   documents: {
     list: (): Promise<DocumentMeta[]> => unwrap(raw.documents.list()),

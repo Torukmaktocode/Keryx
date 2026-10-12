@@ -33,12 +33,14 @@ const api: KeryxApi = {
     commentaryVerses: (req) => invoke(IPC.bibleCommentaryVerses, req),
     commentaryCoverage: (req) => invoke(IPC.bibleCommentaryCoverage, req),
     search: (req) => invoke(IPC.bibleSearch, req),
-    compare: (req) => invoke(IPC.bibleCompare, req)
+    compare: (req) => invoke(IPC.bibleCompare, req),
+    strongsOccurrences: (req) => invoke(IPC.bibleStrongsOccurrences, req)
   },
   dict: {
     lookup: (req) => invoke(IPC.dictLookup, req),
     strongs: (key) => invoke(IPC.dictStrongs, key),
-    coverage: (req) => invoke(IPC.dictCoverage, req)
+    coverage: (req) => invoke(IPC.dictCoverage, req),
+    lookupLemma: (req) => invoke(IPC.dictLemma, req)
   },
   documents: {
     list: () => invoke(IPC.documentsList),
