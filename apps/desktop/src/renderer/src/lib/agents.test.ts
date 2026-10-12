@@ -153,6 +153,17 @@ function fakeHook(overrides: Partial<AgentHook> = {}): AgentHook {
         version: '',
         installed: true,
         source: 'local'
+      },
+      {
+        name: 'Donde Hallarlo en la Biblia - K Anderson',
+        description: '',
+        category: 'Dictionary',
+        lang: 'es',
+        driver: 'e-Sword .dcti',
+        encoding: 'UTF-8',
+        version: '',
+        installed: true,
+        source: 'local'
       }
     ],
     locale: 'es',
@@ -318,6 +329,12 @@ describe('buildDossier (sub-agentes 0 tokens)', () => {
     expect(coment?.entries.some((e) => e.includes('Calvino'))).toBe(true)
     const critico = dossier.sections.find((s) => s.kind === 'critico')
     expect(critico?.entries[0]).toContain('Grie…')
+  })
+
+  it('casos biblicos reales: ancla Nave/DondeHallarlo por libro o tema del verso', async () => {
+    const dossier = await buildDossier(fakeHook(), 'crearsermon', 'Juan 3:16')
+    const caso = dossier.sections.find((s) => s.kind === 'caso')
+    expect(caso?.entries[0]).toContain('Donde Hallarlo')
   })
 })
 

@@ -44,6 +44,7 @@ export interface AgentCitation {
     | 'critico'
     | 'sistematica'
     | 'historia'
+    | 'caso'
 }
 
 export interface DossierSection {
@@ -98,7 +99,8 @@ const SPECIAL_RE: Record<AgentCitation['kind'], RegExp | null> = {
   morfologia: /morfologico robinson|morphological analysis/i,
   critico: /metzger|aparato critico|interlineal|cevallos|codigo textual|codigo real|hebraico|gratn/i,
   sistematica: /teologia sistematica|dogmatica|teologia biblica sistematica/i,
-  historia: /\bhistoria del cristianismo\b|josefo|martires|eusebio/i
+  historia: /\bhistoria del cristianismo\b|josefo|martires|eusebio/i,
+  caso: /donde hallarlo|nave|tematico|thompson/i
 }
 
 /** Orden interna de especialistas: preferimos los de contenido mas extenso. */
@@ -567,6 +569,36 @@ export async function buildDossier(
     return job
   }
 
+  // Casos biblicos REALES para ilustrar a partir de Nave / Donde Hallarlo /
+  // Thompson / concordancias tematicas: solo entradas con contenido real.
+  const casoJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'caso', title: 'Casos biblicos reales', entries: [], cites: [] }
+    if (!parsed) return job
+    const esName = bookName(
+      CANONICAL_BOOKS.find((b) => b.code === parsed.book) ?? CANONICAL_BOOKS[0],
+      'es'
+    )
+    const topicsFor = ([esName] as string[]).concat(themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 3)
+    const mods = hook.modules
+      .filter((m) => m.category === 'Dictionary' && /donde hallarlo|nave|tematico|thompson/i.test(m.name))
+      .sort((a, b) => Number(/donde hallarlo/i.test(b.name)) - Number(/donde hallarlo/i.test(a.name)))
+      .slice(0, 2)
+    for (const mod of mods) {
+      let done = false
+      for (const topic of topicsFor.flatMap(topicVariants)) {
+        if (done) break
+        const entry = await safe(hook.lookup(mod.name, topic), null)
+        if (!entry) continue
+        const plain = stripTags(entry)
+        if (plain.length < 120) continue
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 520)}`)
+        job.cites.push({ kind: 'caso', module: mod.name, entry: topic })
+        done = true
+      }
+    }
+    return job
+  }
+
   // ---- 4b) Paralelos y analogias (Lambert): temas ↔ referencias cruzadas.
   const refsJob = async (): Promise<Job> => {
     const job: Job = { kind: 'referencia', title: 'Paralelos y referencias cruzadas (Lambert)', entries: [], cites: [] }
@@ -598,6 +630,7 @@ export async function buildDossier(
     criticoJob(),
     sistematicaJob(),
     historiaJob(),
+    casoJob(),
     refsJob(),
     illusJob()
   ])

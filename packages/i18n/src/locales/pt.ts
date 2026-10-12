@@ -114,6 +114,7 @@ export const pt: Record<TranslationKey, string> = {
   'guide.critico': 'Exegese crítica e interlinear',
   'guide.sistematica': 'Teologia sistemática',
   'guide.historia': 'História e contexto cristão',
+  'guide.caso': 'Casos biblicos reais',
   'guide.ilustracion': 'Ilustrações',
   'guide.referencia': 'Referências cruzadas',
   'guide.noData': 'Sem fichas ancoradas para esta passagem.',

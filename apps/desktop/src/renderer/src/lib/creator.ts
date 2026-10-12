@@ -358,6 +358,7 @@ export function composeFromDossier(
   const topicLines = sectionEntries(dossier, 'tema')
   const historyLines = sectionEntries(dossier, 'historico')
   const illusLines = sectionEntries(dossier, 'ilustracion')
+  const casoLines = sectionEntries(dossier, 'caso')
   const theoLines = sectionEntries(dossier, 'teologico')
   const culturalLines = sectionEntries(dossier, 'cultural')
   const christLines = sectionEntries(dossier, 'cristologico')
@@ -472,6 +473,9 @@ export function composeFromDossier(
   if (topicLines.length) {
     lines.push('## Temas (concordancias tematicas)', '', ...topicLines.map((entry) => `- ${entry}`), '')
   }
+  if (casoLines.length) {
+    lines.push('## Ilustracion biblica (caso real)', '', ...casoLines.map((entry) => `- ${entry}`), '')
+  }
   if (illusLines.length) {
     lines.push('## Ilustraciones ancladas', '', ...illusLines.map((entry) => `- ${entry}`), '')
   }
@@ -500,29 +504,36 @@ const SNIPPET_SYSTEM =
   'Eres un redactor homiletico de voces cortas y vivas. Te daran el ESQUELETO de un sermon ya ' +
   'construido con fuentes biblicas ancladas por codigo (sub-agentes, 0 tokens). Tu trabajo SOLO ' +
   'es de voz humana: (1) gancho inicial de 40-60 palabras que enfrenta la necesidad humana del texto, ' +
-  '(2) puente ligero de 1-2 frases ANTES de cada punto empezado (no repitas contenido, solo transicion), ' +
-  '(3) oracion final de 3-5 lineas en primera plural, citando la referencia del texto. NO agregues datos, ' +
-  'NO inventes referencias, NO reescribas puntos ni evidencia. Formato EXACTO de marcadores:\n' +
-  '==GANCHO==\n...\n==PUENTE 1==\n...\n==PUENTE 2==\n...\n==PUENTE 3==\n...\n==ORACION==\n...'
+  '(2) INTRODUCCION de 3-4 frases que presenta el pasaje y por que nos toca hoy, ' +
+  '(3) puente ligero de 1-2 frases ANTES de cada punto (no repitas contenido, solo transicion), ' +
+  '(4) oracion final de 3-5 lineas en primera plural, citando la referencia del texto. ' +
+  'NO agregues datos, NO inventes referencias, NO reescribas puntos ni evidencia. Formato EXACTO de marcadores:\n' +
+  '==GANCHO==\n...\n==INTRO==\n...\n==PUENTE 1==\n...\n==PUENTE 2==\n...\n==ORACION==\n...'
 
 interface VoicePieces {
   hook?: string
+  intro?: string
   bridges: string[]
   prayer?: string
 }
 
 function parseSnippets(text: string): VoicePieces {
   const grab = (marker: string): string => {
-    const match = new RegExp(`==\\s*${marker}\\s*==\\n?([\\s\\S]*?)(?=$|==\\s*(?:PUENTE|GANCHO|ORACION))`, 'i').exec(text)
+    const match = new RegExp(`==\\s*${marker}\\s*==\\n?([\\s\\S]*?)(?=$|==\\s*(?:PUENTE|GANCHO|INTRO|ORACION))`, 'i').exec(text)
     return (match?.[1] ?? '').trim()
   }
   const bridges: string[] = []
-  for (let index = 1; index <= 5; index += 1) {
+  for (let index = 1; index <= 6; index += 1) {
     const value = grab(`PUENTE ${index}`)
     if (!value) break
     bridges.push(value)
   }
-  return { hook: grab('GANCHO') || undefined, bridges, prayer: grab('ORACION') || undefined }
+  return {
+    hook: grab('GANCHO') || undefined,
+    intro: grab('INTRO') || undefined,
+    bridges,
+    prayer: grab('ORACION') || undefined
+  }
 }
 
 const FALLBACK_BRIDGES = [
@@ -587,6 +598,7 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
   const christLines = sectionEntries(dossier, 'cristologico')
   const bridgeLines = sectionEntries(dossier, 'aplicacion')
   const illusLines = sectionEntries(dossier, 'ilustracion')
+  const casoLines = sectionEntries(dossier, 'caso')
 
   const gran = firstSentence(commentLines[0] ?? topicLines[0] ?? '')
   const points = pointTitles(outlineLines, commentLines)
@@ -654,9 +666,15 @@ export function composeSermonSkeleton(kind: CreatorKind, query: string, dossier:
     void page
   }
 
-  if (illusLines.length) {
-    lines.push('## Ilustración', '')
-    lines.push(shortEntry(illusLines[0], 420), '')
+  if (illusLines.length || casoLines.length) {
+    if (casoLines.length) {
+      lines.push('## Ilustración bíblica (caso real)', '')
+      lines.push(...casoLines.map((entry) => shortEntry(entry, 420)), '')
+      if (illusLines.length) lines.push(`*Contemporary:* ${shortEntry(illusLines[0], 300)}`, '')
+    } else {
+      lines.push('## Ilustración', '')
+      lines.push(shortEntry(illusLines[0], 420), '')
+    }
   }
 
   lines.push('## Aplicación', '')
@@ -695,12 +713,13 @@ function refEntry2(book: string, chapter: number, verse?: number): string {
 }
 
 /** ensambla sermon: código base + voz (IA o fallback determinista). Nunca deja marcadores. */
-export function assembleSermon(skeleton: string, pieces: VoicePieces, ref: string, bridgeLines: string[] = []): string {
+export function assembleSermon(skeleton: string, pieces: VoicePieces, ref: string, bridgeLines: string[] = [], introFallback = ''): string {
   const bridgeDefault = (index: number): string =>
     (bridgeLines[index % Math.max(1, bridgeLines.length)] ? shortEntry(bridgeLines[index % Math.max(1, bridgeLines.length)], 160) : '') ||
     FALLBACK_BRIDGES[index % FALLBACK_BRIDGES.length]
   let out = skeleton
   out = out.replace('[[GANCHO]]', (pieces.hook ?? '').trim() || `${FALLBACK_HOOKS[0]} «${ref}».`)
+  out = out.replace('[[INTRO]]', (pieces.intro ?? '').trim() || introFallback)
   for (let index = 1; index <= 6; index += 1) {
     out = out.replaceAll(`[[PUENTE ${index}]]`, '⇒ ' + ((pieces.bridges[index - 1] ?? '').trim() || bridgeDefault(index - 1)))
   }
@@ -844,10 +863,15 @@ export async function runCreator(
   // codigo; la IA solo la voz (gancho/puentes/oracion) en 1 llamada corta.
   if (kind === 'crearsermon' && !ctx.settings.deepSermon) {
     const skeleton = composeSermonSkeleton(kind, trimmed, dossier, persona)
-    const bridgeLines = dossier.sections.filter((s) => s.kind === 'aplicacion').flatMap((s) => s.entries)
+    const bridgeLines = dossier.sections.filter((x) => x.kind === 'aplicacion').flatMap((x) => x.entries)
+    const commentEntries = dossier.sections.filter((x) => x.kind === 'comentario').flatMap((x) => x.entries)
+    const granIntro = firstSentence(commentEntries[0] ?? '')
+    const introFallback =
+      'Hoy abrimos ' + (dossier.section ?? trimmed) + ': ' + granIntro +
+      ' El texto no vino a decorar la semana: vino a ordenarla.'
     if (!ctx.settings.aiEnabled) {
       return {
-        markdown: assembleSermon(skeleton, { bridges: [] }, dossier.section ?? trimmed, bridgeLines),
+        markdown: assembleSermon(skeleton, { bridges: [] }, dossier.section ?? trimmed, bridgeLines, introFallback),
         passages,
         aiUsed: false,
         notice: 'Sermón ensamblado 100% por código desde tus módulos (sin IA).',
@@ -877,7 +901,7 @@ export async function runCreator(
       })
       const pieces = parseSnippets(result.text)
       return {
-        markdown: withAnchoredSources(assembleSermon(skeleton, pieces, dossier.section ?? trimmed, bridgeLines), dossier),
+        markdown: withAnchoredSources(assembleSermon(skeleton, pieces, dossier.section ?? trimmed, bridgeLines, introFallback), dossier),
         passages,
         aiUsed: true,
         notice: 'Cuerpo 100% código; solo gancho/puentes/oración de IA (1 llamada corta).',
@@ -885,7 +909,7 @@ export async function runCreator(
       }
     } catch (error) {
       return {
-        markdown: assembleSermon(skeleton, { bridges: [] }, dossier.section ?? trimmed, bridgeLines),
+        markdown: assembleSermon(skeleton, { bridges: [] }, dossier.section ?? trimmed, bridgeLines, introFallback),
         passages,
         aiUsed: false,
         notice: error instanceof Error ? error.message : String(error),

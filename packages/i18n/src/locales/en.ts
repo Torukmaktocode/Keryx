@@ -114,6 +114,7 @@ export const en: Record<TranslationKey, string> = {
   'guide.critico': 'Critical exegesis and interlinear',
   'guide.sistematica': 'Systematic theology',
   'guide.historia': 'History and Christian context',
+  'guide.caso': 'Real biblical cases',
   'guide.ilustracion': 'Illustrations',
   'guide.referencia': 'Cross references',
   'guide.noData': 'No anchored cards for this passage.',

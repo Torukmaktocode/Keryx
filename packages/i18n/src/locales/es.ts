@@ -112,6 +112,7 @@ export const es = {
   'guide.critico': 'Exégesis crítica e interlineal',
   'guide.sistematica': 'Teología sistemática',
   'guide.historia': 'Historia y contexto cristiano',
+  'guide.caso': 'Casos biblicos reales',
   'guide.ilustracion': 'Ilustraciones',
   'guide.referencia': 'Referencias cruzadas',
   'guide.noData': 'Sin fichas ancladas para este pasaje.',
