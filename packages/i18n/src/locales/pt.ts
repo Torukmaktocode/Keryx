@@ -111,6 +111,7 @@ export const pt: Record<TranslationKey, string> = {
   'guide.aplicacion': 'Pontes pastorais e aplicação',
   'guide.idiomas': 'Palavras gregas do NT (Tuggy)',
   'guide.morfologia': 'Morfologia gramatical (Robinson)',
+  'guide.critico': 'Exegese crítica e interlinear',
   'guide.ilustracion': 'Ilustrações',
   'guide.referencia': 'Referências cruzadas',
   'guide.noData': 'Sem fichas ancoradas para esta passagem.',

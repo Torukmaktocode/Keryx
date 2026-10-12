@@ -209,6 +209,7 @@ export function composeFromDossier(
   const christLines = sectionEntries(dossier, 'cristologico')
   const philoLines = sectionEntries(dossier, 'filosofico')
   const bridgeLines = sectionEntries(dossier, 'aplicacion')
+  const critLines = sectionEntries(dossier, 'critico')
 
   const lines: string[] = [
     `# ${TITLE_FOR[kind]}: ${ref}`,
@@ -259,6 +260,9 @@ export function composeFromDossier(
   }
   if (philoLines.length) {
     lines.push('## Contexto filosofico', '', ...philoLines.map((entry) => `- ${entry}`), '')
+  }
+  if (critLines.length) {
+    lines.push('## Exegesis critica e interlineal', '', ...critLines.map((entry) => `- ${entry}`), '')
   }
 
   // 3) Palabras originales

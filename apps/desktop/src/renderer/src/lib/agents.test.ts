@@ -235,6 +235,47 @@ describe('buildDossier (sub-agentes 0 tokens)', () => {
     const refs = dossier.sections.find((s) => s.kind === 'referencia')
     expect(refs?.entries[0]).toContain('Lambert')
   })
+
+  it('exegesis critica por verso (Metzger/aparato/interlineal) y prioriza comentarios pesados', async () => {
+    const hook = fakeHook({
+      modules: [
+        ...fakeHook().modules,
+        {
+          name: 'Un Comentario Textual al NT Griego - Bruce M Metzger',
+          description: '',
+          category: 'Commentary',
+          lang: 'es',
+          driver: 'e-Sword .cmti',
+          encoding: 'UTF-8',
+          version: '',
+          installed: true,
+          source: 'local'
+        },
+        {
+          name: 'Comentario Juan Calvino',
+          description: '',
+          category: 'Commentary',
+          lang: 'es',
+          driver: 'e-Sword .cmti',
+          encoding: 'UTF-8',
+          version: '',
+          installed: true,
+          source: 'local'
+        }
+      ],
+      coverage: async () => [
+        { module: 'A Traves de la Biblia - Myer Pearlman', hits: 9 },
+        { module: 'Comentario Juan Calvino', hits: 9 },
+        { module: 'Un Comentario Textual al NT Griego - Bruce M Metzger', hits: 9 }
+      ]
+    })
+    const dossier = await buildDossier(hook, 'crearsermon', 'Juan 3:16')
+    const coment = dossier.sections.find((s) => s.kind === 'comentario')
+    expect(coment?.entries[0]).toMatch(/Calvino|Metzger|Traves/)
+    expect(coment?.entries.some((e) => e.includes('Calvino'))).toBe(true)
+    const critico = dossier.sections.find((s) => s.kind === 'critico')
+    expect(critico?.entries[0]).toContain('Grie…')
+  })
 })
 
 // debug

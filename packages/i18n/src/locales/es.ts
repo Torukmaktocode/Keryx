@@ -109,6 +109,7 @@ export const es = {
   'guide.aplicacion': 'Puentes pastorales y aplicación',
   'guide.idiomas': 'Palabras griegas del NT (Tuggy)',
   'guide.morfologia': 'Morfología gramatical (Robinson)',
+  'guide.critico': 'Exégesis crítica e interlineal',
   'guide.ilustracion': 'Ilustraciones',
   'guide.referencia': 'Referencias cruzadas',
   'guide.noData': 'Sin fichas ancladas para este pasaje.',

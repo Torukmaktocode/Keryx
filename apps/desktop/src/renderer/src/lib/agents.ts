@@ -41,6 +41,7 @@ export interface AgentCitation {
     | 'aplicacion'
     | 'idiomas'
     | 'morfologia'
+    | 'critico'
 }
 
 export interface DossierSection {
@@ -59,7 +60,7 @@ export interface Dossier {
 
 export const ENTRY_MAX_CHARS = 620
 export const SECTION_MAX_ENTRIES = 3
-export const DOSSIER_BUDGET = 14000
+export const DOSSIER_BUDGET = 16000
 
 /** Ganchos de datos inyectables (api en produccion, fake en tests). */
 export interface AgentHook {
@@ -92,7 +93,8 @@ const SPECIAL_RE: Record<AgentCitation['kind'], RegExp | null> = {
   filosofico: /diccionario de filosofi/i,
   aplicacion: /pastoral|evangelizaci|catequis|doctrina social|evangelismo/i,
   idiomas: /tuggy|lexico griego/i,
-  morfologia: /morfologico robinson|morphological analysis/i
+  morfologia: /morfologico robinson|morphological analysis/i,
+  critico: /metzger|aparato critico|interlineal|cevallos|codigo textual|codigo real|hebraico|gratn/i
 }
 
 /** Orden interna de especialistas: preferimos los de contenido mas extenso. */
@@ -107,6 +109,9 @@ const SPECIAL_ORDER: Partial<Record<AgentCitation['kind'], (name: string) => num
 function shortName(name: string): string {
   return name.length > 34 ? `${name.slice(0, 32)}…` : name
 }
+
+/** Comentarios de referencia pesada: se priorizan en el dosier. */
+const COMMENT_RANK = /calvino|macarthur|matthew henry|keil|delitzsch|robertson|barclay|guzik|macdonald|walton|keener|wiersbe|jamieson|scofield|spurgeon|trenchard|metzger/i
 
 function trimEntry(text: string, max = ENTRY_MAX_CHARS): string {
   const plain = stripTags(text).replace(/\s+/g, ' ').trim()
@@ -264,6 +269,7 @@ export async function buildDossier(
     const coverage = await safe(hook.coverage(parsed.book, parsed.chapter), [] as ModuleCoverage[])
     const commentaryByCoverage = coverage
       .filter((c) => hook.modules.some((m) => m.name === c.module && m.category === 'Commentary'))
+      .sort((a, b) => Number(COMMENT_RANK.test(b.module)) - Number(COMMENT_RANK.test(a.module)))
       .slice(0, SECTION_MAX_ENTRIES)
     for (const item of commentaryByCoverage) {
       const comment = await safe(
@@ -439,6 +445,46 @@ export async function buildDossier(
     })()
   )
 
+  // Walton-Keener (Contexto Cultural) es un COMENTARIO: se mina verso por verso
+  // y alimenta el Contexto social/cultural con su entrada real del pasaje.
+  const waltonJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'cultural', title: 'Contexto social y cultural (verso)', entries: [], cites: [] }
+    if (!parsed) return job
+    const walton = hook.modules.find(
+      (m) => m.category === 'Commentary' && /walton|keener|contexto cultural/i.test(m.name)
+    )
+    if (!walton) return job
+    const entry = await safe(
+      hook.verse(walton.name, parsed.book, parsed.chapter, parsed.verse ?? 1),
+      null
+    )
+    if (entry?.text) {
+      job.entries.push(`[${shortName(walton.name)}] ${trimEntry(entry.text, 560)}`)
+      job.cites.push({ kind: 'cultural', module: walton.name, entry: refEntry(parsed.book, parsed.chapter, parsed.verse ?? 1) })
+    }
+    return job
+  }
+
+  // Exegesis critica por verso: Metzger, aparato critico, interlineal Cevallos,
+  // codigo textual... lo que tenga cobertura en este versiculo.
+  const criticoJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'critico', title: 'Exegesis critica e interlineal', entries: [], cites: [] }
+    if (!parsed) return job
+    const critMods = hook.modules
+      .filter((m) => m.category === 'Commentary' && SPECIAL_RE.critico?.test(m.name))
+      .slice(0, 2)
+    for (const mod of critMods) {
+      const entry = await safe(
+        hook.verse(mod.name, parsed.book, parsed.chapter, parsed.verse ?? 1),
+        null
+      )
+      if (!entry?.text) continue
+      job.entries.push(`[${shortName(mod.name)}] ${trimEntry(entry.text, 560)}`)
+      job.cites.push({ kind: 'critico', module: mod.name, entry: refEntry(parsed.book, parsed.chapter, parsed.verse ?? 1) })
+    }
+    return job
+  }
+
   const illusJob = async (): Promise<Job> => {
     const job: Job = { kind: 'ilustracion', title: 'Ilustraciones', entries: [], cites: [] }
     const illusTopics = (rawTheme ? [rawTheme] : []).concat(verseThemes).slice(0, 3)
@@ -494,6 +540,8 @@ export async function buildDossier(
     themeJob(),
     geoJob(),
     ...contextJobs,
+    waltonJob(),
+    criticoJob(),
     refsJob(),
     illusJob()
   ])
