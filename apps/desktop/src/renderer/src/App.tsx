@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { I18nProvider, useI18n } from '@keryx/i18n'
 import { useAppStore } from './store/appStore'
 import { api } from './lib/api'
@@ -7,13 +7,16 @@ import { ReaderView } from './views/ReaderView'
 import { StudyView } from './views/StudyView'
 import { SearchView } from './views/SearchView'
 import { LibraryView } from './views/LibraryView'
-import { WritingView } from './views/WritingView'
 import { TemplatesView } from './views/TemplatesView'
 import { AssistantView } from './views/AssistantView'
 import { InspirationView } from './views/InspirationView'
 import { ModulesView } from './views/ModulesView'
 import { SettingsView } from './views/SettingsView'
 import { Icon } from './components/Icon'
+
+const WritingView = lazy(() =>
+  import('./views/WritingView').then((m) => ({ default: m.WritingView })),
+)
 
 function Shell() {
   const { t } = useI18n()
@@ -103,7 +106,11 @@ function Shell() {
             {view === 'study' && <StudyView />}
             {view === 'search' && <SearchView />}
             {view === 'library' && <LibraryView />}
-            {view === 'write' && <WritingView />}
+            {view === 'write' && (
+              <Suspense fallback={<div className="empty"><span className="spinner" /></div>}>
+                <WritingView />
+              </Suspense>
+            )}
             {view === 'templates' && <TemplatesView />}
             {view === 'assistant' && <AssistantView />}
             {view === 'inspiration' && <InspirationView />}
