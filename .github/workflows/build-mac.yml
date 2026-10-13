@@ -17,40 +17,18 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Descargar biblioteca del release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          curl -L --fail -H "Authorization: Bearer $GH_TOKEN" \
-            -o biblioteca.7z \
-            "${{ github.server_url }}/${{ github.repository }}/releases/download/biblioteca-v1/biblioteca.7z"
-          python3 -m pip install --quiet --break-system-packages py7zr
-          python3 -c "
-          import py7zr
-          with py7zr.SevenZipFile('biblioteca.7z') as z:
-              z.extractall('.')
-          "
-          COUNT=$(find biblioteca -type f \( -name '*.bbli' -o -name '*.bblx' -o -name '*.cmti' -o -name '*.cmtx' -o -name '*.dcti' -o -name '*.dctx' -o -name '*.refi' -o -name '*.lexi' \) | wc -l)
-          echo "modulos encontrados: $COUNT"
-          test "$COUNT" -ge 717 || { echo 'biblioteca incompleta: menos de 717 modulos'; exit 1; }
-
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Verificar motor
-        run: npm run eval
+      - name: Tests del motor
+        run: npm test
 
-      - name: Generar DMG (arm64 + x64, con biblioteca integrada)
+      - name: Generar DMG (arm64 + x64, solo la aplicacion)
         run: npm run build:mac
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      - name: Verificar biblioteca dentro de cada .app
-        run: |
-          test "$(find apps/desktop/dist -name 'Keryx.app' -path '*Contents/Resources/biblioteca/BIBLIAS*' | wc -l)" -eq 2 \
-            || { echo 'ERROR: no hay biblioteca integrada en los 2 .app'; find apps/desktop/dist -maxdepth 2; exit 1; }
-
-      - name: Publicar DMGs en Release mac-dmg
+      - name: Publicar DMG en Release mac-dmg
         uses: softprops/action-gh-release@v2
         with:
           tag_name: mac-dmg

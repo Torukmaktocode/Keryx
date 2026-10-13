@@ -20,14 +20,6 @@ mac:
       arch: [arm64, x64]
   category: public.app-category.reference
   identity: null
-  extraResources:
-    - from: ../../biblioteca
-      to: biblioteca
-      filter:
-        - '**/*'
-        - '!**/desktop.ini'
-        - '!**/Thumbs.db'
-        - '!**/.*'
 linux:
   target:
     - AppImage

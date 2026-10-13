@@ -118,15 +118,18 @@ Result: 0/5 fallos Â· score medio 9.0/9
 - **Repo**: `biblioteca/` fuera de la historia de git (filter-repo, −~1 GB);
   .rar redundantes borrados del disco (−778 MB). `npm run eval` verificado
   9.0/9 antes y después.
-- **macOS (CI)**: `build-mac.yml` en GitHub Actions; descarga
-  `biblioteca.7z` (869 MB) del release `biblioteca-v1` de ESTE repo privado,
-  extrae con py7zr, verifica ≥717 módulos, corre `npm run eval` como gate,
-  produce DMGs arm64+x64 y los publica en el release `mac-dmg` (los assets de
-  Release no cuentan contra la cuota de Actions; cada uno <2 GiB).
-- **Postura de redistribución**: el repo es PRIVADO; la biblioteca (módulos
-  e-Sword gratuitos de Biblioteca Hispana, derechos no claros) vive en el
-  release `biblioteca-v1` y en los DMG. No distribuirla públicamente; DMG
-  solo para uso personal/personas de confianza.
+- **macOS (CI)**: `build-mac.yml` en GitHub Actions — SOLO Código (sin
+  biblioteca en CI, ni en release, ni en rama de datos): tests del motor (`npm
+  test`) como gate, produce DMGs arm64+x64 y los publica en el release
+  `mac-dmg` (assets de Release sin cuota de Actions; DMG ~90 MB).
+- **Biblioteca en una Mac (manual, como en Windows)**: copiar la carpeta
+  `biblioteca/` a `~/Library/Application Support/Keryx/biblioteca` — la app
+  la detecta sola (`resolveBibliotecaPath`). También vale
+  `KERYX_BIBLIOTECA_PATH`. POLÍTICA: a GitHub JAMÁS se suben los módulos
+  (ni historia, ni release, ni rama de datos); repo = solo código.
+- **Postura de redistribución**: el repo es PRIVADO y solo contiene código;
+  los módulos (derechos no claros) nunca viajan en ningún paquete ni
+  repositorio. Cada usuario aporta su propia biblioteca.
 - **DMG sin firmar**: `mac.identity: null` explícito. Primer arranque:
   clic derecho → Abrir (o `xattr -cr /Applications/Keryx.app`). Firmar y
   notarizar antes de cualquier distribución pública.
