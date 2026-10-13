@@ -4,6 +4,10 @@ Fecha: 2026-10-12 · Estado: arquitectura SermonEngine completa, evals 9.0/9 ver
 con biblioteca real (`npm run eval`), 70/70 tests · Última ronda: T1-T6 (harness tipado,
 gap-analysis 2ª pasada, AST inmutable, consenso/sintaxis/hebreo, evals, export).
 
+> El mapa cronológico E0→E4 con métricas por etapa vive ahora en
+> **`docs/etapas.md`**; este documento conserva el detalle comparativo
+> (V0→V4, vs Logos/ChatGPT/Claude/Gemini) y el veredicto con evidencia.
+
 ## 1. Cómo era al principio
 
 - Biblioteca: sólo 19 módulos `.dctx` traducidos a mano de la enciclopedia Champlin + índice propio.

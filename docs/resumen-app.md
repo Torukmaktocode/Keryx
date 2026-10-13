@@ -2,7 +2,8 @@
 
 Documento mapa: qué tiene hoy la app, cómo está construida y qué flujo sigue el
 usuario. La referencia rápida de comandos vive en `README.md`; el plan original,
-en `PLAN.md`.
+en `PLAN.md`; el mapa de etapas E0→E4, en **`docs/etapas.md`**; el contexto para
+IAs, en `AGENTS.md`.
 
 ## 1. Vista general
 
@@ -151,6 +152,8 @@ Plantillas / Consulta (4 preguntas) → bosquejo → redacción → export MD/HT
 
 ## 6. Histórico relevante (docs/)
 
+- `AGENTS.md` — contexto para IAs (estado vigente, stack, principios).
+- **`docs/etapas.md`** — mapa E0→E4 con métricas y verificación por etapa.
 - `PLAN.md` — visión y decisiones del proyecto original.
 - `docs/champlin.md`, `docs/champlin-session.md` — historial del experimento
   Champlin (retirado en oct-2026; los PDFs quedan en disco, fuera del escaneo).

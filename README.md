@@ -1,8 +1,9 @@
 # Keryx
 
-Aplicación de escritorio para **estudio bíblico y escritura**, con motor de módulos
-**SWORD** y **e-Sword**, estudio avanzado con paneles sincronizados (estilo e-Sword,
-pero más limpio y en español) y modo escritura minimalista tipo iA Writer.
+Aplicación de escritorio (v0.4.0) para **estudio bíblico y escritura**, con motor
+de módulos **SWORD** y **e-Sword**, estudio avanzado con paneles sincronizados
+(estilo e-Sword, pero más limpio y en español) y modo escritura minimalista tipo
+iA Writer.
 
 > κήρυξ (keryx) = heraldo.
 
