@@ -109,6 +109,30 @@ texto-libre talita-cumi    ~974 ms Â· 16 secciones Â· 36 citas Â· 9/9
 Result: 0/5 fallos Â· score medio 9.0/9
 ```
 
+## E4.1 — Versiones multiplataforma (2026-10-13) · commits `853ddf7..89978e3+`
+
+- **Windows**: instalador liviano 74,6 MB (compression maximum, locales
+  es/en-US/pt-BR/pt-PT, electron 37.10.3 exacto, NSIS sin differentialPackage);
+  biblioteca se lee del disco local, NUNCA se empaqueta en Windows. Editor
+  con carga perezosa (React.lazy): bundle 2.558 → 1.613 kB.
+- **Repo**: `biblioteca/` fuera de la historia de git (filter-repo, −~1 GB);
+  .rar redundantes borrados del disco (−778 MB). `npm run eval` verificado
+  9.0/9 antes y después.
+- **macOS (CI)**: `build-mac.yml` en GitHub Actions; descarga
+  `biblioteca.7z` (869 MB) del release `biblioteca-v1` de ESTE repo privado,
+  extrae con py7zr, verifica ≥717 módulos, corre `npm run eval` como gate,
+  produce DMGs arm64+x64 y los publica en el release `mac-dmg` (los assets de
+  Release no cuentan contra la cuota de Actions; cada uno <2 GiB).
+- **Postura de redistribución**: el repo es PRIVADO; la biblioteca (módulos
+  e-Sword gratuitos de Biblioteca Hispana, derechos no claros) vive en el
+  release `biblioteca-v1` y en los DMG. No distribuirla públicamente; DMG
+  solo para uso personal/personas de confianza.
+- **DMG sin firmar**: `mac.identity: null` explícito. Primer arranque:
+  clic derecho → Abrir (o `xattr -cr /Applications/Keryx.app`). Firmar y
+  notarizar antes de cualquier distribución pública.
+- Pendiente E5: app web Netlify (Lector+Estudio+Escritura, módulos locales
+  vía File System Access + SQLite WASM).
+
 ## Siguiente (candidatos, sin compromiso)
 
 - E5: builder de bosquejos desde el AST (editar en vivo), bajar latencia

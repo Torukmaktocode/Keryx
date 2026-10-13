@@ -5,11 +5,12 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { registerIpc } from './ipc'
 
 function resolveSwordPath(): string {
+  const devCandidates = app.isPackaged
+    ? []
+    : [process.env.KERYX_SWORD_PATH, join(process.cwd(), 'sword')]
   const candidates = [
-    process.env.KERYX_SWORD_PATH,
-    join(process.cwd(), 'sword'),
+    ...devCandidates,
     join(process.resourcesPath, 'sword'),
-    join(app.getAppPath(), '..', '..', 'sword'),
     join(app.getAppPath(), '..', 'sword'),
     join(app.getPath('userData'), 'sword')
   ].filter((value): value is string => Boolean(value))
@@ -20,9 +21,11 @@ function resolveSwordPath(): string {
 }
 
 function resolveEswordPath(): string {
+  const devCandidates = app.isPackaged
+    ? []
+    : [process.env.KERYX_ESWORD_PATH, join(process.cwd(), 'esword')]
   const candidates = [
-    process.env.KERYX_ESWORD_PATH,
-    join(process.cwd(), 'esword'),
+    ...devCandidates,
     join(process.resourcesPath, 'esword'),
     join(app.getAppPath(), '..', '..', 'esword'),
     join(app.getAppPath(), '..', 'esword'),
@@ -35,20 +38,20 @@ function resolveEswordPath(): string {
 }
 
 function resolveBibliotecaPath(): string | undefined {
+  const devCandidates = app.isPackaged
+    ? []
+    : [process.env.KERYX_BIBLIOTECA_PATH, join(process.cwd(), 'biblioteca')]
   const candidates = [
-    process.env.KERYX_BIBLIOTECA_PATH,
-    join(process.cwd(), 'biblioteca'),
+    ...devCandidates,
     join(process.resourcesPath, 'biblioteca'),
     join(app.getAppPath(), '..', '..', 'biblioteca'),
     join(app.getAppPath(), '..', 'biblioteca'),
     join(app.getPath('userData'), 'biblioteca')
   ].filter((value): value is string => Boolean(value))
-  let userHome = ''
   for (const candidate of candidates) {
     if (existsSync(candidate)) return candidate
-    if (!userHome) userHome = candidate
   }
-  return userHome || undefined
+  return join(app.getPath('userData'), 'biblioteca')
 }
 
 function createWindow(): void {

@@ -107,7 +107,7 @@ function Shell() {
             {view === 'search' && <SearchView />}
             {view === 'library' && <LibraryView />}
             {view === 'write' && (
-              <Suspense fallback={<div className="empty"><span className="spinner" /></div>}>
+              <Suspense fallback={<div className="empty"><span className="spinner" /><span style={{ marginLeft: 12 }}>{t('app.loading')}</span></div>}>
                 <WritingView />
               </Suspense>
             )}

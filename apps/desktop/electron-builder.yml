@@ -7,7 +7,7 @@ files:
   - package.json
 asar: true
 compression: maximum
-electronLanguages: [es, en, pt]
+electronLanguages: [es, en-US, pt-BR, pt-PT]
 removePackageScripts: true
 nsis:
   differentialPackage: false
@@ -19,11 +19,15 @@ mac:
     - target: dmg
       arch: [arm64, x64]
   category: public.app-category.reference
+  identity: null
   extraResources:
     - from: ../../biblioteca
       to: biblioteca
       filter:
         - '**/*'
+        - '!**/desktop.ini'
+        - '!**/Thumbs.db'
+        - '!**/.*'
 linux:
   target:
     - AppImage
