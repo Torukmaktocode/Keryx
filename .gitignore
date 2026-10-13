@@ -20,6 +20,7 @@ _*.txt
 # (sin "/" inicial: solo carpetas de datos en la raiz, no el package packages/sword)
 /sword/
 /esword/
+/biblioteca/
 /Enciclopeia Champlin/
 .cache-probe/
 dev.log
@@ -30,3 +31,4 @@ dev.log
 *.cmti
 *.cmtx
 *.lexi
+*.rar
