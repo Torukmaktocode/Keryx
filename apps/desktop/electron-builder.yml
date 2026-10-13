@@ -18,6 +18,11 @@ mac:
   target:
     - dmg
   category: public.app-category.reference
+  extraResources:
+    - from: ../../biblioteca
+      to: biblioteca
+      filter:
+        - '**/*'
 linux:
   target:
     - AppImage

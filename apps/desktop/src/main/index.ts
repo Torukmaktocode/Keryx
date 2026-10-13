@@ -8,6 +8,7 @@ function resolveSwordPath(): string {
   const candidates = [
     process.env.KERYX_SWORD_PATH,
     join(process.cwd(), 'sword'),
+    join(process.resourcesPath, 'sword'),
     join(app.getAppPath(), '..', '..', 'sword'),
     join(app.getAppPath(), '..', 'sword'),
     join(app.getPath('userData'), 'sword')
@@ -22,6 +23,7 @@ function resolveEswordPath(): string {
   const candidates = [
     process.env.KERYX_ESWORD_PATH,
     join(process.cwd(), 'esword'),
+    join(process.resourcesPath, 'esword'),
     join(app.getAppPath(), '..', '..', 'esword'),
     join(app.getAppPath(), '..', 'esword'),
     join(app.getPath('userData'), 'esword')
@@ -36,6 +38,7 @@ function resolveBibliotecaPath(): string | undefined {
   const candidates = [
     process.env.KERYX_BIBLIOTECA_PATH,
     join(process.cwd(), 'biblioteca'),
+    join(process.resourcesPath, 'biblioteca'),
     join(app.getAppPath(), '..', '..', 'biblioteca'),
     join(app.getAppPath(), '..', 'biblioteca'),
     join(app.getPath('userData'), 'biblioteca')
