@@ -37,9 +37,9 @@ export function HomeView() {
             <path pathLength={1} d="m2 15 6 6" />
             <path pathLength={1} d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a1 1 0 0 0-2.75-2.91" />
           </svg>
-          <svg viewBox="0 0 24 24" style={delay(3)} aria-hidden="true">
+          <svg viewBox="0 0 24 24" className="home-forms-cross" style={delay(3)} aria-hidden="true">
             <title>Cruz</title>
-            <path pathLength={1} d="M4 9a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h4a1 1 0 0 1 1 1v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4a1 1 0 0 1 1-1h4a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-4a1 1 0 0 1-1-1V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4a1 1 0 0 1-1 1z" />
+            <path pathLength={1} d="M10.3 2.5h3.4v5.1H19.3v3.4h-5.6V21.5h-3.4V11H4.7V7.6h5.6z" />
           </svg>
         </span>
         <span className="home-line" aria-hidden="true" />
