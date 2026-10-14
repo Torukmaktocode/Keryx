@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 
 export type IconName =
+  | 'home'
   | 'reader'
   | 'study'
   | 'write'
@@ -23,6 +24,7 @@ export type IconName =
   | 'close'
 
 const PATHS: Record<IconName, JSX.Element> = {
+  home: <path d="M3 10.5 12 3l9 7.5V21h-6v-6h-6v6H3z" />,
   reader: (
     <>
       <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15H6.5A2.5 2.5 0 0 0 4 20.5z" />

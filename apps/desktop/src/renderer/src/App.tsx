@@ -3,6 +3,7 @@ import { I18nProvider, useI18n } from '@keryx/i18n'
 import { useAppStore } from './store/appStore'
 import { api } from './lib/api'
 import { Sidebar } from './components/Sidebar'
+import { HomeView } from './views/HomeView'
 import { ReaderView } from './views/ReaderView'
 import { StudyView } from './views/StudyView'
 import { SearchView } from './views/SearchView'
@@ -102,6 +103,7 @@ function Shell() {
           <div className="empty">{t('app.startError', { error })}</div>
         ) : (
           <>
+            {view === 'home' && <HomeView />}
             {view === 'reader' && <ReaderView />}
             {view === 'study' && <StudyView />}
             {view === 'search' && <SearchView />}

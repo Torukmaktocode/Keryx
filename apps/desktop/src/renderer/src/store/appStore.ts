@@ -9,6 +9,7 @@ import {
 import { api } from '../lib/api'
 
 export type View =
+  | 'home'
   | 'reader'
   | 'study'
   | 'search'
@@ -55,7 +56,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
-  view: 'reader',
+  view: 'home',
   ready: false,
   error: null,
   engine: null,

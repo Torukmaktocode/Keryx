@@ -3,6 +3,10 @@ import type { TranslationKey } from '../types'
 export const en: Record<TranslationKey, string> = {
   'brand.tagline': 'study',
 
+  'home.lede': 'Your 717-module library is already on your disk. Study the passage, lean on the classics and preach — all local, in Spanish.',
+  'home.start': 'Begin',
+
+  'nav.home': 'Home',
   'nav.reader': 'Reader',
   'nav.study': 'Study',
   'nav.search': 'Search',

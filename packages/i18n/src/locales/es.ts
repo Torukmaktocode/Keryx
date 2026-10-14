@@ -1,6 +1,10 @@
 export const es = {
   'brand.tagline': 'estudio',
 
+  'home.lede': 'Tu biblioteca de 717 módulos ya está en tu disco. Estudia el pasaje, consulta los clásicos y predica — todo local, en español.',
+  'home.start': 'Comenzar',
+
+  'nav.home': 'Inicio',
   'nav.reader': 'Lector',
   'nav.study': 'Estudio',
   'nav.search': 'Búsqueda',
