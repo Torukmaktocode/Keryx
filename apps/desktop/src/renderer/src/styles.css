@@ -1286,7 +1286,7 @@ button.sidebar-brand:hover strong {
 
 @media (max-width: 900px) {
   .cols.compare {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     overflow: auto;
   }
 

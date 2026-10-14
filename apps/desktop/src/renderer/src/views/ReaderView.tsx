@@ -318,7 +318,15 @@ export function ReaderView() {
       </header>
       {compare ? (
         <div className="view-body flush">
-          <div className="cols compare" data-count={compareCount}>
+          <div
+            className="cols compare"
+            data-count={compareCount}
+            style={{
+              gridTemplateColumns: `repeat(${
+                compareCount === 4 ? 2 : compareCount === 6 ? 3 : compareCount
+              }, minmax(0, 1fr))`
+            }}
+          >
             {colModules.slice(0, compareCount).map((moduleName, index) => (
               <section className="col" key={`${index}-${moduleName ?? ''}`}>
                 <div className="col-head">
