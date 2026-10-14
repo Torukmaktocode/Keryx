@@ -1249,11 +1249,21 @@ button.sidebar-brand:hover strong {
 
 .cols.compare {
   grid-template-columns: repeat(var(--compare-count, 2), minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
   grid-auto-columns: minmax(0, 1fr);
   height: 100%;
   padding: var(--space-6);
   box-sizing: border-box;
   overflow: hidden;
+  gap: var(--space-3);
+}
+
+.cols.compare[data-count='4'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cols.compare[data-count='6'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .cols.compare > .col {

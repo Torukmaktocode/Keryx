@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type CSSProperties, type ReactElement } from 'react'
+﻿import { useEffect, useMemo, useState, type ReactElement } from 'react'
 import { useI18n } from '@keryx/i18n'
 import {
   bookName,
@@ -318,7 +318,7 @@ export function ReaderView() {
       </header>
       {compare ? (
         <div className="view-body flush">
-          <div className="cols compare" style={{ ['--compare-count' as string]: String(compareCount) } as CSSProperties}>
+          <div className="cols compare" data-count={compareCount}>
             {colModules.slice(0, compareCount).map((moduleName, index) => (
               <section className="col" key={`${index}-${moduleName ?? ''}`}>
                 <div className="col-head">
