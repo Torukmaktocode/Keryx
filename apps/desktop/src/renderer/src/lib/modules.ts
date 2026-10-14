@@ -11,14 +11,17 @@ export function moduleLabel(m: SwordModule): string {
 
 /** Etiqueta compacta para filas de comparacion: sin sufijos de categoria. */
 export function moduleShortLabel(m: SwordModule): string {
-  return (m.description || '').replace(/\((?:Comentario|Diccionario)[^)]*\)/gi, '').trim() || m.name
+  const base = moduleLabel(m)
+    .replace(/\((?:Biblias?|Libros?|Comentario|Diccionario)[^)]*\)/gi, '')
+    .trim()
+  return base || m.name
 }
 
 /** Perfil de traduccion segun el enfoque que usan los biblistas evangelicos para comparar. */
 export function moduleProfile(name: string): TranslationProfile | null {
   if (
     /interlineal/i.test(name) ||
-    /septuaginta|vulgate|peshitta|textus|hebraica|stuttgart|bizantino|nestle|westcott|tischendorf|torah|griego/i.test(name)
+    /septuaginta|vulgate|peshitta|textus|hebraica|stuttgart|bizantino|nestle|westcott|tischendorf|griego|transliterated hot/i.test(name)
   ) {
     return 'original'
   }

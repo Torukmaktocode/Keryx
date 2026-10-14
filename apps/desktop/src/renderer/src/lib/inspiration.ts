@@ -19,6 +19,8 @@ export interface InspirationSermon {
   duration: string
   bigIdea?: string
   application?: string[]
+  /** fiabilidad de la ficha: documentado = sermon con registro historico; reconstruido = estilo fiel del predicador. */
+  veracity?: 'documentado' | 'reconstruido'
   /** Como fue la predicacion en vivo: escenario, audiencia y manera de hablar. */
   preached?: string
   /** Como abrio el sermón: el primer movimiento retorico antes del texto. */
@@ -259,7 +261,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'edwards-sinners',
     author: 'Jonathan Edwards',
-    title: 'Pecadores en las manos de un Dios airado',
+    veracity: 'documentado',    title: 'Pecadores en las manos de un Dios airado',
     year: 1741,
     place: 'Enfield, Connecticut',
     occasion:
@@ -309,7 +311,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'edwards-divine-light',
     author: 'Jonathan Edwards',
-    title: 'Una luz divina y sobrenatural',
+    veracity: 'documentado',    title: 'Una luz divina y sobrenatural',
     year: 1733,
     place: 'Northampton, Massachusetts',
     occasion:
@@ -357,7 +359,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'edwards-eagerness',
     author: 'Jonathan Edwards',
-    title: 'La diligencia aceptable',
+    veracity: 'documentado',    title: 'La diligencia aceptable',
     year: 1735,
     place: 'Northampton, Massachusetts',
     occasion:
@@ -397,7 +399,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'spurgeon-blood',
     author: 'Charles H. Spurgeon',
-    title: 'La sangre preciosa de Cristo',
+    veracity: 'documentado',    title: 'La sangre preciosa de Cristo',
     year: 1858,
     place: 'Surrey Chapel, Londres',
     occasion:
@@ -440,7 +442,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'spurgeon-anchor',
     author: 'Charles H. Spurgeon',
-    title: 'El ancla del alma',
+    veracity: 'documentado',    title: 'El ancla del alma',
     year: 1870,
     place: 'Tabernáculo Metropolitano, Londres',
     occasion:
@@ -480,7 +482,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'lloydjones-spiritual-depression',
     author: 'D. Martyn Lloyd-Jones',
-    title: '¿Por qué te abates, oh alma mía?',
+    veracity: 'documentado',    title: '¿Por qué te abates, oh alma mía?',
     year: 1954,
     place: 'Westminster Chapel, Londres',
     occasion:
@@ -520,7 +522,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'tozer-following-hard',
     author: 'A. W. Tozer',
-    title: 'Seguir de cerca a Dios',
+    veracity: 'documentado',    title: 'Seguir de cerca a Dios',
     year: 1948,
     place: 'Southside Alliance Church, Chicago',
     occasion:
@@ -563,7 +565,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'keller-prodigal',
     author: 'Timothy Keller',
-    title: 'Los dos hermanos perdidos',
+    veracity: 'documentado',    title: 'Los dos hermanos perdidos',
     year: 2005,
     place: 'Redeemer Presbyterian Church, Nueva York',
     occasion:
@@ -608,7 +610,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'luther-heidelberg',
     author: 'Martín Lutero',
-    title: 'El que es verdaderamente sabio es llamado pecador (Heidelberg)',
+    veracity: 'documentado',    title: 'El que es verdaderamente sabio es llamado pecador (Heidelberg)',
     year: 1518,
     place: 'Heidelberg, Alemania',
     occasion:
@@ -651,7 +653,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'calvino-galatians',
     author: 'Juan Calvino',
-    title: 'La justificación por la sola fe',
+    veracity: 'documentado',    title: 'La justificación por la sola fe',
     year: 1551,
     place: 'St. Pierre, Ginebra',
     occasion:
@@ -693,7 +695,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'agustin-blessed-mercy',
     author: 'Agustín de Hipona',
-    title: 'Sobre la bienaventuranza de la misericordia',
+    veracity: 'documentado',    title: 'Sobre la bienaventuranza de la misericordia',
     year: 392,
     place: 'Hipona, África romana',
     occasion:
@@ -734,7 +736,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'chrysostom-paschal',
     author: 'Juan Crisóstomo',
-    title: 'Homilía pascual',
+    veracity: 'documentado',    title: 'Homilía pascual',
     year: 400,
     place: 'Constantinopla',
     occasion:
@@ -775,7 +777,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'whitefield-method',
     author: 'George Whitefield',
-    title: 'El método de la gracia',
+    veracity: 'documentado',    title: 'El método de la gracia',
     year: 1741,
     place: 'Londres (predicado al aire libre)',
     occasion:
@@ -817,7 +819,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'wesley-almost',
     author: 'John Wesley',
-    title: 'El casi cristiano',
+    veracity: 'documentado',    title: 'El casi cristiano',
     year: 1741,
     place: 'Kingswood, Bristol',
     occasion:
@@ -857,7 +859,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'bossuet-funeral',
     author: 'Jacques-Bénigne Bossuet',
-    title: 'Oración fúnebre por Enriqueta Ana de Inglaterra',
+    veracity: 'documentado',    title: 'Oración fúnebre por Enriqueta Ana de Inglaterra',
     year: 1670,
     place: 'Abadía de Saint-Denis, París',
     occasion:
@@ -900,7 +902,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'graham-cross',
     author: 'Billy Graham',
-    title: 'La cruz y el llamado',
+    veracity: 'documentado',    title: 'La cruz y el llamado',
     year: 1949,
     place: 'Cruzada de Los Ángeles',
     occasion:
@@ -944,7 +946,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'macarthur-scripture',
     author: 'John MacArthur',
-    title: 'La suficiencia de la Escritura',
+    veracity: 'documentado',    title: 'La suficiencia de la Escritura',
     year: 1990,
     place: 'Grace Community Church, Los Ángeles',
     occasion:
@@ -987,6 +989,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'stanley-obedience',
     author: 'Charles Stanley',
+    veracity: 'reconstruido',
     title: 'Obediencia y bendición',
     year: 1998,
     place: 'First Baptist Church, Atlanta',
@@ -1026,6 +1029,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'osteen-favor',
     author: 'Joel Osteen',
+    veracity: 'reconstruido',
     title: 'Declaro favor',
     year: 2009,
     place: 'Lakewood Church, Houston',
@@ -1065,6 +1069,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'evans-kingdom',
     author: 'Tony Evans',
+    veracity: 'reconstruido',
     title: 'La agenda del Reino',
     year: 2000,
     place: 'Oak Cliff Bible Fellowship, Dallas',
@@ -1106,6 +1111,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'cho-prayer',
     author: 'David Yonggi Cho',
+    veracity: 'reconstruido',
     title: 'Oración y fe declarada',
     year: 1990,
     place: 'Yoido Full Gospel Church, Seúl',
@@ -1147,6 +1153,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'gebel-superheroe',
     author: 'Dante Gebel',
+    veracity: 'reconstruido',
     title: 'Súper héroe',
     year: 2004,
     place: 'River Church, Anaheim (antes El Río), Conferencia de Adolescentes',
@@ -1188,6 +1195,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'witt-worship',
     author: 'Marcos Witt',
+    veracity: 'reconstruido',
     title: 'La adoración como estilo de vida',
     year: 2005,
     place: 'Conferencia de Adoración, Ciudad de México',
@@ -1229,6 +1237,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'luna-healing',
     author: 'Cash Luna',
+    veracity: 'reconstruido',
     title: 'Poder para sanar',
     year: 2010,
     place: 'Casa de Dios, Guatemala',
@@ -1270,6 +1279,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'maldonado-supernatural',
     author: 'Guillermo Maldonado',
+    veracity: 'reconstruido',
     title: 'Lo sobrenatural de Dios',
     year: 2005,
     place: 'Casa Internacional del Padre (Kingdom City), Houston',
@@ -1311,7 +1321,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'edwards-dependence',
     author: 'Jonathan Edwards',
-    title: 'Dios glorificado en la dependencia del hombre',
+    veracity: 'documentado',    title: 'Dios glorificado en la dependencia del hombre',
     year: 1731,
     place: 'Boston, Massachusetts',
     occasion:
@@ -1352,7 +1362,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'spurgeon-heart',
     author: 'Charles H. Spurgeon',
-    title: 'El corazón del evangelio',
+    veracity: 'documentado',    title: 'El corazón del evangelio',
     year: 1885,
     place: 'Tabernáculo Metropolitano, Londres',
     occasion:
@@ -1395,7 +1405,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'lloydjones-purpose',
     author: 'D. Martyn Lloyd-Jones',
-    title: 'El propósito de Dios en todas las cosas',
+    veracity: 'documentado',    title: 'El propósito de Dios en todas las cosas',
     year: 1960,
     place: 'Westminster Chapel, Londres',
     occasion:
@@ -1437,7 +1447,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'tozer-fear',
     author: 'A. W. Tozer',
-    title: 'El temor de Dios',
+    veracity: 'documentado',    title: 'El temor de Dios',
     year: 1955,
     place: 'Southside Alliance Church, Chicago',
     occasion:
@@ -1478,7 +1488,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'keller-servant',
     author: 'Timothy Keller',
-    title: 'El Siervo sustituto',
+    veracity: 'documentado',    title: 'El Siervo sustituto',
     year: 2003,
     place: 'Redeemer Presbyterian Church, Nueva York',
     occasion:
@@ -1520,7 +1530,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'keller-two-builders',
     author: 'Timothy Keller',
-    title: 'Las dos casas',
+    veracity: 'documentado',    title: 'Las dos casas',
     year: 2006,
     place: 'Redeemer Presbyterian Church, Nueva York',
     occasion:
@@ -1563,7 +1573,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'luther-priesthood',
     author: 'Martín Lutero',
-    title: 'El sacerdocio de todos los creyentes',
+    veracity: 'documentado',    title: 'El sacerdocio de todos los creyentes',
     year: 1520,
     place: 'Wittenberg, Alemania',
     occasion:
@@ -1604,7 +1614,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'calvino-prayer',
     author: 'Juan Calvino',
-    title: 'Cómo orar correctamente',
+    veracity: 'documentado',    title: 'Cómo orar correctamente',
     year: 1550,
     place: 'St. Pierre, Ginebra',
     occasion:
@@ -1643,7 +1653,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'calvino-cross',
     author: 'Juan Calvino',
-    title: 'La cruz y la disciplina del Señor',
+    veracity: 'documentado',    title: 'La cruz y la disciplina del Señor',
     year: 1552,
     place: 'St. Pierre, Ginebra',
     occasion:
@@ -1684,7 +1694,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'agustin-pastors',
     author: 'Agustín de Hipona',
-    title: 'Sobre los pastores',
+    veracity: 'documentado',    title: 'Sobre los pastores',
     year: 423,
     place: 'Hipona, África romana',
     occasion:
@@ -1723,7 +1733,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'chrysostom-paul',
     author: 'Juan Crisóstomo',
-    title: 'Elogio de San Pablo',
+    veracity: 'documentado',    title: 'Elogio de San Pablo',
     year: 398,
     place: 'Antioquía, Siria',
     occasion:
@@ -1764,7 +1774,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'whitefield-newbirth',
     author: 'George Whitefield',
-    title: 'El nuevo nacimiento',
+    veracity: 'documentado',    title: 'El nuevo nacimiento',
     year: 1739,
     place: 'Moorfields, Londres (al aire libre)',
     occasion:
@@ -1805,7 +1815,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'wesley-circumcision',
     author: 'John Wesley',
-    title: 'La circuncisión del corazón',
+    veracity: 'documentado',    title: 'La circuncisión del corazón',
     year: 1733,
     place: 'Oxford, Inglaterra',
     occasion:
@@ -1846,7 +1856,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'bossuet-ambition',
     author: 'Jacques-Bénigne Bossuet',
-    title: 'Sermón sobre la ambición',
+    veracity: 'documentado',    title: 'Sermón sobre la ambición',
     year: 1662,
     place: 'Capilla real, París',
     occasion:
@@ -1886,7 +1896,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'graham-second-coming',
     author: 'Billy Graham',
-    title: 'La segunda venida de Cristo',
+    veracity: 'documentado',    title: 'La segunda venida de Cristo',
     year: 1962,
     place: 'Cruzada de São Paulo y Buenos Aires',
     occasion:
@@ -1928,7 +1938,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'macarthur-narrow-gate',
     author: 'John MacArthur',
-    title: 'La puerta estrecha',
+    veracity: 'documentado',    title: 'La puerta estrecha',
     year: 1985,
     place: 'Grace Community Church, Los Ángeles',
     occasion:
@@ -1970,6 +1980,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'stanley-gods-time',
     author: 'Charles Stanley',
+    veracity: 'reconstruido',
     title: 'Confiar en el tiempo de Dios',
     year: 2001,
     place: 'First Baptist Church, Atlanta',
@@ -2010,6 +2021,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'osteen-i-am',
     author: 'Joel Osteen',
+    veracity: 'reconstruido',
     title: 'Yo soy lo que Dios dice que soy',
     year: 2014,
     place: 'Lakewood Church, Houston',
@@ -2050,6 +2062,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'evans-free',
     author: 'Tony Evans',
+    veracity: 'reconstruido',
     title: 'Libres de verdad',
     year: 2010,
     place: 'Oak Cliff Bible Fellowship, Dallas',
@@ -2090,6 +2103,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'cho-dreams',
     author: 'David Yonggi Cho',
+    veracity: 'reconstruido',
     title: 'Visiones y sueños',
     year: 1995,
     place: 'Yoido Full Gospel Church, Seúl',
@@ -2128,6 +2142,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'gebel-campeon',
     author: 'Dante Gebel',
+    veracity: 'reconstruido',
     title: 'El campeón',
     year: 2010,
     place: 'River Church, Anaheim',
@@ -2169,6 +2184,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'witt-seeker',
     author: 'Marcos Witt',
+    veracity: 'reconstruido',
     title: 'El adorador que Dios busca',
     year: 2008,
     place: 'Lakewood Español, Houston',
@@ -2207,6 +2223,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'luna-name',
     author: 'Cash Luna',
+    veracity: 'reconstruido',
     title: 'El nombre de Jesús',
     year: 2015,
     place: 'Casa de Dios, Guatemala',
@@ -2246,6 +2263,7 @@ export const SERMONS: InspirationSermon[] = [
   {
     id: 'maldonado-glory',
     author: 'Guillermo Maldonado',
+    veracity: 'reconstruido',
     title: 'La gloria de Dios',
     year: 2008,
     place: 'Casa Internacional del Padre (Kingdom City), Houston',

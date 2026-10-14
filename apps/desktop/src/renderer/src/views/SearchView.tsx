@@ -62,16 +62,46 @@ export function SearchView() {
     setNav(hit.book, hit.chapter || 1, hit.verse || undefined)
     setView('reader')
   }
+  const norm = (value: string): string =>
+    value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
   const highlight = (text: string): string => {
-    const needle = query.trim()
-    if (!needle) return text
-    const index = text.toLowerCase().indexOf(needle.toLowerCase())
-    if (index === -1) return text
-    return [
-      text.slice(0, index),
-      `<mark>${text.slice(index, index + needle.length)}</mark>`,
-      text.slice(index + needle.length)
-    ].join('')
+    const tokens = [...new Set(norm(query.trim()).split(/\s+/).filter(Boolean))]
+    if (!tokens.length) return text
+    let hay = ''
+    const map: number[] = []
+    for (let i = 0; i < text.length; i++) {
+      const piece = norm(text[i])
+      if (!piece) continue
+      hay += piece
+      map.push(i)
+    }
+    const marks: Array<[number, number]> = []
+    for (const token of tokens.sort((a, b) => b.length - a.length)) {
+      let from = 0
+      for (;;) {
+        const idx = hay.indexOf(token, from)
+        if (idx < 0) break
+        marks.push([map[idx], (map[idx + token.length - 1] ?? text.length - 1) + 1])
+        from = idx + token.length
+      }
+    }
+    if (!marks.length) return text
+    marks.sort((a, b) => a[0] - b[0])
+    const merged: Array<[number, number]> = []
+    for (const mark of marks) {
+      const last = merged[merged.length - 1]
+      if (last && mark[0] <= last[1]) last[1] = Math.max(last[1], mark[1])
+      else merged.push(mark)
+    }
+    let out = ''
+    let cursor = 0
+    for (const [start, end] of merged) {
+      out += text.slice(cursor, start)
+      out += `<mark>${text.slice(start, end)}</mark>`
+      cursor = end
+    }
+    return `${out}${text.slice(cursor)}`
   }
 
   return (

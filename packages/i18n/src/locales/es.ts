@@ -54,6 +54,7 @@ export const es = {
   'reader.profile.parafrasis': 'Paráfrasis · lenguaje libre',
   'reader.profile.ampliada': 'Expande los matices de cada palabra',
   'reader.profile.original': 'Texto en hebreo/griego',
+  'reader.orig.legend': 'Líneas por palabra: transliteración · original (G = griego · H = hebreo) · español · parsing · N.º Strong',
   'library.title': 'Enciclopedia / Recursos',
   'library.searchPlaceholder': 'Buscar en el recurso…',
   'library.help': 'Elige un recurso, busca un término y abre la entrada.',
@@ -309,6 +310,10 @@ export const es = {
     'Elige un modo, escribe tu consulta y pulsa Consultar. Funciona offline con tus módulos.',
 
   'inspiration.count': '{count} sermones clásicos',
+  'inspiration.veracity.documentado': 'Sermón documentado',
+  'inspiration.veracity.reconstruido': 'Reconstrucción fiel del estilo',
+  'inspiration.veracity.hint':
+    'Fichas de estudio, no transcripciones: las documentadas derivan de sermones con registro histórico; las reconstruidas siguen la predicación verificable del autor.',
   'inspiration.search': 'Buscar por título, autor, tema…',
   'inspiration.allAuthors': 'Todos los autores',
   'inspiration.allThemes': 'Todos los temas',

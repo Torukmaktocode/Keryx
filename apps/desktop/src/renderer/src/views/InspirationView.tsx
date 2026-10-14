@@ -10,6 +10,12 @@ import {
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
 
+function sermonMarkdownVeracity(sermon: InspirationSermon): string {
+  return sermon.veracity === 'reconstruido'
+    ? 'reconstrucción fiel del estilo del predicador (no transcripción de un sermón fechado)'
+    : 'basada en sermones con registro histórico (ficha de estudio, no transcripción)'
+}
+
 function sermonMarkdown(sermon: InspirationSermon): string {
   const lines = [
     `# ${sermon.title} — ${sermon.author} (${sermon.year})`,
@@ -17,6 +23,9 @@ function sermonMarkdown(sermon: InspirationSermon): string {
     `**Escena:** ${sermon.place}. ${sermon.occasion}`,
     ''
   ]
+  if (sermon.veracity === 'reconstruido' || sermon.veracity === 'documentado') {
+    lines.push(`**Fiabilidad de la ficha:** ${sermonMarkdownVeracity(sermon)}`, '')
+  }
   if (sermon.preached) {
     lines.push(`**Cómo se predicó:** ${sermon.preached}`, '')
   }
@@ -192,7 +201,17 @@ export function InspirationView() {
             <article className="inspiration-detail">
               <div className="inspiration-detail-head">
                 <div>
-                  <h2>{open.title}</h2>
+                  <h2>
+                    {open.title}{' '}
+                    {open.veracity && (
+                      <span
+                        className={`veracity-badge ${open.veracity === 'reconstruido' ? 'reconstruido' : ''}`}
+                        title={t('inspiration.veracity.hint')}
+                      >
+                        {t(`inspiration.veracity.${open.veracity}`)}
+                      </span>
+                    )}
+                  </h2>
                   <p className="meta">
                     <strong>{open.author}</strong> · {open.year} · {open.place} · {open.duration}
                   </p>
@@ -398,7 +417,14 @@ export function InspirationView() {
                             className="inspiration-item"
                             onClick={() => setOpenId(hit.sermon.id)}
                           >
-                            <h3>{hit.sermon.title}</h3>
+                            <h3>
+                              {hit.sermon.title}
+                              {hit.sermon.veracity === 'reconstruido' && (
+                                <span className="veracity-badge reconstruido" title={t('inspiration.veracity.hint')}>
+                                  {t('inspiration.veracity.reconstruido')}
+                                </span>
+                              )}
+                            </h3>
                             <p className="meta">
                               {hit.sermon.year} · {hit.sermon.place} · {hit.sermon.duration}
                             </p>
@@ -425,7 +451,14 @@ export function InspirationView() {
                       onClick={() => setOpenId(hit.sermon.id)}
                     >
                       <div>
-                        <h3>{hit.sermon.title}</h3>
+                        <h3>
+                          {hit.sermon.title}
+                          {hit.sermon.veracity === 'reconstruido' && (
+                            <span className="veracity-badge reconstruido" title={t('inspiration.veracity.hint')}>
+                              {t('inspiration.veracity.reconstruido')}
+                            </span>
+                          )}
+                        </h3>
                         <p className="meta">
                           <strong>{hit.sermon.author}</strong>
                           {hit.authorInfo ? ` — ${hit.authorInfo.era}` : ''} · {hit.sermon.year} ·{' '}

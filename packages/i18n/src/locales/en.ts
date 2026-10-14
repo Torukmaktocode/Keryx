@@ -56,6 +56,7 @@ export const en: Record<TranslationKey, string> = {
   'reader.profile.parafrasis': 'Paraphrase · free language',
   'reader.profile.ampliada': 'Expands the nuances of each word',
   'reader.profile.original': 'Hebrew/Greek text',
+  'reader.orig.legend': 'Lines per word: transliteration · original text (G = Greek · H = Hebrew) · Spanish · parsing · Strong no.',
   'library.title': 'Encyclopedia / Resources',
   'library.searchPlaceholder': 'Search in the resource…',
   'library.help': 'Pick a resource, search a term and open the entry.',
@@ -310,6 +311,10 @@ export const en: Record<TranslationKey, string> = {
   'assistant.hint': 'Pick a mode, type your query and press Ask. Works offline with your modules.',
 
   'inspiration.count': '{count} classic sermons',
+  'inspiration.veracity.documentado': 'Documented sermon',
+  'inspiration.veracity.reconstruido': 'Faithful style reconstruction',
+  'inspiration.veracity.hint':
+    "Study notes, not transcripts: documented ones derive from sermons with historical records; reconstructed ones follow the author's verifiable preaching style.",
   'inspiration.search': 'Search by title, author, theme…',
   'inspiration.allAuthors': 'All authors',
   'inspiration.allThemes': 'All themes',
