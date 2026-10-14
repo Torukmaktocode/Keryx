@@ -5,7 +5,7 @@ export const pt: Record<TranslationKey, string> = {
 
   'home.verse': '«Ide, e fazei discípulos de todas as nações.»',
   'home.verseRef': 'Mateus 28:19',
-  'home.lede': '96 Bíblias, 79 comentários, enciclopédias, 120 dicionários e 422 livros — tudo em um só lugar. Escreva seu sermão e deixe os clássicos sustentarem cada afirmação com fontes ancoradas: 6 horas de preparação em 19 segundos — e ainda é a sua voz.',
+  'home.lede': '96 Bíblias para comparar, 79 comentários verso a verso, 120 dicionários e enciclopédias, 422 livros de teologia e história — tudo em um só lugar. Escreva seu sermão e cada afirmação chega com a fonte ancorada: 6 horas de preparação em 19 segundos, na sua própria voz.',
   'home.start': 'Iniciar',
   'home.forms': 'Pomba, fogo, servo e cruz: as formas de Jesus',
 

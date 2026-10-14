@@ -3,7 +3,7 @@ export const es = {
 
   'home.verse': '«Id, y haced discípulos a todas las naciones.»',
   'home.verseRef': 'Mateo 28:19',
-  'home.lede': '96 Biblias, 79 comentarios, enciclopedias, 120 diccionarios y 422 libros — todo en un solo lugar. Escribe tu sermón y deja que los clásicos sostengan cada afirmación con las fuentes ancladas: 6 horas de preparación en 19 segundos, y sigue siendo tu voz.',
+  'home.lede': '96 Biblias para comparar, 79 comentarios verso a verso, 120 diccionarios y enciclopedias, 422 libros de teología e historia — todo en un solo lugar. Escribe tu sermón y cada afirmación llega con su fuente anclada: 6 horas de preparación en 19 segundos, con tu propia voz.',
   'home.start': 'Comenzar',
   'home.forms': 'Paloma, fuego, siervo y cruz: las formas de Jesús',
 
