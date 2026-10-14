@@ -54,6 +54,41 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+/** Clases de caracteres (mayuscula/minuscula/variantes acentuadas) para GLOB de SQLite. */
+const GLOB_CLASSES: Record<string, string> = {
+  a: 'aáàâäãAÁÀÂÄÃ',
+  e: 'eéèêëEÉÈÊË',
+  i: 'iíìîïIÍÌÎÏ',
+  o: 'oóòôöõOÓÒÔÖÕ',
+  u: 'uúùûüUÚÙÛÜ',
+  n: 'nñNÑ',
+  c: 'cçCÇ',
+  s: 'sßsS',
+  y: 'yýYÝ'
+}
+
+/**
+ * Patron GLOB insensible a mayusculas y acentos para el pre-filtro SQL de
+ * busqueda: LIKE '%comenzo%' no empata "comenzo" con "comenzo" (SQLite LIKE
+ * es sensible a acentos), pero los corchetes GLOB si lo hacen.
+ * Palabras separadas por comodin (>'*') para cruzar espacios y puntuacion.
+ */
+export function accentGlob(value: string): string {
+  const words: string[] = []
+  for (const word of value.trim().split(/\s+/).filter(Boolean)) {
+    let out = ''
+    for (const raw of word.toLowerCase()) {
+      const ch = normalizeText(raw) || raw
+      if (GLOB_CLASSES[ch]) out += `[${GLOB_CLASSES[ch]}]`
+      else if (/[a-z]/.test(ch)) out += `[${ch}${ch.toUpperCase()}]`
+      else if ('*?[]\\^$'.includes(ch)) out += '?'
+      else out += ch
+    }
+    words.push(out)
+  }
+  return words.join('*')
+}
+
 /** Recorta el texto en la primera coincidencia con contexto a ambos lados. */
 export function buildSnippet(
   text: string,

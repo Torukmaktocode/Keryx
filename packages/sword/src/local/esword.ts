@@ -14,7 +14,7 @@ import {
   type Verse
 } from '@keryx/core'
 import { resolveBook } from '../reference'
-import { matchesQuery, tokenizeQuery } from './search'
+import { accentGlob, matchesQuery, tokenizeQuery } from './search'
 import type { SwordProvider } from '../provider'
 
 const BIBLE_EXT = new Set(['.bblx', '.bbli', '.bbl'])
@@ -603,16 +603,16 @@ export class EswordProvider implements SwordProvider {
       : this.modules.map((m) => m.name)
     const results: SearchResult[] = []
     const limit = options.limit ?? 200
-    const like = `%${escapeLike(options.query)}%`
-    // El LIKE de SQLite solo pre-filtra (superset); el filtro real es por
-    // palabra completa, para que "amor" no empate con "JAMOR" o "Amorrheo".
+    const glob = `*${accentGlob(options.query)}*`
+    // El GLOB (clases [aáAÁ]) pre-filtra un superconjunto insensible a
+    // acentos/mayusculas; el filtro real es por palabra, sensible al usuario.
     const tokens = tokenizeQuery(options.query)
     const matchOptions = {
       caseSensitive: options.caseSensitive ?? false,
       wholeWord: options.wholeWord ?? true
     }
-    // El LIKE trae un superconjunto; se amplia para que el filtro por palabra
-    // completa no agote los candidatos antes de llenar el limite pedido.
+    // El pre-filtro trae un superconjunto; se amplia para que el filtro por
+    // palabra completa no agote los candidatos antes de llenar el limite pedido.
     const likeLimit = Math.min(limit * 25, 5000)
     for (const name of targets) {
       const conf = this.module(name)
@@ -622,9 +622,9 @@ export class EswordProvider implements SwordProvider {
         if (conf.category === 'Bible' && conf.bookTable) {
           const rows = db
             .prepare(
-              `SELECT Book AS book, Chapter AS chapter, Verse AS verse, Scripture AS text FROM ${conf.bookTable} WHERE Scripture LIKE ? ESCAPE '\\' LIMIT ?`
+              `SELECT Book AS book, Chapter AS chapter, Verse AS verse, Scripture AS text FROM ${conf.bookTable} WHERE Scripture GLOB ? LIMIT ?`
             )
-            .all(like, likeLimit) as Array<{
+            .all(glob, likeLimit) as Array<{
             book: number
             chapter: number
             verse: number
@@ -647,9 +647,9 @@ export class EswordProvider implements SwordProvider {
           const rows = db
             .prepare(
               `SELECT Book AS book, ChapterBegin AS chapter, VerseBegin AS verse, Comments AS text` +
-                ` FROM ${conf.commVerse} WHERE Comments LIKE ? ESCAPE '\\' LIMIT ?`
+                ` FROM ${conf.commVerse} WHERE Comments GLOB ? LIMIT ?`
             )
-            .all(like, likeLimit) as Array<{
+            .all(glob, likeLimit) as Array<{
             book: number
             chapter: number
             verse: number
@@ -677,9 +677,9 @@ export class EswordProvider implements SwordProvider {
             columns[0]
           const rows = db
             .prepare(
-              `SELECT ${topicCol} AS topic, ${defCol} AS text FROM ${conf.dictTable} WHERE ${defCol} LIKE ? ESCAPE '\\' LIMIT ?`
+              `SELECT ${topicCol} AS topic, ${defCol} AS text FROM ${conf.dictTable} WHERE ${defCol} GLOB ? LIMIT ?`
             )
-            .all(like, likeLimit) as Array<{ topic: string; text: string }>
+            .all(glob, likeLimit) as Array<{ topic: string; text: string }>
           for (const row of rows) {
             const plain = stripHtml(renderEsword(row.text ?? ''))
             if (tokens.length && !matchesQuery(plain, tokens, matchOptions)) continue
