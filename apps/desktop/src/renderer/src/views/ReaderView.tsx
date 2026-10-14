@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type ReactElement } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactElement } from 'react'
 import { useI18n } from '@keryx/i18n'
 import {
   bookName,
@@ -34,6 +34,7 @@ export function ReaderView() {
   const [langFilter, setLangFilter] = useState('')
   const [compare, setCompare] = useState(false)
   const [compareCount, setCompareCount] = useState<CompareCount>(2)
+  const [aligned, setAligned] = useState(false)
   const [colModules, setColModules] = useState<string[]>([])
   const [colVerses, setColVerses] = useState<Record<string, Verse[]>>({})
   const [colLoading, setColLoading] = useState<Record<string, boolean>>({})
@@ -110,18 +111,15 @@ export function ReaderView() {
       .finally(() => setLoading(false))
   }, [selectedModule, book, chapter])
 
-  const nextDifferentModule = (used: string[], skip = ''): string =>
-    bibleModules.find((m) => m.name !== selectedModule && !used.includes(m.name) && m.name !== skip)
-      ?.name ??
+  const nextDifferentModule = (used: string[]): string =>
+    bibleModules.find((m) => m.name !== selectedModule && !used.includes(m.name))?.name ??
     bibleModules.find((m) => m.name !== selectedModule)?.name ??
     selectedModule
 
   useEffect(() => {
     if (!compare) return
     setColModules((prev) => {
-      const base = prev.length ? prev : [selectedModule, ...prev]
-      const filled: string[] = base.filter(Boolean)
-      if (!filled.length) filled.push(selectedModule)
+      const filled = prev.length ? prev.filter(Boolean) : [selectedModule]
       const used = new Set(filled)
       for (let i = filled.length; i < compareCount; i++) {
         const next = nextDifferentModule([...used])
@@ -131,6 +129,10 @@ export function ReaderView() {
       return filled.slice(0, compareCount)
     })
   }, [compare, compareCount, selectedModule, bibleModules])
+
+  useEffect(() => {
+    if (compare) setAligned(compareCount > 2)
+  }, [compare, compareCount])
 
   const colKey = colModules.slice(0, compareCount).join('\n')
   useEffect(() => {
@@ -184,6 +186,63 @@ export function ReaderView() {
       ))}
     </div>
   )
+
+  const renderColSelect = (index: number, moduleName: string): ReactElement => (
+    <select
+      className="select"
+      value={moduleName ?? ''}
+      onChange={(e) => setColModule(index, e.target.value)}
+    >
+      {bibleModules.map((m) => (
+        <option key={m.name} value={m.name}>
+          {moduleOptionLabel(m, locale)}
+        </option>
+      ))}
+    </select>
+  )
+
+  const renderAlignedRows = (): ReactElement => {
+    const mods = colModules.slice(0, compareCount)
+    const baseVerses = colVerses[mods[0] ?? '']
+    if (!baseVerses) {
+      return (
+        <Fragment>
+          <div className="empty">
+            <span className="spinner" />
+          </div>
+        </Fragment>
+      )
+    }
+    return (
+      <>
+        {baseVerses.map((baseVerse) =>
+          mods.map((moduleName, colIndex) => {
+            const list = colVerses[moduleName]
+            const verse = list?.find((v) => v.verse === baseVerse.verse)
+            return (
+              <div
+                className={`vs-cell ${colIndex === 0 ? 'base' : ''}`}
+                key={`${baseVerse.verse}-${colIndex}`}
+              >
+                {!list ? (
+                  <span className="vs-loading">
+                    <span className="spinner" />
+                  </span>
+                ) : verse ? (
+                  <>
+                    {colIndex === 0 && <span className="verse-num">{baseVerse.verse}</span>}
+                    <span dangerouslySetInnerHTML={{ __html: verse.text }} />
+                  </>
+                ) : (
+                  <span className="vs-missing">�</span>
+                )}
+              </div>
+            )
+          })
+        )}
+      </>
+    )
+  }
 
   return (
     <div className="view">
@@ -240,7 +299,23 @@ export function ReaderView() {
             ))}
           </div>
         )}
-        {compare && compareCount === 2 && (
+        {compare && (
+          <div className="seg">
+            <button
+              className={`seg-btn ${!aligned ? 'active' : ''}`}
+              onClick={() => setAligned(false)}
+            >
+              {t('reader.panels')}
+            </button>
+            <button
+              className={`seg-btn ${aligned ? 'active' : ''}`}
+              onClick={() => setAligned(true)}
+            >
+              {t('reader.aligned')}
+            </button>
+          </div>
+        )}
+        {compare && compareCount === 2 && !aligned && (
           <button
             className="btn ghost small"
             onClick={() => {
@@ -249,7 +324,7 @@ export function ReaderView() {
             }}
             title={t('reader.swap')}
           >
-            ⇄
+            ?
           </button>
         )}
         <div className="seg">
@@ -316,7 +391,23 @@ export function ReaderView() {
           </select>
         )}
       </header>
-      {compare ? (
+      {compare && aligned ? (
+        <div className="view-body flush">
+          <div
+            className="compare-vs"
+            style={{ gridTemplateColumns: `repeat(${compareCount}, minmax(0, 1fr))` }}
+          >
+            {colModules.slice(0, compareCount).map((moduleName, index) => (
+              <div className={`vs-head ${index === 0 ? 'base' : ''}`} key={`h-${index}`}>
+                {index === 0 && <span className="vs-tag">{t('reader.base')}</span>}
+                {renderColSelect(index, moduleName ?? '')}
+              </div>
+            ))}
+            {renderAlignedRows()}
+          </div>
+        </div>
+      ) : null}
+      {compare && !aligned ? (
         <div className="view-body flush">
           <div
             className="cols compare"
@@ -329,18 +420,9 @@ export function ReaderView() {
           >
             {colModules.slice(0, compareCount).map((moduleName, index) => (
               <section className="col" key={`${index}-${moduleName ?? ''}`}>
-                <div className="col-head">
-                  <select
-                    className="select"
-                    value={moduleName ?? ''}
-                    onChange={(e) => setColModule(index, e.target.value)}
-                  >
-                    {bibleModules.map((m) => (
-                      <option key={m.name} value={m.name}>
-                        {moduleOptionLabel(m, locale)}
-                      </option>
-                    ))}
-                  </select>
+                <div className={`col-head ${index === 0 ? 'vs-head-base' : ''}`}>
+                  {index === 0 && <span className="vs-tag">{t('reader.base')}</span>}
+                  {renderColSelect(index, moduleName ?? '')}
                 </div>
                 <div className="col-body">
                   {colLoading[moduleName] ? (
@@ -357,7 +439,8 @@ export function ReaderView() {
             ))}
           </div>
         </div>
-      ) : (
+      ) : null}
+      {!compare ? (
         <div className="view-body">
           {loading ? (
             <div className="empty">
@@ -373,7 +456,9 @@ export function ReaderView() {
             renderVerses(verses)
           )}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }
+
+

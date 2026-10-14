@@ -2,6 +2,9 @@ export const es = {
   'brand.tagline': 'estudio',
 
   'reader.compareCount': 'Biblias en comparación',
+  'reader.base': 'Base',
+  'reader.panels': 'Paneles',
+  'reader.aligned': 'Versículo a versículo',
   'nav.reader': 'Lector',
   'nav.study': 'Estudio',
   'nav.search': 'Búsqueda',

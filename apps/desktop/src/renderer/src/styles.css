@@ -1283,6 +1283,78 @@
   }
 }
 
+/* ===== Comparacion alineada (estrategia de Logos Text Comparison: base + verse a verse) ===== */
+
+.compare-vs {
+  height: 100%;
+  overflow: auto;
+  padding: 0 var(--space-6) var(--space-6);
+  box-sizing: border-box;
+}
+
+.vs-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  min-height: 0;
+}
+
+.vs-head.base {
+  background: var(--accent-soft);
+  border-bottom-color: var(--accent);
+}
+
+.vs-tag {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 1px 7px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.vs-head .select {
+  flex: 1;
+}
+
+.vs-cell {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-scripture);
+  font-size: 15.5px;
+  line-height: 1.6;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.vs-cell.base {
+  background: rgba(178, 90, 52, 0.07);
+  border-bottom: 1px solid rgba(178, 90, 52, 0.35);
+}
+
+.vs-cell .verse-num {
+  margin-right: 6px;
+}
+
+.vs-missing {
+  color: var(--muted);
+  font-size: 13px;
+  font-family: var(--font-ui);
+}
+
+.vs-loading {
+  display: inline-flex;
+  padding: 4px;
+}
+
 /* ===== Writing ===== */
 .writing {
   display: grid;

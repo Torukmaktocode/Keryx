@@ -4,6 +4,9 @@ export const en: Record<TranslationKey, string> = {
   'brand.tagline': 'study',
 
   'reader.compareCount': 'Bibles in comparison',
+  'reader.base': 'Base',
+  'reader.panels': 'Panels',
+  'reader.aligned': 'Verse by verse',
   'nav.reader': 'Reader',
   'nav.study': 'Study',
   'nav.search': 'Search',
