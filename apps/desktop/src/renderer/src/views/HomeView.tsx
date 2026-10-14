@@ -1,56 +1,35 @@
-import type { CSSProperties } from 'react'
 import { useI18n } from '@keryx/i18n'
-import { useAppStore } from '../store/appStore'
-
-const FORM_DELAY_MS = 320
-const FORM_STEP_MS = 150
 
 export function HomeView() {
   const { t } = useI18n()
-  const setView = useAppStore((s) => s.setView)
-  const delay = (i: number): CSSProperties =>
-    ({ '--d': `${FORM_DELAY_MS + i * FORM_STEP_MS}ms` }) as CSSProperties
 
   return (
     <div className="home">
       <div className="home-stage">
         <span className="home-glow" aria-hidden="true" />
-        <span className="home-word">Keryx</span>
-        <span className="home-forms" aria-label={t('home.forms')} role="img">
-          <svg viewBox="0 0 24 24" style={delay(0)} aria-hidden="true">
-            <title>Paloma</title>
-            <path pathLength={1} d="M16 7h.01" />
-            <path pathLength={1} d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20" />
-            <path pathLength={1} d="m20 7 2 .5-2 .5" />
-            <path pathLength={1} d="M10 18v3" />
-            <path pathLength={1} d="M14 17.75V21" />
-            <path pathLength={1} d="M7 18a6 6 0 0 0 3.84-10.61" />
-          </svg>
-          <svg viewBox="0 0 24 24" style={delay(1)} aria-hidden="true">
-            <title>Fuego</title>
-            <path pathLength={1} d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" />
-          </svg>
-          <svg viewBox="0 0 24 24" style={delay(2)} aria-hidden="true">
-            <title>Siervo</title>
-            <path pathLength={1} d="M11 14h2a2 2 0 0 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16" />
-            <path pathLength={1} d="m14.45 13.39 5.05-4.694C20.196 8 21 6.85 21 5.75a2.75 2.75 0 0 0-4.797-1.837.276.276 0 0 1-.406 0A2.75 2.75 0 0 0 11 5.75c0 1.2.802 2.248 1.5 2.946L16 11.95" />
-            <path pathLength={1} d="m2 15 6 6" />
-            <path pathLength={1} d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a1 1 0 0 0-2.75-2.91" />
-          </svg>
-          <svg viewBox="0 0 24 24" className="home-forms-cross" style={delay(3)} aria-hidden="true">
-            <title>Cruz</title>
-            <path pathLength={1} d="M10.3 2.5h3.4v5.1H19.3v3.4h-5.6V21.5h-3.4V11H4.7V7.6h5.6z" />
-          </svg>
+        <span className="home-word">
+          <span className="home-dove" aria-hidden="true">
+            <svg viewBox="20 50 400 260" role="presentation">
+              <path className="home-wing-far" d="M246 200C220 120 170 74 96 60c44 56 100 104 144 146z" />
+              <path d="M172 238 84 258 124 234 96 222 146 222Z" />
+              <ellipse cx="250" cy="230" rx="86" ry="46" transform="rotate(-8 250 230)" />
+              <circle cx="332" cy="196" r="26" />
+              <path d="M356 190l32 8-32 12z" />
+              <path className="home-wing-near" d="M232 204C200 136 140 92 64 78c46 54 114 98 162 132z" />
+              <g className="home-branch">
+                <path className="home-branch-stem" d="M386 204c16-8 32-12 48-14" />
+                <path className="home-branch-leaf" d="M434 190c10-6 22-6 30 0-10 6-22 6-30 0z" />
+                <circle className="home-branch-olive" cx="404" cy="191" r="5" />
+              </g>
+            </svg>
+          </span>
+          Keryx
         </span>
         <span className="home-line" aria-hidden="true" />
         <blockquote className="home-verse">
           <span className="home-verse-text">{t('home.verse')}</span>
           <cite>{t('home.verseRef')}</cite>
         </blockquote>
-        <p className="home-lede">{t('home.lede')}</p>
-        <button className="btn primary home-start" onClick={() => setView('study')}>
-          {t('home.start')}
-        </button>
       </div>
     </div>
   )
