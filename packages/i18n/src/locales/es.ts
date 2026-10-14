@@ -1,10 +1,6 @@
 export const es = {
   'brand.tagline': 'estudio',
 
-  'home.verse': '«Id, y haced discípulos a todas las naciones.»',
-  'home.verseRef': 'Mateo 28:19',
-
-  'nav.home': 'Inicio',
   'reader.compareCount': 'Biblias en comparación',
   'nav.reader': 'Lector',
   'nav.study': 'Estudio',

@@ -3,10 +3,6 @@ import type { TranslationKey } from '../types'
 export const en: Record<TranslationKey, string> = {
   'brand.tagline': 'study',
 
-  'home.verse': '“Go and make disciples of all nations.”',
-  'home.verseRef': 'Matthew 28:19',
-
-  'nav.home': 'Home',
   'reader.compareCount': 'Bibles in comparison',
   'nav.reader': 'Reader',
   'nav.study': 'Study',

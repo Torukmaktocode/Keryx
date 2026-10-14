@@ -3,10 +3,6 @@ import type { TranslationKey } from '../types'
 export const pt: Record<TranslationKey, string> = {
   'brand.tagline': 'estudo',
 
-  'home.verse': '«Ide, e fazei discípulos de todas as nações.»',
-  'home.verseRef': 'Mateus 28:19',
-
-  'nav.home': 'Início',
   'reader.compareCount': 'Bíblias em comparação',
 
   'nav.reader': 'Leitor',

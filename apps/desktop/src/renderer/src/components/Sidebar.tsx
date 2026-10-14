@@ -3,7 +3,6 @@ import { useAppStore, type View } from '../store/appStore'
 import { Icon, type IconName } from './Icon'
 
 const ITEMS: { id: View; icon: IconName }[] = [
-  { id: 'home', icon: 'home' },
   { id: 'reader', icon: 'reader' },
   { id: 'study', icon: 'study' },
   { id: 'search', icon: 'search' },
@@ -28,10 +27,10 @@ export function Sidebar() {
 
   return (
     <aside className="sidebar">
-      <button className="sidebar-brand" onClick={() => setView('home')}>
+      <div className="sidebar-brand">
         <strong>Keryx</strong>
         <span>{t('brand.tagline')}</span>
-      </button>
+      </div>
       <nav className="nav">
         {ITEMS.map((item) => (
           <button
