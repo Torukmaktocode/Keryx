@@ -2,8 +2,8 @@ import type { CSSProperties } from 'react'
 import { useI18n } from '@keryx/i18n'
 import { useAppStore } from '../store/appStore'
 
-const FORM_DELAY_MS = 900
-const FORM_STEP_MS = 230
+const FORM_DELAY_MS = 320
+const FORM_STEP_MS = 150
 
 export function HomeView() {
   const { t } = useI18n()
