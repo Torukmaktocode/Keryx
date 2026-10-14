@@ -5,7 +5,7 @@ export const en: Record<TranslationKey, string> = {
 
   'home.verse': '“Go and make disciples of all nations.”',
   'home.verseRef': 'Matthew 28:19',
-  'home.lede': '96 Bibles to compare, 79 verse-by-verse commentaries, 120 dictionaries and encyclopedias, 422 theology and history books — all in one place. Write your sermon and every claim arrives with its anchored source: 8 hours of preparation in 19 seconds, in your own voice.',
+  'home.lede': 'Read, study, write and prepare your sermon like never before. 96 Bibles to compare, 79 verse-by-verse commentaries, 120 dictionaries and encyclopedias, 422 theology and history books — all in one place: your sermon ready in 19 seconds, in your own voice.',
   'home.start': 'Begin',
   'home.forms': 'Dove, fire, servant and cross: the forms of Jesus',
 
