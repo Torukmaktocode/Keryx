@@ -19,23 +19,27 @@ export function HomeView() {
         <span className="home-forms" aria-label={t('home.forms')} role="img">
           <svg viewBox="0 0 24 24" style={delay(0)} aria-hidden="true">
             <title>Paloma</title>
-            <path pathLength={1} d="M19.5 10.5c-1.6-2.4-4.6-3.2-7.4-2.1L6.6 6.5v3.3C4.7 10.8 3.4 12.2 3 13.9c3.1 2.7 8.5 3 12 1.1 3.4-1.4 4.2-3.5 4.5-4.5z" />
-            <path pathLength={1} d="M10.5 9c.9-2.2 2.7-2.9 4.7-2.3" />
+            <path pathLength={1} d="M16 7h.01" />
+            <path pathLength={1} d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20" />
+            <path pathLength={1} d="m20 7 2 .5-2 .5" />
+            <path pathLength={1} d="M10 18v3" />
+            <path pathLength={1} d="M14 17.75V21" />
+            <path pathLength={1} d="M7 18a6 6 0 0 0 3.84-10.61" />
           </svg>
           <svg viewBox="0 0 24 24" style={delay(1)} aria-hidden="true">
             <title>Fuego</title>
-            <path pathLength={1} d="M12 3.2c1.1 3 4.1 4.4 4.1 7.9a4.1 4.1 0 0 1-8.2 0c0-1.5.5-2.7 1.4-3.8.2 1 .8 1.9 1.7 2.3-.7-2-.7-4.7 1-6.4z" />
+            <path pathLength={1} d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" />
           </svg>
           <svg viewBox="0 0 24 24" style={delay(2)} aria-hidden="true">
             <title>Siervo</title>
-            <path pathLength={1} d="M5.5 12.5h13l-1.4 5.3a2.2 2.2 0 0 1-2.2 1.7H9.1a2.2 2.2 0 0 1-2.2-1.7z" />
-            <path pathLength={1} d="M8.8 12.5V9.4A2.7 2.7 0 0 1 11.5 7h1a2.7 2.7 0 0 1 2.7 2.4v3.1" />
-            <path pathLength={1} d="M12 7V3.6" />
+            <path pathLength={1} d="M11 14h2a2 2 0 0 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16" />
+            <path pathLength={1} d="m14.45 13.39 5.05-4.694C20.196 8 21 6.85 21 5.75a2.75 2.75 0 0 0-4.797-1.837.276.276 0 0 1-.406 0A2.75 2.75 0 0 0 11 5.75c0 1.2.802 2.248 1.5 2.946L16 11.95" />
+            <path pathLength={1} d="m2 15 6 6" />
+            <path pathLength={1} d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a1 1 0 0 0-2.75-2.91" />
           </svg>
           <svg viewBox="0 0 24 24" style={delay(3)} aria-hidden="true">
             <title>Cruz</title>
-            <path pathLength={1} d="M12 3.5v17" />
-            <path pathLength={1} d="M6.8 8.8h10.4" />
+            <path pathLength={1} d="M4 9a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h4a1 1 0 0 1 1 1v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4a1 1 0 0 1 1-1h4a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-4a1 1 0 0 1-1-1V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4a1 1 0 0 1-1 1z" />
           </svg>
         </span>
         <span className="home-line" aria-hidden="true" />
