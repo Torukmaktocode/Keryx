@@ -43,6 +43,10 @@ export function HomeView() {
           </svg>
         </span>
         <span className="home-line" aria-hidden="true" />
+        <blockquote className="home-verse">
+          <span className="home-verse-text">{t('home.verse')}</span>
+          <cite>{t('home.verseRef')}</cite>
+        </blockquote>
         <p className="home-lede">{t('home.lede')}</p>
         <button className="btn primary home-start" onClick={() => setView('study')}>
           {t('home.start')}

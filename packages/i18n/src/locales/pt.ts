@@ -3,7 +3,9 @@ import type { TranslationKey } from '../types'
 export const pt: Record<TranslationKey, string> = {
   'brand.tagline': 'estudo',
 
-  'home.lede': 'Sua biblioteca com 717 módulos já está no seu disco. Estude a passagem, recorra aos clássicos e pregue — tudo local, em espanhol.',
+  'home.verse': '«Ide, e fazei discípulos de todas as nações.»',
+  'home.verseRef': 'Mateus 28:19',
+  'home.lede': '96 Bíblias, 79 comentários, enciclopédias, 120 dicionários e 422 livros — tudo em um só lugar. Escreva seu sermão e deixe os clássicos sustentarem cada afirmação com fontes ancoradas: 6 horas de preparação em 19 segundos — e ainda é a sua voz.',
   'home.start': 'Iniciar',
   'home.forms': 'Pomba, fogo, servo e cruz: as formas de Jesus',
 

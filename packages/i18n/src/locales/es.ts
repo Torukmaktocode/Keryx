@@ -1,7 +1,9 @@
 export const es = {
   'brand.tagline': 'estudio',
 
-  'home.lede': 'Tu biblioteca de 717 módulos ya está en tu disco. Estudia el pasaje, consulta los clásicos y predica — todo local, en español.',
+  'home.verse': '«Id, y haced discípulos a todas las naciones.»',
+  'home.verseRef': 'Mateo 28:19',
+  'home.lede': '96 Biblias, 79 comentarios, enciclopedias, 120 diccionarios y 422 libros — todo en un solo lugar. Escribe tu sermón y deja que los clásicos sostengan cada afirmación con las fuentes ancladas: 6 horas de preparación en 19 segundos, y sigue siendo tu voz.',
   'home.start': 'Comenzar',
   'home.forms': 'Paloma, fuego, siervo y cruz: las formas de Jesús',
 

@@ -2210,20 +2210,45 @@ input[type='range'] {
   animation: home-line-in 600ms ease-out 1900ms both;
 }
 
+.home-verse {
+  margin: 0;
+  text-align: center;
+  animation: home-rise 450ms ease 2250ms both;
+}
+
+.home-verse-text {
+  display: block;
+  font-family: var(--font-scripture);
+  font-style: italic;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--fg);
+}
+
+.home-verse cite {
+  display: block;
+  margin-top: var(--space-2);
+  font-family: var(--font-ui);
+  font-style: normal;
+  font-size: 12.5px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
 .home-lede {
   margin: 0;
   color: var(--fg-soft);
-  font-size: 17px;
-  line-height: 1.65;
-  max-width: 42ch;
-  animation: home-rise 450ms ease 2250ms both;
+  font-size: 16.5px;
+  line-height: 1.62;
+  max-width: 46ch;
+  animation: home-rise 450ms ease 2600ms both;
 }
 
 .home-start {
   font-size: 16px;
   padding: var(--space-3) var(--space-7);
   border-radius: 999px;
-  animation: home-rise 450ms ease 2600ms both;
+  animation: home-rise 450ms ease 2950ms both;
 }
 
 @keyframes home-draw {
