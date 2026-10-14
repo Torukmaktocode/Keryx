@@ -7,6 +7,7 @@ import {
   type SwordModule
 } from '@keryx/core'
 import { api } from '../lib/api'
+import { annotateProfiles } from '../lib/modules'
 
 export type View =
   | 'reader'
@@ -109,11 +110,12 @@ export const useAppStore = create<AppState>((set, get) => ({
         api.modules.list(),
         api.version().catch(() => '0.1.0')
       ])
-      const bibleModules = modules.filter((m) => m.category === 'Bible')
+      const annotated = annotateProfiles(modules)
+      const bibleModules = annotated.filter((m) => m.category === 'Bible')
       set({
         engine,
         settings,
-        modules,
+        modules: annotated,
         selectedModule: get().selectedModule || bibleModules[0]?.name || modules[0]?.name || '',
         sidebarHidden: settings.sidebarHidden ?? false,
         version,
@@ -128,7 +130,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   refreshModules: async () => {
-    const modules = await api.modules.list()
+    const modules = annotateProfiles(await api.modules.list())
     set({ modules })
   },
 

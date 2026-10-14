@@ -79,6 +79,11 @@ Síntesis en una línea por hito:
   economía + deepSermon (borrador→crítico→final), 12 oradores con perfil,
   exégesis BDAG-lite por Strong# en ExegesisCard, export .doc/.md/Copiar,
   evals medibles `npm run eval` — **9.0/9, 0 fallos, 5 pasajes dorados**.
+  E4.2: comparativa del Lector completa — apilado Logos para 4/6, llenado
+  por metodología experta (`expertPlan`: contrasta el polo opuesto a la
+  base; RV60↔NVI, +NTV/LBLA, +Amplificada, +original) y chips de perfil de
+  traducción (formal/dinámica/paráfrasis/ampliada/original) anotados en el
+  init vía `annotateProfiles`.
 
 ## 5. Principios no negociables (romper uno = regresión)
 

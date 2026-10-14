@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState, type ReactElement } from 'react'
-import { useI18n } from '@keryx/i18n'
+import { useI18n, type TranslationKey } from '@keryx/i18n'
 import {
   bookName,
   booksByTestament,
@@ -8,32 +8,57 @@ import {
 } from '@keryx/core'
 import { api } from '../lib/api'
 import { languageLabel, languageRank } from '../lib/languages'
-import { moduleOptionLabel } from '../lib/modules'
+import { moduleOptionLabel, moduleShortLabel } from '../lib/modules'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
 
 const COUNTS = [1, 2, 4, 6] as const
 type CompareCount = (typeof COUNTS)[number]
 
-const DYNAMIC: RegExp[][] = [
-  [/nueva version internacional/i],
-  [/lenguaje sencillo/i, /dia de hoy/i, /palabra de dios para todos/i, /lenguaje actual/i]
+const POLO_FORMAL: RegExp[] = [
+  /reina valera/i,
+  /am.ricas/i,
+  /biblia textual/i,
+  /interlineal/i
 ]
 
-export const EXPERT_SLOTS: Record<number, RegExp[][][]> = {
-  2: [DYNAMIC],
-  4: [
-    DYNAMIC,
-    [[/amplificada/i]],
-    [[/de jerusalen/i, /jerusalem/i, /interconfesional/i, /peregrino/i]]
-  ],
-  6: [
-    DYNAMIC,
-    [[/amplificada/i]],
-    [[/de jerusalen/i, /jerusalem/i, /interconfesional/i, /peregrino/i]],
-    [[/am.ricas/i]],
-    [[/hebraica stuttgart/i, /torah/i]]
-  ]
+const RV: RegExp[][] = [
+  [/^reina valera 1960$/i],
+  [/reina valera 1960/i],
+  [/^reina valera 1995$/i],
+  [/reina valera 1995/i],
+  [/nueva reina valera 2000/i],
+  [/reina valera/i]
+]
+
+const LBLA: RegExp[][] = [
+  [/la biblia de las am.ricas/i],
+  [/nueva biblia de las am.ricas/i],
+  [/biblia de las am.ricas/i]
+]
+
+const NVI: RegExp[][] = [[/nueva version internacional/i]]
+const NTV: RegExp[][] = [[/traduccion viviente/i], [/nueva version internacional/i]]
+const AMPLIADA: RegExp[][] = [[/amplificada/i]]
+const ORIGINAL: RegExp[][] = [
+  [/interlineal/i],
+  [/biblia textual/i],
+  [/hebraica stuttgart/i],
+  [/torah/i]
+]
+
+export const expertPlan = (count: number, baseName: string): RegExp[][][] => {
+  const baseFormal = POLO_FORMAL.some((re) => re.test(baseName))
+  const pool: RegExp[][][] = baseFormal ? [NVI, NTV, AMPLIADA, LBLA, ORIGINAL] : [RV, LBLA, AMPLIADA, NTV, ORIGINAL]
+  return pool.slice(0, Math.max(count - 1, 0))
+}
+
+const PROFILE_KEYS: Record<string, TranslationKey> = {
+  formal: 'reader.profile.formal',
+  dinamica: 'reader.profile.dinamica',
+  parafrasis: 'reader.profile.parafrasis',
+  ampliada: 'reader.profile.ampliada',
+  original: 'reader.profile.original'
 }
 
 export function ReaderView() {
@@ -118,7 +143,7 @@ export function ReaderView() {
 
   useEffect(() => {
     if (selectedVerse === null) return
-    const el = document.querySelector('.verse.selected')
+    const el = document.querySelector('.verse.selected, .vs-base-row.selected')
     el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }, [selectedVerse])
 
@@ -142,12 +167,12 @@ export function ReaderView() {
     setColModules((prev) => {
       const filled = prev.length ? prev.filter(Boolean) : [selectedModule]
       const used = new Set(filled)
-      const expert = EXPERT_SLOTS[compareCount] ?? []
+      const expert = expertPlan(compareCount, selectedModule)
       for (let i = filled.length; i < compareCount; i++) {
         let pick = ''
-        for (const group of expert[i - 1] ?? []) {
+        for (const alt of expert[i - 1] ?? []) {
           const found = bibleModules.find(
-            (m) => group.every((re) => re.test(m.name)) && !used.has(m.name) && m.name !== selectedModule
+            (m) => alt.some((re) => re.test(m.name)) && !used.has(m.name) && m.name !== selectedModule
           )
           if (found) {
             pick = found.name
@@ -219,6 +244,18 @@ export function ReaderView() {
     </div>
   )
 
+  const modulesByName = useMemo(() => new Map(modules.map((m) => [m.name, m])), [modules])
+
+  const profileKey = (moduleName: string): TranslationKey | null => {
+    const profile = modulesByName.get(moduleName ?? '')?.profile
+    return profile ? (PROFILE_KEYS[profile] ?? null) : null
+  }
+
+  const renderProfile = (moduleName: string): ReactElement | null => {
+    const key = profileKey(moduleName)
+    return key ? <span className="head-profile">{t(key)}</span> : null
+  }
+
   const renderColSelect = (index: number, moduleName: string): ReactElement => (
     <select
       className="select"
@@ -272,6 +309,66 @@ export function ReaderView() {
             )
           })
         )}
+      </>
+    )
+  }
+
+  const renderStackedVerses = (): ReactElement => {
+    const mods = colModules.slice(0, compareCount)
+    const baseVerses = colVerses[mods[0] ?? '']
+    const altMods = mods.slice(1).filter(Boolean)
+    if (!baseVerses) {
+      return (
+        <div className="empty">
+          <span className="spinner" />
+        </div>
+      )
+    }
+    return (
+      <>
+        {baseVerses.map((baseVerse) => (
+          <section className="vs-block" key={baseVerse.verse}>
+            {baseVerse.heading && <div className="vs-block-heading">{baseVerse.heading}</div>}
+            <div
+              className={`vs-base-row ${selectedVerse === baseVerse.verse ? 'selected' : ''}`}
+              onClick={() => setSelectedVerse(baseVerse.verse)}
+            >
+              <span className="verse-num">{baseVerse.verse}</span>
+              <span className="vs-text" dangerouslySetInnerHTML={{ __html: baseVerse.text }} />
+            </div>
+            {altMods.map((moduleName) => {
+              const list = colVerses[moduleName]
+              const verse = list?.find((v) => v.verse === baseVerse.verse)
+              const mod = allBibles.find((b) => b.name === moduleName)
+              const labelKey = profileKey(moduleName)
+              return (
+                <div
+                  className="vs-alt-row"
+                  key={moduleName}
+                  onClick={() => setSelectedVerse(baseVerse.verse)}
+                >
+                  <span />
+                  <span className="vs-label">
+                    {mod ? moduleShortLabel(mod) : moduleName}
+                    {labelKey && <small>{t(labelKey)}</small>}
+                  </span>
+                  <span className="vs-alt-text">
+                    {!list ? (
+                      <span className="spinner" />
+                    ) : verse ? (
+                      <span
+                        className="vs-text"
+                        dangerouslySetInnerHTML={{ __html: verse.text }}
+                      />
+                    ) : (
+                      <span className="vs-missing">—</span>
+                    )}
+                  </span>
+                </div>
+              )
+            })}
+          </section>
+        ))}
       </>
     )
   }
@@ -425,18 +522,37 @@ export function ReaderView() {
       </header>
       {compare && aligned ? (
         <div className="view-body flush">
-          <div
-            className="compare-vs"
-            style={{ gridTemplateColumns: `repeat(${compareCount}, minmax(0, 1fr))` }}
-          >
-            {colModules.slice(0, compareCount).map((moduleName, index) => (
-              <div className={`vs-head ${index === 0 ? 'base' : ''}`} key={`h-${index}`}>
-                {index === 0 && <span className="vs-tag">{t('reader.base')}</span>}
-                {renderColSelect(index, moduleName ?? '')}
+          {compareCount > 2 ? (
+            <div className="compare-stack">
+              <div className="vs-alt-heads">
+                {colModules.slice(0, compareCount).map((moduleName, index) => (
+                  <div
+                    className={`vs-alt-head ${index === 0 ? 'base' : ''}`}
+                    key={`h-${index}`}
+                  >
+                    {index === 0 && <span className="vs-tag">{t('reader.base')}</span>}
+                    {renderColSelect(index, moduleName ?? '')}
+                    {renderProfile(moduleName)}
+                  </div>
+                ))}
               </div>
-            ))}
-            {renderAlignedRows()}
-          </div>
+              {renderStackedVerses()}
+            </div>
+          ) : (
+            <div
+              className="compare-vs"
+              style={{ gridTemplateColumns: `repeat(${compareCount}, minmax(0, 1fr))` }}
+            >
+              {colModules.slice(0, compareCount).map((moduleName, index) => (
+                <div className={`vs-head ${index === 0 ? 'base' : ''}`} key={`h-${index}`}>
+                  {index === 0 && <span className="vs-tag">{t('reader.base')}</span>}
+                  {renderColSelect(index, moduleName ?? '')}
+                  {renderProfile(moduleName)}
+                </div>
+              ))}
+              {renderAlignedRows()}
+            </div>
+          )}
         </div>
       ) : null}
       {compare && !aligned ? (
@@ -455,6 +571,7 @@ export function ReaderView() {
                 <div className={`col-head ${index === 0 ? 'vs-head-base' : ''}`}>
                   {index === 0 && <span className="vs-tag">{t('reader.base')}</span>}
                   {renderColSelect(index, moduleName ?? '')}
+                  {renderProfile(moduleName)}
                 </div>
                 <div className="col-body">
                   {colLoading[moduleName] ? (

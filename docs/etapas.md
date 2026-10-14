@@ -136,6 +136,30 @@ Result: 0/5 fallos Â· score medio 9.0/9
 - Pendiente E5: app web Netlify (Lector+Estudio+Escritura, módulos locales
   vía File System Access + SQLite WASM).
 
+## E4.2 — Comparativa del Lector estilo experto (2026-10-13) · sección Leer
+
+- **Modo apilado Logos Text Comparison para 4/6**: un bloque por verso, la
+  Biblia base arriba destacada y las demás traducciones debajo con su nombre
+  + perfil; nada se aplasta (antes: grid de 4/6 columnas con ~15-25 % de
+  ancho por traducción). El modo 2 conserva columnas verso a verso.
+- **Llenado automático por metodología experta** (`expertPlan` en
+  `ReaderView.tsx`): SIEMPRE contrasta el Polo opuesto a la Biblia base del
+  usuario (equivalencia formal ↔ dinámica, Coalición por el Evangelio /
+  Bible Project). Bench experto: 2 = RVR60 ↔ NVI; 4 = + NTV (o LBLA si la
+  base es dinámica) + Amplificada; 6 = + LBLA + interlineal/textual
+  (original). Preferencia RV1960 limpia sobre "con Strong"; si un módulo no
+  existe, cae al siguiente distinto.
+- Fix latente: el matcher de slots usaba `.every` (los grupos de alias nunca
+  hacían match); ahora cada hueco prueba alternativas con `.some`.
+- **Chip de perfil de traducción** en los tres modos (paneles/alineado/
+  apilado y en cada fila del modo apilado): formal · dinámica · paráfrasis ·
+  ampliada · original. Clasificador `moduleProfile` en `lib/modules.ts`,
+  anotado UNA VEZ en el init (bootstrap/refreshModules con
+  `annotateProfiles`), campo `profile` en `SwordModule` (core).
+- i18n: claves `reader.profile.*` añadidas juntas en es/en/pt.
+- Verificado contra los 96 nombres reales de `biblioteca/BIBLIAS`;
+  typecheck + lint + 70 tests en verde.
+
 ## Siguiente (candidatos, sin compromiso)
 
 - E5: builder de bosquejos desde el AST (editar en vivo), bajar latencia

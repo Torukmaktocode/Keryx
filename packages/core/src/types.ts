@@ -9,6 +9,9 @@ export type ModuleCategory =
 
 export type ModuleSource = 'local' | 'remote'
 
+/** Enfoque de traduccion para comparar biblias (espectro de equivalencia experto). */
+export type TranslationProfile = 'formal' | 'dinamica' | 'parafrasis' | 'ampliada' | 'original'
+
 export interface SwordModule {
   name: string
   description: string
@@ -24,6 +27,7 @@ export interface SwordModule {
   library?: 'principal' | 'biblioteca'
   hasStrongs?: boolean
   cipherKey?: boolean
+  profile?: TranslationProfile | null
 }
 
 export interface Repository {
