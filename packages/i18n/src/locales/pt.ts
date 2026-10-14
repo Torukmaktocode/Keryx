@@ -5,6 +5,7 @@ export const pt: Record<TranslationKey, string> = {
 
   'home.lede': 'Sua biblioteca com 717 módulos já está no seu disco. Estude a passagem, recorra aos clássicos e pregue — tudo local, em espanhol.',
   'home.start': 'Iniciar',
+  'home.forms': 'Pomba, fogo, servo e cruz: as formas de Jesus',
 
   'nav.home': 'Início',
 

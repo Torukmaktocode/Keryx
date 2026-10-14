@@ -3,6 +3,7 @@ export const es = {
 
   'home.lede': 'Tu biblioteca de 717 módulos ya está en tu disco. Estudia el pasaje, consulta los clásicos y predica — todo local, en español.',
   'home.start': 'Comenzar',
+  'home.forms': 'Paloma, fuego, siervo y cruz: las formas de Jesús',
 
   'nav.home': 'Inicio',
   'nav.reader': 'Lector',
