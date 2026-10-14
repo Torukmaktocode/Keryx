@@ -15,6 +15,27 @@ import { Icon } from '../components/Icon'
 const COUNTS = [1, 2, 4, 6] as const
 type CompareCount = (typeof COUNTS)[number]
 
+const DYNAMIC: RegExp[][] = [
+  [/nueva version internacional/i],
+  [/lenguaje sencillo/i, /dia de hoy/i, /palabra de dios para todos/i, /lenguaje actual/i]
+]
+
+export const EXPERT_SLOTS: Record<number, RegExp[][][]> = {
+  2: [DYNAMIC],
+  4: [
+    DYNAMIC,
+    [[/amplificada/i]],
+    [[/de jerusalen/i, /jerusalem/i, /interconfesional/i, /peregrino/i]]
+  ],
+  6: [
+    DYNAMIC,
+    [[/amplificada/i]],
+    [[/de jerusalen/i, /jerusalem/i, /interconfesional/i, /peregrino/i]],
+    [[/am.ricas/i]],
+    [[/hebraica stuttgart/i, /torah/i]]
+  ]
+}
+
 export function ReaderView() {
   const { t, locale } = useI18n()
   const modules = useAppStore((s) => s.modules)
@@ -121,10 +142,21 @@ export function ReaderView() {
     setColModules((prev) => {
       const filled = prev.length ? prev.filter(Boolean) : [selectedModule]
       const used = new Set(filled)
+      const expert = EXPERT_SLOTS[compareCount] ?? []
       for (let i = filled.length; i < compareCount; i++) {
-        const next = nextDifferentModule([...used])
-        used.add(next)
-        filled.push(next)
+        let pick = ''
+        for (const group of expert[i - 1] ?? []) {
+          const found = bibleModules.find(
+            (m) => group.every((re) => re.test(m.name)) && !used.has(m.name) && m.name !== selectedModule
+          )
+          if (found) {
+            pick = found.name
+            break
+          }
+        }
+        if (!pick) pick = nextDifferentModule([...used])
+        used.add(pick)
+        filled.push(pick)
       }
       return filled.slice(0, compareCount)
     })
@@ -234,7 +266,7 @@ export function ReaderView() {
                     <span dangerouslySetInnerHTML={{ __html: verse.text }} />
                   </>
                 ) : (
-                  <span className="vs-missing">—</span>
+                  <span className="vs-missing">ï¿½</span>
                 )}
               </div>
             )
