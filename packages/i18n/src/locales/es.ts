@@ -1,4 +1,4 @@
-﻿export const es = {
+export const es = {
   'brand.tagline': 'estudio',
 
   'home.verse': 'Â«Id, y haced discÃ­pulos a todas las naciones.Â»',

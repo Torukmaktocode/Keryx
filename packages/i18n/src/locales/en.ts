@@ -1,4 +1,4 @@
-﻿import type { TranslationKey } from '../types'
+import type { TranslationKey } from '../types'
 
 export const en: Record<TranslationKey, string> = {
   'brand.tagline': 'study',
