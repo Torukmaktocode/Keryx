@@ -293,28 +293,87 @@ export function getPersona(id: string): Persona {
 
 export const MASTER_PROMPT = [
   'Eres un homiletico y teologo del nivel de los grandes predicadores y escritores de la historia cristiana.',
-  'Produce un documento COMPLETO y profesional (900-1500 palabras), listo para predicar, en el idioma del usuario.',
+  'Produce un documento COMPLETO, PROFUNDO y profesional (1400-2400 palabras), listo para predicar, en el idioma del usuario.',
   '',
   'REGLA DE ORO: usa EXCLUSIVAMENTE la evidencia del DOSSIER anclado. Cada afirmacion expositiva debe poder rastrearse a una cita [Modulo · entrada].',
   'No inventes citas biblicas, datos historicos, numeros Strong ni hechos; si algo no consta en el dosier, dilo con honestidad o dejalo como [PUNTO POR COMPLETAR].',
   '',
+  'PROFUNDIDAD (obligatoria): desarrolla, no resumas. Cada apartado en 2-3 parrafos de 80-150 palabras. Amplia cada termino, costumbre o doctrina con TODO el material del dosier (mismo tema en otros modulos, horizontes historicos, teologia). Si el dosier trae mas material del que puedes usar en un parrafo, usa mas parrafos, no lo dejes fuera.',
+  '',
   'Estructura requerida (encabezados ##):',
-  '1. "Texto base y gran idea": cita el pasaje y formula la gran idea en una frase.',
-  '2. "Contexto historico y geografico": autor, fecha probable (si consta), destinatarios, geografia real y costumbres del DOSIER.',
-  '3. "Palabras originales": terminos Strong transliterados con su rango semantico segun las definiciones citadas.',
-  '4. "Comentario verso a versiculo": exegesis fiel siguiendo los comentarios anclados, con unidad literaria y sintaxis.',
+  '1. "Texto base y gran idea": cita el pasaje y formula la gran idea en una frase; luego desarrolla por que esa idea es el eje del texto (2-3 parrafos).',
+  '2. "Contexto historico y geografico": autor, fecha probable (si consta), destinatarios, geografia real y costumbres del DOSIER; explica como CADA dato cambia el modo de leer el texto.',
+  '3. "Palabras originales": terminos Strong transliterados con su rango semantico completo segun las definiciones citadas (no una sola definicion), incluyen usos ejemplares citados del dosier.',
+  '4. "Comentario verso a versiculo": divide el pasaje en UNIDADES literarias: sintaxis, flujo argumental y conexiones logicas segun los comentarios anclados; 2-3 parrafos por unidad mayor.',
   '5. "Hermeneutica": genero literario y reglas; puente honesto entre el mundo del texto y hoy.',
-  '6. "Homiletica": Gancho (necesidad humana) -> Gran idea -> Ejemplo -> Desafio.',
-  '7. "Ilustraciones": usa primero las del dosier; al menos dos si constan.',
-  '8. "Aplicacion en la vida": concreta y medible (hogar, trabajo, iglesia).',
-  '9. "Oracion final".',
+  '6. "Horizonte teologico": como el pasaje conecta con las doctrinas y con la historia cristiana que trae el DOSIER (teologia sistematica, historia de la iglesia, Walton-Keener); 2-3 parrafos citados.',
+  '7. "Homiletica": Gancho (necesidad humana) -> Gran idea -> varios ejemplos -> Desafio.',
+  '8. "Ilustraciones": usa primero las del dosier desarrolladas en 3-5 lineas cada una; al menos dos si constan; suma un caso biblico del dosier si hay.',
+  '9. "Aplicacion en la vida": tres esferas concretas y medibles (vida personal, familia, iglesia-mundo) con al menos un paso accionable por esfera.',
+  '10. "Oracion final": primera persona plural, citando al menos una referencia del texto.',
   '',
   '- Cita referencias como "Libro Capitulo:Versiculo".',
-  '- Densidad: nada de relleno; todo parrafo sostiene la gran idea.'
+  '- Densidad: nada de relleno; todo parrafo sostiene la gran idea o abre el texto con la evidencia del dosier.'
 ].join('\n')
 
-function personaPrompt(persona: Persona): string {
-  if (persona.id === 'none') {
+/* ------------------------------------------------- crítico de código (0 tokens) */
+
+export interface CodeCriticism {
+  severe: string[]
+  minor: string[]
+}
+
+/** Verifica el borrador contra el dosier SIN usar IA: Strong inventados,
+ *  referencias biblicas sin ancla, huecos marcados y secciones ausentes. */
+export function codeCritic(markdown: string, dossier: Dossier): CodeCriticism {
+  const anchored = dossierForPrompt(dossier).toUpperCase().replace(/\s+/g, ' ')
+  const severe: string[] = []
+  const minor: string[] = []
+
+  const strongs = [...markdown.matchAll(/\b[GH]\d{3,5}\b/g)].map((m) => m[0].toUpperCase())
+  const inventedStrongs = [...new Set(strongs)].filter(
+    (key) => !anchored.includes(key) && key !== 'G0' && key !== 'H0'
+  )
+  if (inventedStrongs.length) {
+    severe.push(`Numeros Strong SIN ancla en el dosier: ${inventedStrongs.join(', ')}`)
+  }
+
+  const refs = [...markdown.matchAll(/\b[1-3]?\s?[A-ZÁÉÍÓÚÑÜa-záéíóúñü]{4,}\s+\d{1,3}:\d{1,3}\b/g)]
+    .map((m) => m[0].replace(/\s+/g, ' '))
+    .map((ref) => (ref.endsWith('.') ? ref.slice(0, -1) : ref))
+  const ghostRefs = [...new Set(refs)].filter((ref) => !anchored.includes(ref.toUpperCase()))
+  if (ghostRefs.length > 1) {
+    severe.push(`Referencias biblicas sin ancla en el dosier: ${ghostRefs.slice(0, 5).join(' · ')}`)
+  }
+
+  const slack = (markdown.match(/\[PUNTO POR COMPLETAR\]/g) ?? []).length
+  if (slack > 2) minor.push(`${slack} huecos marcados [PUNTO POR COMPLETAR]`)
+
+  const heads = [...markdown.matchAll(/^##\s+(.+)$/gm)].map((m) => m[1].toLowerCase())
+  for (const need of ['texto base', 'contexto', 'palabras', 'aplicacion']) {
+    if (!heads.some((head) => head.includes(need))) minor.push(`Falta la seccion que incluye "${need}".`)
+  }
+
+  return { severe, minor }
+}
+
+/** Material del dosier que el borrador no aprovecho (guias para la pasada final). */
+export function unusedDossierMaterial(markdown: string, dossier: Dossier, limit = 6): string[] {
+  const pending: string[] = []
+  for (const section of dossier.sections) {
+    for (const entry of section.entries) {
+      const head = entry.replace(/\s+/g, ' ').slice(0, 40)
+      if (head.length < 20) continue
+      if (!markdown.replace(/\s+/g, ' ').includes(head)) {
+        pending.push(`${section.title}: ${shortEntry(entry, 150)}`)
+        if (pending.length >= limit) return pending
+      }
+    }
+  }
+  return pending
+}
+
+function personaPrompt(persona: Persona): string {  if (persona.id === 'none') {
     return 'ESTILO DEL ORADOR: el propio predicador. Usa tu voz natural y la de tu congregacion; no imites a nadie. El cuerpo del sermon ya esta anclado; solo redacta la voz human en tus propias palabras.'
   }
   return `ESTILO DEL ORADOR: ${persona.name}. ${persona.style}\nEscribe/predica COMO ${persona.name}: su voz, su enfoque y sus prioridades.`
@@ -515,12 +574,13 @@ export function composeFromDossier(
 /* ---------------------------------------------------------- esqueleto codig */
 
 const SNIPPET_SYSTEM =
-  'Eres un redactor homiletico de voces cortas y vivas. Te daran el ESQUELETO de un sermon ya ' +
+  'Eres un redactor homiletico de voces amplias y vivas. Te daran el ESQUELETO de un sermon ya ' +
   'construido con fuentes biblicas ancladas por codigo (sub-agentes, 0 tokens). Tu trabajo SOLO ' +
-  'es de voz humana: (1) gancho inicial de 40-60 palabras que enfrenta la necesidad humana del texto, ' +
-  '(2) INTRODUCCION de 3-4 frases que presenta el pasaje y por que nos toca hoy, ' +
-  '(3) puente ligero de 1-2 frases ANTES de cada punto (no repitas contenido, solo transicion), ' +
-  '(4) oracion final de 3-5 lineas en primera plural, citando la referencia del texto. ' +
+  'es de voz humana: (1) gancho inicial de 60-90 palabras que enfrente la necesidad humana del texto con una imagen concreta, ' +
+  '(2) INTRODUCCION de 5-7 frases que presente el pasaje, su contexto esencial y por que nos toca hoy, ' +
+  '(3) puente ligero de 2-3 frases ANTES de cada punto (no repitas contenido, solo transicion que prepare el punto), ' +
+  '(4) meditacion de 90-140 palabras que abraze la frase para meditar y la vuelva oracion del corazon, ' +
+  '(5) oracion final de 5-8 lineas en primera plural, citando la referencia del texto y el deseo del mensaje. ' +
   'NO agregues datos, NO inventes referencias, NO reescribas puntos ni evidencia. Formato EXACTO de marcadores:\n' +
   '==GANCHO==\n...\n==INTRO==\n...\n==PUENTE 1==\n...\n==PUENTE 2==\n...\n==MEDITACION==\n...\n==ORACION==\n...'
 
@@ -958,7 +1018,7 @@ export async function runCreator(
           { role: 'user', content: ask }
         ],
         temperature: 0.6,
-        maxTokens: 700
+        maxTokens: 1400
       })
       const pieces = parseSnippets(result.text)
       const voiced = {
@@ -1001,6 +1061,8 @@ export async function runCreator(
       '',
       `Tema o pasaje solicitado: ${trimmed}`,
       '',
+      'AUTOCHQUE antes de responder: cada numero Strong citado debe figurar en el DOSIER y cada cita biblica Libro C:V debe estar en el DOSIER o en el texto anclado; corrige o elimina lo que no conste.',
+      '',
       'DOSSIER ANCLADO (recogido por sub-agentes de codigo; usalo como unica fuente):',
       dossierForPrompt(dossier)
     ]
@@ -1013,48 +1075,67 @@ export async function runCreator(
         { role: 'user', content: user }
       ],
       temperature: 0.55,
-      maxTokens: 3600
+      maxTokens: 6000
     })
 
     let markdown = result.text
 
-    // deepSermon (opt-in): borrador / crítico homilético / final con correcciones.
-    if (ctx.settings.deepSermon) {
-      const critique = await api.ai.chat({
-        messages: [
-          {
-            role: 'system',
-            content:
-              'Actua como critico homiletico experto. Revisa el borrador SOLO contra el dosier anclado ' +
-              'que te dare. Verifica: (1) cada cita biblica es real y coincide con el texto anclado, ' +
-              '(2) no hay afirmaciones o historias que ausenten del dosier, (3) los contextos ' +
-              'historico/cultural/teologico del dosier se aprovechan, (4) la aplicacion es concreta, ' +
-              '(5) se respeta el estilo pedido. Devuelve SOLO una lista de correcciones concretas ' +
-              'numerada, cada una con el punto del sermón que corriges. Sin alargar el sermón. ' +
-              `Responde en ${language}.`
-          },
-          {
-            role: 'user',
-            content: `BORRADOR:\n\n${markdown}\n\nDOSSIER ANCLADO:\n\n${dossierForPrompt(dossier)}`
-          }
-        ],
-        temperature: 0.3,
-        maxTokens: 900
-      })
+    // Crítico de CÓDIGO (0 tokens): si la IA invento Strong o referencias sin ancla,
+    // una unica pasada de reparacion dirigida (solo cuando hace falta).
+    const criticism = codeCritic(markdown, dossier)
+    if (criticism.severe.length) {
+      try {
+        const repair = await api.ai.chat({
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Repara SOLO los hallazgos listados, usando el dosier anclado como unica fuente: ' +
+                'sustituye o elimina cada numero Strong y cada referencia biblica que no este anclada. ' +
+                'No cambies nada mas del documento. Devuelve el documento completo corregido.'
+            },
+            {
+              role: 'user',
+              content: `HALLAZGOS:\n${criticism.severe
+                .map((issue, index) => `${index + 1}) ${issue}`)
+                .join('\n')}\n\nBORRADOR:\n\n${markdown}\n\nDOSSIER ANCLADO:\n\n${dossierForPrompt(dossier)}`
+            }
+          ],
+          temperature: 0.4,
+          maxTokens: 3000
+        })
+        if (repair.text && repair.text.length > 200) markdown = repair.text
+      } catch {
+        // la reparacion es optativa: el borrador anclado sigue siendo utilizable
+      }
+    }
 
+    if (ctx.settings.deepSermon) {
+      // Pasada final (calidad): desarrolla el material del dosier que el borrador no uso.
+      const pending = unusedDossierMaterial(markdown, dossier)
+      const finalParts = [
+        'BORRADOR:',
+        markdown,
+        '',
+        pending.length
+          ? `MATERIAL DEL DOSIER AUN NO USADO (desarrollalo en la seccion que corresponda):\n${pending
+              .map((item, index) => `${index + 1}) ${item}`)
+              .join('\n')}`
+          : '',
+        criticism.minor.length
+          ? `POLISH:\n${criticism.minor.map((issue, index) => `${index + 1}) ${issue}`).join('\n')}`
+          : ''
+      ].filter(Boolean)
       const final = await api.ai.chat({
         messages: [
           {
             role: 'system',
-            content: `${MASTER_PROMPT}\n\nResponde en ${language}. Tu trabajo es reescribir el borrador aplicando las correcciones del revisor, sin quitar secciones ni reducir las citas ancladas.`
+            content: `${MASTER_PROMPT}\n\nResponde en ${language}. Tu trabajo es reescribir el borrador desarrollando profundamente el material sin usar y aplicando el pulido; secciones completas, nunca una frase suelta. No quites secciones ni reduzcas las citas ancladas. El resultado debe superar al borrador en profundidad y extension.`
           },
-          {
-            role: 'user',
-            content: `BORRADOR:\n\n${markdown}\n\nCORRECCIONES:\n\n${critique.text}`
-          }
+          { role: 'user', content: finalParts.join('\n\n') }
         ],
         temperature: 0.5,
-        maxTokens: 3600
+        maxTokens: 6000
       })
       markdown = final.text
     }

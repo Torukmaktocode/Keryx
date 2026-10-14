@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeAll } from 'vitest'
-import { runCreator, composeSermonSkeleton, assembleSermon, locatePassageByTokens, queryTokensOf } from './creator'
+import { runCreator, composeSermonSkeleton, assembleSermon, locatePassageByTokens, queryTokensOf, codeCritic } from './creator'
 import type { AssistantContext } from './assistant'
 import type { AppSettings, SwordModule } from '@keryx/core'
 
@@ -139,15 +139,15 @@ describe('esqueleto + ensamble (codigo primero)', () => {
     expect(result.markdown).not.toContain('[[')
   })
 
-  it('deepSermon on: 3 llamadas y usa la final (modo calidad)', async () => {
+  it('deepSermon on: 2 llamadas (borrador + final) y usa la final (modo calidad)', async () => {
     state.chat = vi.fn(async () => ({ text: 'FINAL\n\n## Sección', role: 'assistant' })) as unknown as typeof state.chat
     const result = await runCreator(mkCtx({ deepSermon: true }), 'crearsermon', 'Romanos 8:28', 'escudero')
-    expect(state.chat).toHaveBeenCalledTimes(3)
+    expect(state.chat).toHaveBeenCalledTimes(2)
     expect(result.aiUsed).toBe(true)
     expect(result.markdown).toContain('## Sección')
   })
 
-  it('deepSermon: si la critica falla, fallback local completo', async () => {
+  it('deepSermon: si la final falla, fallback local completo', async () => {
     let calls = 0
     state.chat = vi.fn(() => {
       calls += 1
@@ -158,5 +158,26 @@ describe('esqueleto + ensamble (codigo primero)', () => {
     expect(calls).toBe(2)
     expect(result.aiUsed).toBe(false)
     expect(result.markdown).toContain('## ')
+  })
+})
+
+describe('codeCritic (critico de codigo, 0 tokens)', () => {
+  const dossier = {
+    query: 'Juan 3',
+    section: null,
+    sections: [{ kind: 'strongs', title: 'Palabras', entries: ['**G4205**: amovalo (amovalo): el texto del modulo con G4205 anclado.'] }],
+    citations: [],
+    chars: 100
+  } as unknown as Parameters<typeof codeCritic>[1]
+
+  it('detecta Strong inventados (no anclados en el dosier)', () => {
+    const verdict = codeCritic('## Texto\nG9999 es sospechoso y G4205 esta bien.', dossier)
+    expect(verdict.severe.join(' ')).toContain('G9999')
+    expect(verdict.severe.join(' ')).not.toContain('G4205')
+  })
+
+  it('no dispara severos cuando todo esta anclado', () => {
+    const verdict = codeCritic('## Texto base\nG4205 ok.', dossier)
+    expect(verdict.severe).toHaveLength(0)
   })
 })
