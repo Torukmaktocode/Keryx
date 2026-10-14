@@ -1248,7 +1248,7 @@ button.sidebar-brand:hover strong {
 }
 
 .cols.compare {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(var(--compare-count, 2), minmax(0, 1fr));
   grid-auto-columns: minmax(0, 1fr);
   height: 100%;
   padding: var(--space-6);
@@ -1256,7 +1256,7 @@ button.sidebar-brand:hover strong {
   overflow: hidden;
 }
 
-.cols.compare .col {
+.cols.compare > .col {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -1280,7 +1280,7 @@ button.sidebar-brand:hover strong {
     overflow: auto;
   }
 
-  .cols.compare .col {
+  .cols.compare > .col {
     max-height: 60vh;
   }
 }

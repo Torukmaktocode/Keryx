@@ -8,6 +8,7 @@ export const es = {
   'home.forms': 'Paloma, fuego, siervo y cruz: las formas de Jesús',
 
   'nav.home': 'Inicio',
+  'reader.compareCount': 'Biblias en comparación',
   'nav.reader': 'Lector',
   'nav.study': 'Estudio',
   'nav.search': 'Búsqueda',

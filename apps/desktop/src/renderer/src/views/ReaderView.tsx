@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type ReactElement } from 'react'
+﻿import { useEffect, useMemo, useState, type CSSProperties, type ReactElement } from 'react'
 import { useI18n } from '@keryx/i18n'
 import {
   bookName,
@@ -11,6 +11,9 @@ import { languageLabel, languageRank } from '../lib/languages'
 import { moduleOptionLabel } from '../lib/modules'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
+
+const COUNTS = [1, 2, 4, 6] as const
+type CompareCount = (typeof COUNTS)[number]
 
 export function ReaderView() {
   const { t, locale } = useI18n()
@@ -30,9 +33,10 @@ export function ReaderView() {
   const [loading, setLoading] = useState(false)
   const [langFilter, setLangFilter] = useState('')
   const [compare, setCompare] = useState(false)
-  const [secondaryModule, setSecondaryModule] = useState('')
-  const [secondaryVerses, setSecondaryVerses] = useState<Verse[]>([])
-  const [secondaryLoading, setSecondaryLoading] = useState(false)
+  const [compareCount, setCompareCount] = useState<CompareCount>(2)
+  const [colModules, setColModules] = useState<string[]>([])
+  const [colVerses, setColVerses] = useState<Record<string, Verse[]>>({})
+  const [colLoading, setColLoading] = useState<Record<string, boolean>>({})
   const [testament, setTestament] = useState<'all' | 'OT' | 'NT'>('all')
 
   const allBibles = useMemo(() => modules.filter((m) => m.category === 'Bible'), [modules])
@@ -106,22 +110,63 @@ export function ReaderView() {
       .finally(() => setLoading(false))
   }, [selectedModule, book, chapter])
 
-  useEffect(() => {
-    if (!compare) return
-    if (secondaryModule && secondaryModule !== selectedModule) return
-    const other = bibleModules.find((m) => m.name !== selectedModule)
-    if (other) setSecondaryModule(other.name)
-  }, [compare, secondaryModule, selectedModule, bibleModules])
+  const nextDifferentModule = (used: string[], skip = ''): string =>
+    bibleModules.find((m) => m.name !== selectedModule && !used.includes(m.name) && m.name !== skip)
+      ?.name ??
+    bibleModules.find((m) => m.name !== selectedModule)?.name ??
+    selectedModule
 
   useEffect(() => {
-    if (!compare || !secondaryModule) return
-    setSecondaryLoading(true)
-    api.bible
-      .chapter({ module: secondaryModule, book, chapter })
-      .then((result) => setSecondaryVerses(result))
-      .catch(() => setSecondaryVerses([]))
-      .finally(() => setSecondaryLoading(false))
-  }, [compare, secondaryModule, book, chapter])
+    if (!compare) return
+    setColModules((prev) => {
+      const base = prev.length ? prev : [selectedModule, ...prev]
+      const filled: string[] = base.filter(Boolean)
+      if (!filled.length) filled.push(selectedModule)
+      const used = new Set(filled)
+      for (let i = filled.length; i < compareCount; i++) {
+        const next = nextDifferentModule([...used])
+        used.add(next)
+        filled.push(next)
+      }
+      return filled.slice(0, compareCount)
+    })
+  }, [compare, compareCount, selectedModule, bibleModules])
+
+  const colKey = colModules.slice(0, compareCount).join('\n')
+  useEffect(() => {
+    if (!compare || !colKey) return
+    const list = colKey.split('\n')
+    for (const moduleName of list) {
+      if (!moduleName || colVerses[moduleName] !== undefined) continue
+      setColLoading((prev) => ({ ...prev, [moduleName]: true }))
+      api.bible
+        .chapter({ module: moduleName, book, chapter })
+        .then((result) => setColVerses((prev) => ({ ...prev, [moduleName]: result })))
+        .catch(() => setColVerses((prev) => ({ ...prev, [moduleName]: [] })))
+        .finally(() => setColLoading((prev) => ({ ...prev, [moduleName]: false })))
+    }
+  }, [compare, colKey, book, chapter])
+
+  const reflowChapter = (list: string[]): void => {
+    for (const moduleName of list) {
+      if (!moduleName) continue
+      setColLoading((prev) => ({ ...prev, [moduleName]: true }))
+      api.bible
+        .chapter({ module: moduleName, book, chapter })
+        .then((result) => setColVerses((prev) => ({ ...prev, [moduleName]: result })))
+        .catch(() => setColVerses((prev) => ({ ...prev, [moduleName]: [] })))
+        .finally(() => setColLoading((prev) => ({ ...prev, [moduleName]: false })))
+    }
+  }
+
+  const setColModule = (index: number, name: string): void => {
+    setColModules((prev) => {
+      const next = [...prev]
+      next[index] = name
+      reflowChapter([next[index]])
+      return next
+    })
+  }
 
   const renderVerses = (list: Verse[]): ReactElement => (
     <div className="scripture">
@@ -174,21 +219,37 @@ export function ReaderView() {
         )}
         <button
           className={`btn small ${compare ? 'primary' : 'ghost'}`}
-          onClick={() => setCompare((value) => !value)}
+          onClick={() => {
+            if (!compare && !colModules.length) setColModules([selectedModule])
+            setCompare((value) => !value)
+          }}
           title={t('reader.compareHint')}
         >
           <Icon name="columns" size={14} /> {t('reader.compare')}
         </button>
         {compare && (
+          <div className="seg" title={t('reader.compareCount')}>
+            {COUNTS.map((n) => (
+              <button
+                key={n}
+                className={`seg-btn ${compareCount === n ? 'active' : ''}`}
+                onClick={() => setCompareCount(n)}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        )}
+        {compare && compareCount === 2 && (
           <button
             className="btn ghost small"
             onClick={() => {
-              setSelectedModule(secondaryModule)
-              setSecondaryModule(selectedModule)
+              setColModules(([a, b]) => [b, a])
+              reflowChapter([colModules[0], colModules[1]])
             }}
             title={t('reader.swap')}
           >
-            â‡„
+            ⇄
           </button>
         )}
         <div className="seg">
@@ -257,59 +318,35 @@ export function ReaderView() {
       </header>
       {compare ? (
         <div className="view-body flush">
-          <div className="cols compare">
-            <section className="col">
-              <div className="col-head">
-                <select
-                  className="select"
-                  value={selectedModule}
-                  onChange={(e) => setSelectedModule(e.target.value)}
-                >
-                  {bibleModules.map((m) => (
-                    <option key={m.name} value={m.name}>
-                      {moduleOptionLabel(m, locale)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-body">
-                {loading ? (
-                  <div className="empty">
-                    <span className="spinner" />
-                  </div>
-                ) : verses.length === 0 ? (
-                  <div className="empty">{t('reader.noText', { module: selectedModule })}</div>
-                ) : (
-                  renderVerses(verses)
-                )}
-              </div>
-            </section>
-            <section className="col">
-              <div className="col-head">
-                <select
-                  className="select"
-                  value={secondaryModule}
-                  onChange={(e) => setSecondaryModule(e.target.value)}
-                >
-                  {bibleModules.map((m) => (
-                    <option key={m.name} value={m.name}>
-                      {moduleOptionLabel(m, locale)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-body">
-                {secondaryLoading ? (
-                  <div className="empty">
-                    <span className="spinner" />
-                  </div>
-                ) : secondaryVerses.length === 0 ? (
-                  <div className="empty">{t('reader.noText', { module: secondaryModule })}</div>
-                ) : (
-                  renderVerses(secondaryVerses)
-                )}
-              </div>
-            </section>
+          <div className="cols compare" style={{ ['--compare-count' as string]: String(compareCount) } as CSSProperties}>
+            {colModules.slice(0, compareCount).map((moduleName, index) => (
+              <section className="col" key={`${index}-${moduleName ?? ''}`}>
+                <div className="col-head">
+                  <select
+                    className="select"
+                    value={moduleName ?? ''}
+                    onChange={(e) => setColModule(index, e.target.value)}
+                  >
+                    {bibleModules.map((m) => (
+                      <option key={m.name} value={m.name}>
+                        {moduleOptionLabel(m, locale)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-body">
+                  {colLoading[moduleName] ? (
+                    <div className="empty">
+                      <span className="spinner" />
+                    </div>
+                  ) : (colVerses[moduleName] ?? []).length === 0 ? (
+                    <div className="empty">{t('reader.noText', { module: moduleName })}</div>
+                  ) : (
+                    renderVerses(colVerses[moduleName] ?? [])
+                  )}
+                </div>
+              </section>
+            ))}
           </div>
         </div>
       ) : (

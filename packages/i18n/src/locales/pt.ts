@@ -10,6 +10,7 @@ export const pt: Record<TranslationKey, string> = {
   'home.forms': 'Pomba, fogo, servo e cruz: as formas de Jesus',
 
   'nav.home': 'Início',
+  'reader.compareCount': 'Bíblias em comparação',
 
   'nav.reader': 'Leitor',
   'nav.study': 'Estudo',

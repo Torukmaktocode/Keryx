@@ -10,6 +10,7 @@ export const en: Record<TranslationKey, string> = {
   'home.forms': 'Dove, fire, servant and cross: the forms of Jesus',
 
   'nav.home': 'Home',
+  'reader.compareCount': 'Bibles in comparison',
   'nav.reader': 'Reader',
   'nav.study': 'Study',
   'nav.search': 'Search',
