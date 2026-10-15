@@ -23,10 +23,12 @@ export function SearchView() {
 
   const [query, setQuery] = useState('')
   const [module, setModule] = useState(selectedModule || bibles[0]?.name || '')
+  const [allBibles, setAllBibles] = useState(false)
   const [scope, setScope] = useState<Scope>('all')
   const [caseSensitive, setCaseSensitive] = useState(false)
   const [wholeWord, setWholeWord] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const [results, setResults] = useState<SearchResult[] | null>(null)
 
   useEffect(() => {
@@ -37,22 +39,61 @@ export function SearchView() {
 
   const run = async (): Promise<void> => {
     const needle = query.trim()
-    if (!needle || !module) return
+    if (!needle || (!module && !bibles.length)) return
     setLoading(true)
     try {
-      const found = await api.bible.search({
-        query: needle,
-        modules: [module],
-        scope,
-        caseSensitive,
-        wholeWord,
-        limit: 200
-      })
-      setResults(found)
-      if (found.length === 0) notify(t('study.noResults'))
+      // Agentes: una Biblia (7 lectores de canon en paralelo) o todas las
+      // Biblias instaladas en tandas de 12, con progreso en vivo.
+      if (allBibles) {
+        const targets = bibles.map((m) => m.name)
+        setProgress({ done: 0, total: targets.length })
+        const merged: SearchResult[] = []
+        for (let i = 0; i < targets.length && merged.length < 300; i += 12) {
+          const slice = targets.slice(i, i + 12)
+          const batches = await Promise.all(
+            slice.map((name) =>
+              api.bible
+                .search({
+                  query: needle,
+                  modules: [name],
+                  scope,
+                  caseSensitive,
+                  wholeWord,
+                  limit: 12
+                })
+                .then((list) => list.slice(0, 12))
+                .catch(() => [] as SearchResult[])
+            )
+          )
+          merged.push(...batches.flat())
+          setProgress({
+            done: Math.min(i + slice.length, targets.length),
+            total: targets.length
+          })
+        }
+        merged.sort((a, b) => {
+          const indexA = CANONICAL_BOOKS.findIndex((book) => book.code === a.book)
+          const indexB = CANONICAL_BOOKS.findIndex((book) => book.code === b.book)
+          return indexA - indexB || a.chapter - b.chapter || a.verse - b.verse
+        })
+        setResults(merged)
+        if (merged.length === 0) notify(t('study.noResults'))
+      } else {
+        const found = await api.bible.search({
+          query: needle,
+          modules: [module],
+          scope,
+          caseSensitive,
+          wholeWord,
+          limit: 200
+        })
+        setResults(found)
+        if (found.length === 0) notify(t('study.noResults'))
+      }
     } catch {
       notify(t('study.searchError'))
     } finally {
+      setProgress(null)
       setLoading(false)
     }
   }
@@ -141,6 +182,19 @@ export function SearchView() {
             <option value="ot">{t('search.scope.ot')}</option>
             <option value="nt">{t('search.scope.nt')}</option>
           </select>
+          {loading && progress && (
+            <span className="muted" style={{ fontSize: 13 }}>
+              {progress.done}/{progress.total}
+            </span>
+          )}
+          <label className="filter-check">
+            <input
+              type="checkbox"
+              checked={allBibles}
+              onChange={(e) => setAllBibles(e.target.checked)}
+            />
+            {t('search.allBibles')}
+          </label>
           <label className="filter-check">
             <input
               type="checkbox"

@@ -171,7 +171,7 @@ function topicVariants(theme: string): string[] {
 }
 
 /** Palabras distintivas del texto del versiculo para minar diccionarios generales. */
-function verseThemeWords(html: string): string[] {
+export function verseThemeWords(html: string): string[] {
   const stop = new Set([
     'porque', 'aquel', 'aquella', 'cuando', 'donde', 'nuestro', 'nuestra', 'tambien',
     'ustedes', 'ellos', 'ella', 'nosotros', 'hasta', 'desde', 'sobre', 'entre',
@@ -211,12 +211,27 @@ function verseMorphCodes(html: string): string[] {
   ].slice(0, 6)
 }
 
+/** Grupos de fuentes del dosier para la UI (respuesta paso a paso). */
+export type MineGroup =
+  | 'bible'
+  | 'commentary'
+  | 'homiletics'
+  | 'original'
+  | 'dictionaries'
+  | 'context'
+  | 'geo'
+  | 'theology'
+
+/** Reporta en vivo el progreso de la mina: grupo tocado y fuentes ya completadas. */
+export type MineProgressReporter = (group: MineGroup, done: number, total: number) => void
+
 /** Ensambla el dosier con presupuesto global. `at` fuerza la referencia (Guía del Pasaje). */
 export async function buildDossier(
   hook: AgentHook,
   mode: AgentMode,
   query: string,
-  at?: { book: string; chapter: number; verse?: number }
+  at?: { book: string; chapter: number; verse?: number },
+  onProgress?: MineProgressReporter
 ): Promise<Dossier> {
   const parsed = at ?? parseReference(query)
   const sections: DossierSection[] = []
@@ -794,28 +809,44 @@ export async function buildDossier(
     return job
   }
 
+  // Tracking por grupo de fuente (para la UI de pasos en vivo).
+  const mineJobs: Array<[MineGroup, () => Promise<Job>]> = [
+    ['commentary', commentJob],
+    ['homiletics', outlineJob],
+    ['original', strongsJob],
+    ['original', idiomasJob],
+    ['original', morfologiaJob],
+    ['dictionaries', themeJob],
+    ['geo', geoJob],
+    ['context', waltonJob],
+    ['original', criticoJob],
+    ['theology', sistematicaJob],
+    ['theology', historiaJob],
+    ['dictionaries', casoJob],
+    ['dictionaries', citaJob],
+    ['dictionaries', figuraJob],
+    ['geo', geoVerseJob],
+    ['bible', consensoJob],
+    ['original', sintaxisJob],
+    ['dictionaries', nombresJob],
+    ['dictionaries', refsJob],
+    ['homiletics', illusJob]
+  ]
+  const CONTEXT_BEFORE = 7
+  const CONTEXT_GROUPS: MineGroup[] = ['theology', 'context', 'theology', 'context', 'homiletics']
+  let mined = 0
+  const mineTotal = mineJobs.length + contextJobs.length
+  const track = (group: MineGroup, promise: Promise<Job>): Promise<Job> =>
+    promise.then((job) => {
+      mined += 1
+      onProgress?.(group, mined, mineTotal)
+      return job
+    })
+  // El orden canonico de ensamblado NO cambia: solo se envuelve cada promesa.
   const jobs = await Promise.all([
-    commentJob(),
-    outlineJob(),
-    strongsJob(),
-    idiomasJob(),
-    morfologiaJob(),
-    themeJob(),
-    geoJob(),
-    ...contextJobs,
-    waltonJob(),
-    criticoJob(),
-    sistematicaJob(),
-    historiaJob(),
-    casoJob(),
-    citaJob(),
-    figuraJob(),
-    geoVerseJob(),
-    consensoJob(),
-    sintaxisJob(),
-    nombresJob(),
-    refsJob(),
-    illusJob()
+    ...mineJobs.slice(0, CONTEXT_BEFORE).map(([group, run]) => track(group, run())),
+    ...contextJobs.map((promise, index) => track(CONTEXT_GROUPS[index] ?? 'context', promise)),
+    ...mineJobs.slice(CONTEXT_BEFORE).map(([group, run]) => track(group, run()))
   ])
 
   // Ensamble canonico: el presupuesto se consume en orden fijo (determinista).

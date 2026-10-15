@@ -76,6 +76,8 @@ export const api = {
   dict: {
     lookup: (req: { module: string; key: string }): Promise<string | null> =>
       unwrap(raw.dict.lookup(req)),
+    entries: (req: { module: string; prefix?: string }): Promise<Array<{ topic: string }>> =>
+      unwrap(raw.dict.entries(req)),
     strongs: (key: string): Promise<StrongsEntry | null> => unwrap(raw.dict.strongs(key)),
     coverage: (req: { term: string }): Promise<ModuleCoverage[]> => unwrap(raw.dict.coverage(req)),
     lookupLemma: (req: { module: string; lemma: string }) =>

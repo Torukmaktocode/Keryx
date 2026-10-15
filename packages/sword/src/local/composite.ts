@@ -140,6 +140,18 @@ export class CompositeSwordProvider implements SwordProvider {
     return null
   }
 
+  async dictEntries(module: string, prefix: string, limit = 400): Promise<Array<{ topic: string }>> {
+    for (const provider of this.providers) {
+      try {
+        const entries = await provider.dictEntries(module, prefix, limit)
+        if (entries.length) return entries
+      } catch {
+        // prueba el siguiente
+      }
+    }
+    return []
+  }
+
   async strongs(key: string): Promise<StrongsEntry | null> {
     for (const provider of this.providers) {
       const entry = await provider.strongs(key)

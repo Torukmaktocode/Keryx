@@ -359,6 +359,21 @@ export class LocalSwordProvider implements SwordProvider {
     return result
   }
 
+  async dictEntries(module: string, prefix: string, limit = 400): Promise<Array<{ topic: string }>> {
+    const conf = this.confs.get(module)
+    if (!conf || isTextDriver(conf.driver)) return []
+    try {
+      const keys = this.ldModule(conf).keys()
+      const needle = prefix.trim().toLowerCase()
+      const filtered = needle
+        ? keys.filter((key) => key.toLowerCase().includes(needle))
+        : keys
+      return filtered.slice(0, limit).map((topic) => ({ topic }))
+    } catch {
+      return []
+    }
+  }
+
   async strongs(key: string): Promise<StrongsEntry | null> {
     const normalized = key.trim().toUpperCase()
     const language: StrongsEntry['language'] = normalized.startsWith('G')

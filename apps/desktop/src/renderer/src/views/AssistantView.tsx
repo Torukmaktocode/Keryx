@@ -1,21 +1,71 @@
 import { useEffect, useMemo, useState } from 'react'
 import { downloadDocument, copyToClipboard } from '../lib/exportDoc'
-import { useI18n } from '@keryx/i18n'
+import { useI18n, type TranslationKey } from '@keryx/i18n'
 import type { AiStatus } from '@keryx/core'
 import { api } from '../lib/api'
 import {
   ASSISTANT_EXAMPLES,
   ASSISTANT_MODES,
+  formatMs,
   runAssistant,
   type AssistantMode,
-  type AssistantResult
+  type AssistantResult,
+  type AssistantStepId
 } from '../lib/assistant'
 import { PERSONAS } from '../lib/creator'
+import type { MineGroup } from '../lib/agents'
 import { renderMarkdown } from '../lib/markdown'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
 
 const CREATOR_MODES: AssistantMode[] = ['crearsermon', 'crearestudio', 'creardevocional']
+
+const STEP_KEYS: Record<AssistantStepId, TranslationKey> = {
+  locate: 'assistant.step.locate',
+  search: 'assistant.step.search',
+  dossier: 'assistant.step.dossier',
+  compose: 'assistant.step.compose',
+  voice: 'assistant.step.voice',
+  critic: 'assistant.step.critic',
+  repair: 'assistant.step.repair',
+  final: 'assistant.step.final',
+  sources: 'assistant.step.sources'
+}
+
+const SOURCE_ORDER: MineGroup[] = [
+  'bible',
+  'commentary',
+  'dictionaries',
+  'original',
+  'context',
+  'geo',
+  'theology',
+  'homiletics'
+]
+
+const SOURCE_KEYS: Record<MineGroup, TranslationKey> = {
+  bible: 'assistant.src.bible',
+  commentary: 'assistant.src.commentary',
+  homiletics: 'assistant.src.homiletics',
+  original: 'assistant.src.original',
+  dictionaries: 'assistant.src.dictionaries',
+  context: 'assistant.src.context',
+  geo: 'assistant.src.geo',
+  theology: 'assistant.src.theology'
+}
+
+interface StepState {
+  id: AssistantStepId
+  detail?: string
+  startedAt: number
+  endedAt?: number
+}
+
+interface MineState {
+  done: number
+  total: number
+  groups: MineGroup[]
+}
 
 export function AssistantView() {
   const { t, locale } = useI18n()
@@ -31,6 +81,9 @@ export function AssistantView() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<AssistantResult | null>(null)
   const [status, setStatus] = useState<AiStatus | null>(null)
+  const [steps, setSteps] = useState<StepState[]>([])
+  const [elapsed, setElapsed] = useState(0)
+  const [mining, setMining] = useState<MineState>({ done: 0, total: 0, groups: [] })
 
   useEffect(() => {
     api.ai
@@ -46,15 +99,37 @@ export function AssistantView() {
     if (!text) return
     setQuery(text)
     setLoading(true)
+    setResult(null)
+    setSteps([])
+    setElapsed(0)
+    setMining({ done: 0, total: 0, groups: [] })
+    const started = performance.now()
+    const timer = window.setInterval(() => setElapsed(performance.now() - started), 50)
     try {
       const res = await runAssistant(
         { locale, settings, modules, selectedModule, personaId },
         mode,
-        text
+        text,
+        (id, detail) => {
+          setSteps((prev) => [
+            ...prev.map((step) => (step.endedAt ? step : { ...step, endedAt: performance.now() })),
+            { id, detail, startedAt: performance.now() }
+          ])
+        },
+        (group, done, total) => {
+          setMining((prev) => ({
+            done,
+            total,
+            groups: prev.groups.includes(group) ? prev.groups : [...prev.groups, group]
+          }))
+        }
       )
+      setSteps((prev) => prev.map((step) => (step.endedAt ? step : { ...step, endedAt: performance.now() })))
+      setElapsed(res.elapsedMs ?? 0)
       setResult(res)
       if (res.notice) notify(res.notice)
     } finally {
+      window.clearInterval(timer)
       setLoading(false)
     }
   }
@@ -136,8 +211,54 @@ export function AssistantView() {
           </div>
 
           {loading && (
-            <div className="empty">
-              <span className="spinner" />
+            <div className="assistant-steps">
+              <div className="assistant-progress-title">
+                {t(
+                  mode === 'crearsermon'
+                    ? 'assistant.progress.crearsermon'
+                    : mode === 'crearestudio'
+                      ? 'assistant.progress.crearestudio'
+                      : mode === 'creardevocional'
+                        ? 'assistant.progress.creardevocional'
+                        : 'assistant.progress.generic'
+                )}
+              </div>
+              <div className="assistant-timer">
+                <span className="spinner small" />
+                <strong>{formatMs(elapsed)}</strong>
+              </div>
+              {steps.map((step, index) => (
+                <div
+                  key={`${step.id}-${index}`}
+                  className={`step ${step.endedAt ? 'done' : 'active'}`}
+                >
+                  <span className="step-mark">{step.endedAt ? '✓' : '»'}</span>
+                  <span className="step-label">
+                    {t(STEP_KEYS[step.id])}
+                    {step.detail ? <small> · {step.detail}</small> : null}
+                  </span>
+                  {step.endedAt && (
+                    <span className="step-time">{formatMs(step.endedAt - step.startedAt)}</span>
+                  )}
+                </div>
+              ))}
+              {mining.total > 0 && (
+                <div className="mine-block">
+                  <small className="mine-count">
+                    {t('assistant.step.mining', { done: mining.done, total: mining.total })}
+                  </small>
+                  <div className="mine-grid">
+                    {SOURCE_ORDER.map((group) => (
+                      <span
+                        key={group}
+                        className={`mine-chip ${mining.groups.includes(group) ? 'done' : ''}`}
+                      >
+                        {mining.groups.includes(group) ? '✓' : '·'} {t(SOURCE_KEYS[group])}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -156,6 +277,11 @@ export function AssistantView() {
                     ? t('assistant.brain.ai', { chars: result.dossierChars ?? 0 })
                     : t('assistant.brain.local', { chars: result.dossierChars ?? 0 })}
                 </span>
+                {result.elapsedMs != null && (
+                  <span className="badge muted">
+                    {t('assistant.time', { time: formatMs(result.elapsedMs) })}
+                  </span>
+                )}
                 <button
                   className="btn ghost small"
                   onClick={() => {

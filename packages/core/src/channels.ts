@@ -25,6 +25,7 @@ export const IPC = {
   bibleCompare: 'bible:compare',
 
   dictLookup: 'dict:lookup',
+  dictEntries: 'dict:entries',
   dictStrongs: 'dict:strongs',
   dictCoverage: 'dict:coverage',
   dictLemma: 'dict:lemma',

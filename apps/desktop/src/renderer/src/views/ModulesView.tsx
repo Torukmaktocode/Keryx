@@ -6,15 +6,10 @@ import { languageLabel } from '../lib/languages'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
 
-type SourceFilter = 'all' | 'sword' | 'esword'
-
-const isEsword = (m: SwordModule): boolean => (m.driver || '').startsWith('e-Sword')
-
 export function ModulesView() {
   const { t, locale } = useI18n()
   const modules = useAppStore((s) => s.modules)
   const refreshModules = useAppStore((s) => s.refreshModules)
-  const engine = useAppStore((s) => s.engine)
   const notify = useAppStore((s) => s.notify)
   const priorities = useAppStore((s) => s.settings.priorityModules)
   const togglePriority = useAppStore((s) => s.togglePriority)
@@ -23,15 +18,12 @@ export function ModulesView() {
   const [repo, setRepo] = useState('')
   const [remote, setRemote] = useState<SwordModule[]>([])
   const [busy, setBusy] = useState<string | null>(null)
-  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all')
   const [query, setQuery] = useState('')
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return [...modules]
       .filter((m) => {
-        if (sourceFilter === 'sword' && isEsword(m)) return false
-        if (sourceFilter === 'esword' && !isEsword(m)) return false
         if (needle && !m.name.toLowerCase().includes(needle) && !m.description.toLowerCase().includes(needle)) {
           return false
         }
@@ -43,7 +35,7 @@ export function ModulesView() {
         if (pa !== pb) return pb - pa
         return a.name.localeCompare(b.name)
       })
-  }, [modules, priorities, sourceFilter, query])
+  }, [modules, priorities, query])
 
   useEffect(() => {
     void api.modules
@@ -94,26 +86,12 @@ export function ModulesView() {
       <header className="view-header">
         <h1 className="view-title">{t('modules.title')}</h1>
         <div className="spacer" />
-        <span className={`badge ${engine?.native ? '' : 'muted'}`}>
-          {engine?.native ? t('modules.native') : t('modules.demo')}
-        </span>
         <button className="btn small" onClick={() => void refreshModules()}>
           {t('common.refresh')}
         </button>
       </header>
       <div className="view-body">
         <div className="filters">
-          <div className="segmented">
-            {(['all', 'sword', 'esword'] as SourceFilter[]).map((id) => (
-              <button
-                key={id}
-                className={sourceFilter === id ? 'active' : ''}
-                onClick={() => setSourceFilter(id)}
-              >
-                {t(`modules.filter.${id}`)}
-              </button>
-            ))}
-          </div>
           <input
             className="input"
             placeholder={t('modules.filterPlaceholder')}
@@ -125,20 +103,17 @@ export function ModulesView() {
         <h3>{t('modules.installed', { count: filtered.length })}</h3>
         <div className="list">
           {filtered.map((m) => {
-            const esword = isEsword(m)
+            const langLabel = m.lang ? languageLabel(m.lang, locale) : ''
             return (
               <div className="list-item" key={`${m.driver}-${m.name}`}>
                 <div className="meta">
                   <strong>{m.name}</strong>
                   <small>
-                    {m.category} - {languageLabel(m.lang, locale)}
-                    {m.driver ? ` - ${m.driver}` : ''}
+                    {m.category}
+                    {langLabel ? ` - ${langLabel}` : ''}
                     {m.hasStrongs ? ' - Strongs' : ''}
                   </small>
                 </div>
-                <span className={`badge ${esword ? 'esword' : 'muted'}`}>
-                  {esword ? 'e-Sword' : 'SWORD'}
-                </span>
                 <button
                   className={`btn small ghost ${priorities.includes(m.name) ? 'primary' : ''}`}
                   title={t('modules.priorityHint')}

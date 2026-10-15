@@ -49,6 +49,11 @@ export const dictLookupSchema = z.object({
   key: z.string().min(1)
 })
 
+export const dictEntriesSchema = z.object({
+  module: z.string().min(1),
+  prefix: z.string().optional()
+})
+
 export const strongsSchema = z.object({
   key: z.string().min(1)
 })

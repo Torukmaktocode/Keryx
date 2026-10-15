@@ -8,6 +8,8 @@
  * y avisa explicitamente que fue ensamblado localmente.
  */
 import type { AssistantContext, AssistantPassage, AssistantResult } from './assistant'
+import type { AssistantStepReporter } from './assistant'
+import type { MineProgressReporter } from './agents'
 import { refLabel, stripTags } from './assistant'
 import { api } from './api'
 import { apiHook, buildDossier, dossierForPrompt, type Dossier } from './agents'
@@ -929,10 +931,14 @@ export async function runCreator(
   ctx: AssistantContext,
   kind: CreatorKind,
   query: string,
-  personaId: string
+  personaId: string,
+  onStep?: AssistantStepReporter,
+  onProgress?: MineProgressReporter
 ): Promise<AssistantResult> {
   const trimmed = query.trim()
-  if (!trimmed) return { markdown: '', passages: [], aiUsed: false }
+  if (!trimmed) return { markdown: '', passages: [], aiUsed: false, aiMs: 0 }
+
+  let aiMs = 0
 
   /** Localizador por texto: los resultados se PUNTUAN por cuantas palabras de
    * la consulta cumple cada versiculo (la frase real gana sobre palabras
@@ -955,7 +961,9 @@ export async function runCreator(
     return undefined
   }
 
+  onStep?.('locate')
   const located = await locatePassage()
+  onStep?.('dossier')
   const dossier = await buildDossier(
     apiHook({
       modules: ctx.modules,
@@ -965,7 +973,8 @@ export async function runCreator(
     }),
     kind,
     trimmed,
-    located && !parseReference(trimmed) ? located : undefined
+    located && !parseReference(trimmed) ? located : undefined,
+    onProgress
   )
 
   const passages: AssistantPassage[] = dossier.citations
@@ -973,6 +982,7 @@ export async function runCreator(
     .map((citation) => ({ ref: citation.entry, module: citation.module, text: '' }))
 
   const persona = getPersona(personaId)
+  onStep?.('compose')
   const local = composeFromDossier(kind, ctx, trimmed, dossier, persona)
 
   const language = ctx.locale === 'en' ? 'English' : ctx.locale === 'pt' ? 'Portuguese' : 'Spanish'
@@ -987,7 +997,8 @@ export async function runCreator(
         markdown: renderSermon(doc),
         passages,
         aiUsed: false,
-        notice: 'Sermón ensamblado 100% por código desde tus módulos (sin IA).',
+        aiMs,
+        notice: 'Sermón ensamblado con tus módulos (sin redacción del modelo).',
         ...citationsData
       }
     }
@@ -1012,6 +1023,8 @@ export async function runCreator(
         '',
         'Devuelve EXACTAMENTE el formato de marcadores del sistema.'
       ].join('\n')
+      onStep?.('voice')
+      const t0 = performance.now()
       const result = await api.ai.chat({
         messages: [
           { role: 'system', content: `${SNIPPET_SYSTEM}\n\nResponde en ${language}.` },
@@ -1020,6 +1033,7 @@ export async function runCreator(
         temperature: 0.6,
         maxTokens: 1400
       })
+      aiMs += performance.now() - t0
       const pieces = parseSnippets(result.text)
       const voiced = {
         ...doc,
@@ -1036,7 +1050,8 @@ export async function runCreator(
         markdown: renderSermon(voiced),
         passages,
         aiUsed: true,
-        notice: 'Cuerpo 100% código; solo gancho/intro/puentes/meditación/oración de IA (1 llamada corta).',
+        aiMs,
+        notice: 'Estructura y fuentes garantizadas; solo gancho/intro/puentes/meditación/oración redactados (1 pasada corta).',
         ...citationsData
       }
     } catch (error) {
@@ -1044,6 +1059,7 @@ export async function runCreator(
         markdown: renderSermon(doc),
         passages,
         aiUsed: false,
+        aiMs,
         notice: error instanceof Error ? error.message : String(error),
         ...citationsData
       }
@@ -1051,7 +1067,7 @@ export async function runCreator(
   }
 
   if (!ctx.settings.aiEnabled) {
-    return { markdown: local, passages, aiUsed: false, ...citationsData }
+    return { markdown: local, passages, aiUsed: false, aiMs, ...citationsData }
   }
 
   try {
@@ -1069,6 +1085,8 @@ export async function runCreator(
       .filter(Boolean)
       .join('\n\n')
 
+    onStep?.('voice')
+    const t0 = performance.now()
     const result = await api.ai.chat({
       messages: [
         { role: 'system', content: `${MASTER_PROMPT}\n\nResponde en ${language}.` },
@@ -1077,14 +1095,18 @@ export async function runCreator(
       temperature: 0.55,
       maxTokens: 6000
     })
+    aiMs += performance.now() - t0
 
     let markdown = result.text
 
     // Crítico de CÓDIGO (0 tokens): si la IA invento Strong o referencias sin ancla,
     // una unica pasada de reparacion dirigida (solo cuando hace falta).
+    onStep?.('critic')
     const criticism = codeCritic(markdown, dossier)
     if (criticism.severe.length) {
+      onStep?.('repair')
       try {
+        const t1 = performance.now()
         const repair = await api.ai.chat({
           messages: [
             {
@@ -1104,6 +1126,7 @@ export async function runCreator(
           temperature: 0.4,
           maxTokens: 3000
         })
+        aiMs += performance.now() - t1
         if (repair.text && repair.text.length > 200) markdown = repair.text
       } catch {
         // la reparacion es optativa: el borrador anclado sigue siendo utilizable
@@ -1112,6 +1135,7 @@ export async function runCreator(
 
     if (ctx.settings.deepSermon) {
       // Pasada final (calidad): desarrolla el material del dosier que el borrador no uso.
+      onStep?.('final')
       const pending = unusedDossierMaterial(markdown, dossier)
       const finalParts = [
         'BORRADOR:',
@@ -1126,6 +1150,7 @@ export async function runCreator(
           ? `POLISH:\n${criticism.minor.map((issue, index) => `${index + 1}) ${issue}`).join('\n')}`
           : ''
       ].filter(Boolean)
+      const t2 = performance.now()
       const final = await api.ai.chat({
         messages: [
           {
@@ -1137,16 +1162,19 @@ export async function runCreator(
         temperature: 0.5,
         maxTokens: 6000
       })
+      aiMs += performance.now() - t2
       markdown = final.text
     }
 
     // Citas ancladas SIEMPRE al final (por código, nunca depende de la IA).
+    onStep?.('sources')
     markdown = withAnchoredSources(markdown, dossier)
 
     return {
       markdown,
       passages,
       aiUsed: true,
+      aiMs,
       ...citationsData
     }
   } catch (error) {
@@ -1154,6 +1182,7 @@ export async function runCreator(
       markdown: local,
       passages,
       aiUsed: false,
+      aiMs,
       notice: error instanceof Error ? error.message : String(error),
       ...citationsData
     }

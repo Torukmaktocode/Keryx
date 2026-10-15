@@ -8,6 +8,7 @@ import {
   dictCoverageSchema,
   compareRequestSchema,
   dictLookupSchema,
+  dictEntriesSchema,
   dictLemmaSchema,
   strongsOccurrencesSchema,
   documentCreateSchema,
@@ -135,6 +136,10 @@ export async function registerIpc(
   register(IPC.dictLookup, (args) => {
     const req = dictLookupSchema.parse(args[0])
     return sword.lookupDict(req.module, req.key)
+  })
+  register(IPC.dictEntries, (args) => {
+    const req = dictEntriesSchema.parse(args[0])
+    return sword.dictEntries(req.module, req.prefix ?? '')
   })
   register(IPC.dictStrongs, (args) => sword.strongs(String(args[0])))
   register(IPC.dictLemma, (args) => {

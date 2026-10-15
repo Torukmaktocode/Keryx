@@ -71,6 +71,7 @@ export interface KeryxApi {
   }
   dict: {
     lookup(req: { module: string; key: string }): Promise<Result<string | null>>
+    entries(req: { module: string; prefix?: string }): Promise<Result<Array<{ topic: string }>>>
     strongs(key: string): Promise<Result<StrongsEntry | null>>
     coverage(req: { term: string }): Promise<Result<ModuleCoverage[]>>
     lookupLemma(req: { module: string; lemma: string }): Promise<Result<{ topic: string; definition: string } | null>>

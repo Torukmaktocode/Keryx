@@ -137,6 +137,15 @@ export class DemoSwordProvider implements SwordProvider {
     return dict[key.toUpperCase()] ?? null
   }
 
+  async dictEntries(module: string, prefix: string, limit = 400): Promise<Array<{ topic: string }>> {
+    const dict = DEMO_DICTIONARY[module]
+    if (!dict) return []
+    const keys = Object.keys(dict).sort()
+    const needle = prefix.trim().toLowerCase()
+    const filtered = needle ? keys.filter((key) => key.toLowerCase().includes(needle)) : keys
+    return filtered.slice(0, limit).map((topic) => ({ topic }))
+  }
+
   async strongs(key: string): Promise<StrongsEntry | null> {
     const normalized = key.toUpperCase()
     const language: StrongsEntry['language'] = normalized.startsWith('G')

@@ -150,6 +150,10 @@ export class NativeSwordProvider implements SwordProvider {
     return this.require('getRawModuleEntry')(module, key, false) ?? null
   }
 
+  async dictEntries(_module: string, _prefix: string, _limit = 400): Promise<Array<{ topic: string }>> {
+    return []
+  }
+
   async strongs(key: string): Promise<StrongsEntry | null> {
     const entry = this.require('getStrongsEntry')(key)
     if (!entry) return null

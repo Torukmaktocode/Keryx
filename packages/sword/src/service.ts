@@ -118,6 +118,14 @@ export class SwordService {
     return this.provider.lookupDict(module, key)
   }
 
+  dictEntries(
+    module: string,
+    prefix: string,
+    limit = 400
+  ): Promise<Array<{ topic: string }>> {
+    return this.provider.dictEntries(module, prefix, limit)
+  }
+
   lookupLemma(module: string, lemma: string): Promise<{ topic: string; definition: string } | null> {
     return this.provider.lookupLemma(module, lemma)
   }

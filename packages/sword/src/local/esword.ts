@@ -150,6 +150,19 @@ function collectFiles(root: string, depth: number): string[] {
   return out
 }
 
+/** Rangos de canon por agente (numeros e-Sword = orden canonico 1-66). Cada
+ * agente escanea su franja en paralelo: garantiza cobertura real de Génesis
+ * a Apocalipsis sin que Génesis agote el limite de resultados solos. */
+const BIBLE_AGENT_RANGES: Array<[number, number]> = [
+  [1, 10],
+  [11, 20],
+  [21, 26],
+  [27, 39],
+  [40, 46],
+  [47, 65],
+  [66, 66]
+]
+
 export class EswordProvider implements SwordProvider {
   readonly kind = 'local' as const
   readonly available = true
@@ -620,27 +633,26 @@ export class EswordProvider implements SwordProvider {
       const db = this.open(conf.path)
       try {
         if (conf.category === 'Bible' && conf.bookTable) {
-          const rows = db
-            .prepare(
-              `SELECT Book AS book, Chapter AS chapter, Verse AS verse, Scripture AS text FROM ${conf.bookTable} WHERE Scripture GLOB ? LIMIT ?`
+          // Agentes de canon en paralelo: cada franja escanea independiente.
+          // El scope AT/NT recorta las franjas (antes el scope se ignoraba).
+          const scopeFrom = options.scope === 'nt' ? 40 : 1
+          const scopeTo = options.scope === 'ot' ? 39 : 66
+          const ranges = BIBLE_AGENT_RANGES.filter(
+            ([from, to]) => to >= scopeFrom && from <= scopeTo
+          ).map(([from, to]) => [Math.max(from, scopeFrom), Math.min(to, scopeTo)] as [number, number])
+          const take = Math.max(2, Math.ceil(limit / ranges.length))
+          const slices = await Promise.all(
+            ranges.map(([from, to]) =>
+              this.searchBibleAgent(conf, name, glob, tokens, matchOptions, from, to, take)
             )
-            .all(glob, likeLimit) as Array<{
-            book: number
-            chapter: number
-            verse: number
-            text: string
-          }>
-          for (const row of rows) {
-            const plain = stripHtml(renderEsword(row.text ?? ''))
-            if (tokens.length && !matchesQuery(plain, tokens, matchOptions)) continue
-            const canonical = CANONICAL_BOOKS[row.book - 1]
-            results.push({
-              module: name,
-              book: canonical?.code ?? String(row.book),
-              chapter: row.chapter,
-              verse: row.verse,
-              text: renderEsword(row.text ?? '')
-            })
+          )
+          const ordered = slices.flat().sort((a, b) => {
+            const indexA = CANONICAL_BOOKS.findIndex((book) => book.code === a.book)
+            const indexB = CANONICAL_BOOKS.findIndex((book) => book.code === b.book)
+            return indexA - indexB || a.chapter - b.chapter || a.verse - b.verse
+          })
+          for (const result of ordered) {
+            results.push(result)
             if (results.length >= limit) return results
           }
         } else if (conf.category === 'Commentary' && conf.commVerse) {
@@ -698,6 +710,66 @@ export class EswordProvider implements SwordProvider {
       }
     }
     return results
+  }
+
+  /** Indice de temas del modulo (diccionario o libro topical) — SQL nativo. */
+  async dictEntries(module: string, prefix: string, limit = 400): Promise<Array<{ topic: string }>> {
+    const conf = this.module(module)
+    if (!conf || !conf.dictTable) return []
+    const db = this.open(conf.path)
+    const columns = this.columns(db, conf.dictTable)
+    const topicCol = columns.find((c) => /topic|term|word|key|title/i.test(c)) ?? columns[0]
+    try {
+      const needle = prefix.trim() ? `%${escapeLike(prefix.trim())}%` : '%'
+      const rows = db
+        .prepare(
+          `SELECT ${topicCol} AS topic FROM ${conf.dictTable} WHERE ${topicCol} LIKE ? ORDER BY ${topicCol} COLLATE NOCASE LIMIT ?`
+        )
+        .all(needle, limit) as Array<{ topic: string }>
+      return rows.filter((row) => String(row.topic ?? '').trim())
+    } catch {
+      return []
+    }
+  }
+
+  /** Agente de canon: escanea una franja de libros (e-Sword numera canonicamente). */
+  private async searchBibleAgent(
+    conf: EswordModule,
+    name: string,
+    glob: string,
+    tokens: string[],
+    matchOptions: { caseSensitive: boolean; wholeWord: boolean },
+    from: number,
+    to: number,
+    take: number
+  ): Promise<SearchResult[]> {
+    const db = this.open(conf.path)
+    const likeLimit = Math.min(Math.max(take * 30, 200), 5000)
+    const rows = db
+      .prepare(
+        `SELECT Book AS book, Chapter AS chapter, Verse AS verse, Scripture AS text FROM ${conf.bookTable} WHERE Book BETWEEN ? AND ? AND Scripture GLOB ? LIMIT ?`
+      )
+      .all(from, to, glob, likeLimit) as Array<{
+      book: number
+      chapter: number
+      verse: number
+      text: string
+    }>
+    const out: SearchResult[] = []
+    for (const row of rows) {
+      const plain = stripHtml(renderEsword(row.text ?? ''))
+      if (tokens.length && !matchesQuery(plain, tokens, matchOptions)) continue
+      const canonical = CANONICAL_BOOKS[row.book - 1]
+      out.push({
+        module: name,
+        book: canonical?.code ?? String(row.book),
+        chapter: row.chapter,
+        verse: row.verse,
+        text: renderEsword(row.text ?? '')
+      })
+      if (out.length >= take) break
+    }
+    return out
   }
 
   async lookupDict(module: string, key: string): Promise<string | null> {

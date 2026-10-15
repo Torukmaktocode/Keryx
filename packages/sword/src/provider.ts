@@ -32,5 +32,7 @@ export interface SwordProvider {
   ): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>>
   search(options: SearchOptions): Promise<SearchResult[]>
   lookupDict(module: string, key: string): Promise<string | null>
+  /** Indice de temas de un modulo diccionario o libro (e-Sword/Local). */
+  dictEntries(module: string, prefix: string, limit?: number): Promise<Array<{ topic: string }>>
   strongs(key: string): Promise<StrongsEntry | null>
 }

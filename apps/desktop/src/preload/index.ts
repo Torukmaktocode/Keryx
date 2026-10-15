@@ -38,6 +38,7 @@ const api: KeryxApi = {
   },
   dict: {
     lookup: (req) => invoke(IPC.dictLookup, req),
+    entries: (req) => invoke(IPC.dictEntries, req),
     strongs: (key) => invoke(IPC.dictStrongs, key),
     coverage: (req) => invoke(IPC.dictCoverage, req),
     lookupLemma: (req) => invoke(IPC.dictLemma, req)

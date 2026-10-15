@@ -19,10 +19,8 @@ export function Sidebar() {
   const { t } = useI18n()
   const view = useAppStore((s) => s.view)
   const setView = useAppStore((s) => s.setView)
-  const engine = useAppStore((s) => s.engine)
   const locale = useAppStore((s) => s.settings.uiLocale)
   const updateSettings = useAppStore((s) => s.updateSettings)
-  const version = useAppStore((s) => s.version)
   const toggleSidebar = useAppStore((s) => s.toggleSidebar)
 
   return (
@@ -59,10 +57,6 @@ export function Sidebar() {
             </button>
           ))}
         </div>
-        <span>
-          {engine ? (engine.native ? t('engine.native') : t('engine.demo')) : t('engine.starting')}
-        </span>
-        <span className="muted">{version}</span>
       </div>
     </aside>
   )

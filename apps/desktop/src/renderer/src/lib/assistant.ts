@@ -3,6 +3,7 @@ import { api } from './api'
 import { moduleLabel } from './modules'
 import { parseReference } from './reference'
 import { runCreator } from './creator'
+import type { MineProgressReporter } from './agents'
 
 export type AssistantMode =
   | 'verse'
@@ -30,6 +31,30 @@ export interface AssistantResult {
   citations?: Array<{ module: string; entry: string; kind: string }>
   /** Caracteres del dosier anclado (presupuesto de sub-agentes). */
   dossierChars?: number
+  /** Tiempo real total de la respuesta (ms, medido en el renderer). */
+  elapsedMs?: number
+  /** Tiempo real acumulado de las llamadas IA (ms, medido en el renderer). */
+  aiMs?: number
+}
+
+export type AssistantStepId =
+  | 'locate'
+  | 'search'
+  | 'dossier'
+  | 'compose'
+  | 'voice'
+  | 'critic'
+  | 'repair'
+  | 'final'
+  | 'sources'
+
+/** Reporta en vivo qué está haciendo el asistente (paso a paso, 0 tokens). */
+export type AssistantStepReporter = (id: AssistantStepId, detail?: string) => void
+
+export function formatMs(ms: number): string {
+  if (ms < 1000) return `${Math.round(ms)} ms`
+  const seconds = ms / 1000
+  return `${seconds.toFixed(seconds < 60 ? 1 : 0)} s`
 }
 
 export interface AssistantContext {
@@ -320,18 +345,23 @@ async function localHermeneutica(ctx: AssistantContext, query: string): Promise<
 export async function runAssistant(
   ctx: AssistantContext,
   mode: AssistantMode,
-  query: string
+  query: string,
+  onStep?: AssistantStepReporter,
+  onProgress?: MineProgressReporter
 ): Promise<AssistantResult> {
+  const started = performance.now()
   const trimmed = query.trim()
   if (!trimmed) {
-    return { markdown: '', passages: [], aiUsed: false }
+    return { markdown: '', passages: [], aiUsed: false, elapsedMs: 0 }
   }
 
   // Modos de creacion completa (sermon / estudio / devocional estilo grandes)
   if (mode === 'crearsermon' || mode === 'crearestudio' || mode === 'creardevocional') {
-    return runCreator(ctx, mode, trimmed, ctx.personaId ?? 'peterson')
+    const creator = await runCreator(ctx, mode, trimmed, ctx.personaId ?? 'peterson', onStep, onProgress)
+    return { ...creator, elapsedMs: performance.now() - started }
   }
 
+  onStep?.('search')
   let local: LocalResult
   if (mode === 'verse') local = await localVerse(ctx, trimmed)
   else if (mode === 'chapter') local = await localChapter(ctx, trimmed)
@@ -341,7 +371,12 @@ export async function runAssistant(
   else local = await localTopic(ctx, trimmed)
 
   // Los modos de estudio NO usan IA: todo se ancla por codigo (0 tokens).
-  return { markdown: local.markdown, passages: local.passages, aiUsed: false }
+  return {
+    markdown: local.markdown,
+    passages: local.passages,
+    aiUsed: false,
+    elapsedMs: performance.now() - started
+  }
 }
 
 export const ASSISTANT_EXAMPLES: Record<AssistantMode, string[]> = {
