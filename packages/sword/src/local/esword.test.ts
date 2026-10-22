@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { EswordProvider } from './esword'
+import { EswordProvider, detectarIdiomaTexto } from './esword'
 
 const ROOT = join(tmpdir(), `keryx-esword-test-${process.pid}`)
 const PRINCIPAL = join(ROOT, 'esword')
@@ -54,6 +54,32 @@ beforeAll(() => {
     .run()
   biblia.prepare("INSERT INTO Details SELECT 'Biblia de prueba', 'TB', 'Spanish'").run()
   biblia.close()
+
+  // Modulo sin columna Language (caso real de biblioteca): attr lang del HTML
+  const sinLang = new DatabaseSync(join(PRINCIPAL, 'TestSinLang.bbli'))
+  sinLang.exec('CREATE TABLE Details (Title TEXT, Abbreviation TEXT, Information TEXT, Version INT)')
+  sinLang
+    .prepare("INSERT INTO Details VALUES ('Ver Biblia al Dia', 'BAD', '<p lang=\"es-ES\">Biblia al Día</p>', 4)")
+    .run()
+  sinLang.exec('CREATE TABLE Bible (Book INT, Chapter INT, Verse INT, Scripture TEXT)')
+  sinLang
+    .prepare("INSERT INTO Bible VALUES (1, 1, 1, 'Dios, en el principio, creó los cielos y la tierra.')")
+    .run()
+  sinLang.close()
+
+  // Modulo ingles sin Language ni attr lang: deteccion por contenido
+  const english = new DatabaseSync(join(PRINCIPAL, 'TestEnglish.dcti'))
+  english.exec('CREATE TABLE Details (Title TEXT, Abbreviation TEXT, Information TEXT)')
+  english
+    .prepare("INSERT INTO Details VALUES ('English Dictionary', 'ED', '<p>A dictionary of the Bible</p>')")
+    .run()
+  english.exec('CREATE TABLE Dictionary (Topic TEXT, Definition TEXT)')
+  english
+    .prepare(
+      "INSERT INTO Dictionary VALUES ('Grace', 'The unmerited favor of God toward men, and the divine assistance given to them.')"
+    )
+    .run()
+  english.close()
 
   // Biblioteca: comentario, libro topical y diccionario en subcarpetas (2 niveles)
   buildModule(
@@ -148,5 +174,31 @@ describe('EswordProvider multi-raiz (fixtures)', () => {
 
   it('devuelve null si no hay raices con modulos', () => {
     expect(makeProvider(join(ROOT, 'nada'), [join(ROOT, 'tambien-nada')])).toBeNull()
+  })
+})
+
+describe('Deteccion de idioma de modulos (puente de traduccion)', () => {
+  it('detecta es/en/pt por stopwords y marcas ortograficas', () => {
+    expect(detectarIdiomaTexto('En el principio creó Dios los cielos y la tierra.')).toBe('es')
+    expect(
+      detectarIdiomaTexto('The measure of love is the cross, not the discourse of the world.')
+    ).toBe('en')
+    expect(detectarIdiomaTexto('A graça de Deus não é uma doutrina, mas a verdade que leva até ele.')).toBe('pt')
+    expect(detectarIdiomaTexto('')).toBe('')
+    expect(detectarIdiomaTexto('V 2 Rb 3,14')).toBe('')
+  })
+
+  it('usa el attr lang="es-ES" del HTML de Information cuando falta Language', async () => {
+    const provider = makeProvider(PRINCIPAL, [BIBLIOTECA])!
+    const modules = await provider.listLocalModules()
+    const sinLang = modules.find((m) => m.name === 'TestSinLang')
+    expect(sinLang?.lang).toBe('es')
+  })
+
+  it('detecta el idioma por contenido cuando no hay Language ni attr lang', async () => {
+    const provider = makeProvider(PRINCIPAL, [BIBLIOTECA])!
+    const modules = await provider.listLocalModules()
+    const english = modules.find((m) => m.name === 'TestEnglish')
+    expect(english?.lang).toBe('en')
   })
 })

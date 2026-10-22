@@ -15,6 +15,11 @@ import type {
   SwordModule,
   Verse
 } from './types'
+import type {
+  PresentationSaveInput,
+  TranslatePairInput,
+  TranslateRequestInput
+} from './schemas'
 
 export interface EngineInfo {
   kind: 'native' | 'local' | 'demo'
@@ -24,6 +29,16 @@ export interface EngineInfo {
 export interface CompareColumn {
   module: string
   verses: Verse[]
+}
+
+export interface PresentationSaveResult {
+  saved: boolean
+  path: string
+}
+
+export interface TranslateStatusResult {
+  available: boolean
+  pairs: string[]
 }
 
 export interface KeryxApi {
@@ -59,6 +74,13 @@ export interface KeryxApi {
     commentaryVerses(req: { module: string; book: string; chapter: number }): Promise<Result<number[]>>
     commentaryCoverage(req: { book: string; chapter: number }): Promise<Result<ModuleCoverage[]>>
     search(req: SearchOptions): Promise<Result<SearchResult[]>>
+    searchCount(req: SearchOptions): Promise<Result<number>>
+    suggest(req: { query: string; module: string; limit?: number }): Promise<Result<Array<{ word: string; score: number }>>>
+    checkSpelling(req: {
+      module: string
+      words: string[]
+      limit?: number
+    }): Promise<Result<Array<{ word: string; known: boolean; suggestions: string[] }>>>
     compare(req: {
       book: string
       chapter: number
@@ -90,6 +112,14 @@ export interface KeryxApi {
   settings: {
     get(): Promise<Result<AppSettings>>
     set(patch: Partial<AppSettings>): Promise<Result<AppSettings>>
+  }
+  presentations: {
+    save(input: PresentationSaveInput): Promise<Result<PresentationSaveResult>>
+  }
+  translate: {
+    status(): Promise<Result<TranslateStatusResult>>
+    translate(req: TranslateRequestInput): Promise<Result<string>>
+    install(req: TranslatePairInput): Promise<Result<string[]>>
   }
   ai: {
     chat(req: AiChatRequest): Promise<Result<AiChatResult>>

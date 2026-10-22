@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '@keryx/i18n'
 import { api } from '../lib/api'
+import { plainText } from '../lib/traductor'
+import { useAppStore } from '../store/appStore'
+import { TextoTraducido } from './TextoTraducido'
 
 interface Props {
   module: string
@@ -18,6 +21,8 @@ const lookupKey = (module: string, book: string, chapter: number, verse: number)
 /** Acordeón verse-a-verse para comentarios e-Sword reales (.cmtx/.cmti). */
 export function CommentaryAccordion({ module, book, chapter, verse, onSelectVerse }: Props) {
   const { t } = useI18n()
+  const modules = useAppStore((s) => s.modules)
+  const moduleLang = modules.find((m) => m.name === module)?.lang
   const [verses, setVerses] = useState<number[]>([])
   const [openVerse, setOpenVerse] = useState<number | null>(null)
   const [content, setContent] = useState<Record<number, string>>({})
@@ -101,7 +106,7 @@ export function CommentaryAccordion({ module, book, chapter, verse, onSelectVers
               {open && (
                 <div className="comment-body scripture">
                   {content[v] ? (
-                    <div dangerouslySetInnerHTML={{ __html: content[v] }} />
+                    <TextoTraducido html={content[v]} plain={plainText(content[v])} lang={moduleLang} />
                   ) : loading ? (
                     <div className="empty">
                       <span className="spinner" />

@@ -14,7 +14,7 @@ import {
   type Verse
 } from '@keryx/core'
 import { resolveBook } from '../reference'
-import { accentGlob, matchesQuery, tokenizeQuery } from './search'
+import { accentGlob, matchesQuery, normalizeText, suggestWords, tokenizeQuery } from './search'
 import type { SwordProvider } from '../provider'
 
 const BIBLE_EXT = new Set(['.bblx', '.bbli', '.bbl'])
@@ -107,6 +107,73 @@ function normalizeLang(raw: string): string {
   return ''
 }
 
+/** Quita bloques de estilos/scripts y data-URIs (basura de Word y de imagenes). */
+function sinEstilos(html: string): string {
+  return (html ?? '')
+    .replace(/src="data:[^"]*"/gi, ' ')
+    .replace(/src='data:[^']*'/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+}
+
+/** Extrae el idioma del atributo lang="es-ES" que e-Sword deja en el HTML. */
+function langDeHtml(html: string): string {
+  const match = /lang=["']([a-z]{2})(?:-[A-Za-z]{2,4})?["']/i.exec(sinEstilos(html ?? ''))
+  if (!match) return ''
+  const code = match[1].toLowerCase()
+  return code === 'es' || code === 'pt' || code === 'en' ? code : ''
+}
+
+const STOPWORDS: Record<string, Set<string>> = {
+  es: new Set([
+    'que', 'de', 'la', 'los', 'las', 'el', 'y', 'en', 'un', 'una', 'con', 'para', 'por', 'su',
+    'lo', 'es', 'son', 'del', 'se', 'no', 'mas', 'pero', 'como', 'dijo', 'todos', 'al', 'este',
+    'esta', 'sus', 'hijo', 'dios', 'jesus', 'sera', 'fue', 'han', 'todo', 'cual', 'aquel'
+  ]),
+  en: new Set([
+    'the', 'and', 'of', 'to', 'in', 'that', 'is', 'was', 'for', 'with', 'his', 'her', 'they',
+    'not', 'but', 'are', 'have', 'this', 'from', 'which', 'their', 'said', 'shall', 'unto',
+    'them', 'thee', 'thou', 'hath', 'thy', 'were', 'been', 'will', 'who', 'all'
+  ]),
+  pt: new Set([
+    'que', 'de', 'não', 'nao', 'uma', 'com', 'por', 'dos', 'das', 'para', 'seu', 'são', 'sao',
+    'mais', 'como', 'mas', 'ao', 'ele', 'isso', 'também', 'tambem', 'muito', 'pelo', 'pela',
+    'até', 'ate', 'quando', 'e', 'os', 'as', 'em', 'ser', 'foi', 'sua', 'seus', 'lhe'
+  ])
+}
+
+const TRANSLIT = new Set([
+  'kai', 'theos', 'theou', 'kyrios', 'kyriou', 'autos', 'autou', 'oun', 'gar', 'hoti', 'eis',
+  'panta', 'panton', 'yehovah', 'elohim', 'yisrael', 'asher', 'dabar', 'hayah', 'elohai'
+])
+
+/**
+ * Detecta el idioma (es/pt/en o '') por evidencia lexical: stopwords y marcas
+ * ortograficas. Determinista, 0 tokens; umbral minimo para no inventar. Texto
+ * griego/hebreo transliterado (Strong, interlineales) devuelve ''.
+ */
+export function detectarIdiomaTexto(text: string): string {
+  const words = (text ?? '')
+    .toLowerCase()
+    .match(/[a-záéíóúñüãõçâêôà¿¡]+/g)
+  if (!words?.length) return ''
+  const translit = words.filter((w) => TRANSLIT.has(w)).length
+  if (translit >= 5) return ''
+  const latinRatio = (text.match(/[a-záéíóúñüãõçâêôà¿¡]/gi) ?? []).length / Math.max(1, text.length)
+  if (latinRatio < 0.3) return ''
+  const scores = { es: 0, en: 0, pt: 0 }
+  for (const word of words) {
+    if (STOPWORDS.es.has(word)) scores.es += 1
+    if (STOPWORDS.en.has(word)) scores.en += 1
+    if (STOPWORDS.pt.has(word)) scores.pt += 1
+    if (/ñ/.test(word) || /[¿¡]/.test(word)) scores.es += 2
+    if (/ã|õ|ç/.test(word) || /â|ê|ô/.test(word)) scores.pt += 2
+    if (/á|é|í|ó|ú/.test(word)) scores.es += 1
+  }
+  const best = Object.entries(scores).sort((a, b) => b[1] - a[1])[0]
+  return best[1] >= 4 ? best[0] : ''
+}
+
 /**
  * Normaliza un tema de diccionario para comparar: sin acentos, mayusculas,
  * sin marcador de marcador inicial (\b, usado por e-Sword), sin numeracion
@@ -168,6 +235,7 @@ export class EswordProvider implements SwordProvider {
   readonly available = true
   private modules: EswordModule[] = []
   private readonly dbs = new Map<string, DatabaseSync>()
+  private readonly vocab = new Map<string, string[]>()
 
   private constructor(private readonly roots: EswordRoot[]) {}
 
@@ -236,6 +304,26 @@ export class EswordProvider implements SwordProvider {
           const commBook = tables.find((t) => /^bookcommentary$/i.test(t)) ?? null
           const commTable =
             commVerse ?? commChapter ?? commBook ?? (contentTables.find((t) => /comment/i.test(t)) ?? null)
+          // Idioma real del modulo. Prioridad: contenido lexical (decisivo),
+          // luego titulo/Information; columna Language solo si no es modulo de
+          // texto biblico antiguo (los conversores suelen mentir); attr lang de
+          // Word como ultimo recurso.
+          const meta = stripHtml(sinEstilos(`${info.description} ${info.information}`))
+          const esTextoBiblico =
+            /greek|hebraic|hebrew|griego|hebreo|interlineal|transliterat|vulgate|textus receptus|massoret/i.test(meta)
+          let language = info.language && !esTextoBiblico ? info.language : ''
+          const contentSample = this.sampleContent(db, [
+            bookTable,
+            commVerse,
+            commChapter,
+            commBook,
+            dictTable
+          ])
+          if (!language) language = detectarIdiomaTexto(contentSample)
+          if (!language && !esTextoBiblico) language = detectarIdiomaTexto(meta.slice(0, 2000))
+          if (!language && !esTextoBiblico && info.information) {
+            language = langDeHtml(info.information)
+          }
           this.modules.push({
             name: basename(path, ext),
             path,
@@ -243,7 +331,7 @@ export class EswordProvider implements SwordProvider {
             category: categoryFor(ext),
             description: info.description,
             abbreviation: info.abbreviation,
-            lang: info.language,
+            lang: language,
             library: root.library,
             bookTable,
             dictTable,
@@ -302,20 +390,50 @@ export class EswordProvider implements SwordProvider {
   private readDetails(db: DatabaseSync): {
     description: string
     abbreviation: string
+    information: string
     language: string
   } {
     try {
       const row = db.prepare('SELECT * FROM Details LIMIT 1').get() as
         | Record<string, unknown>
         | undefined
-      if (!row) return { description: '', abbreviation: '', language: '' }
+      if (!row) return { description: '', abbreviation: '', information: '', language: '' }
       const description = String(row.Description ?? row.description ?? '')
       const abbreviation = String(row.Abbreviation ?? row.abbreviation ?? '')
+      const information = String(row.Information ?? row.information ?? '')
       const language = normalizeLang(String(row.Language ?? row.language ?? ''))
-      return { description, abbreviation, language }
+      return { description, abbreviation, information, language }
     } catch {
-      return { description: '', abbreviation: '', language: '' }
+      return { description: '', abbreviation: '', information: '', language: '' }
     }
+  }
+
+  /** Texto plano del contenido real del modulo (idioma): recorre las tablas
+   * candidatas en orden (las vacias no cuentan) y barre por offsets hasta
+   * juntar texto suficiente. */
+  private sampleContent(db: DatabaseSync, tables: Array<string | null>): string {
+    let text = ''
+    for (const table of tables) {
+      if (!table || text.length >= 300) continue
+      try {
+        for (let offset = 0; offset <= 30 && text.length < 300; offset += 6) {
+          const rows = db.prepare(`SELECT * FROM ${table} LIMIT 6 OFFSET ${offset}`).all() as Array<
+            Record<string, unknown>
+          >
+          if (!rows.length) break
+          for (const row of rows) {
+            for (const value of Object.values(row)) {
+              if (typeof value === 'string') {
+                text += ` ${stripHtml(sinEstilos(value)).slice(0, 1200)}`
+              }
+            }
+          }
+        }
+      } catch {
+        // tabla inaccesible: siguiente candidata
+      }
+    }
+    return text
   }
 
   private module(name: string): EswordModule | undefined {
@@ -626,7 +744,7 @@ export class EswordProvider implements SwordProvider {
     }
     // El pre-filtro trae un superconjunto; se amplia para que el filtro por
     // palabra completa no agote los candidatos antes de llenar el limite pedido.
-    const likeLimit = Math.min(limit * 25, 5000)
+    const likeLimit = Math.min(limit * 25, 50000)
     for (const name of targets) {
       const conf = this.module(name)
       if (!conf) continue
@@ -732,6 +850,115 @@ export class EswordProvider implements SwordProvider {
     }
   }
 
+  /** Indice de vocabulario normalizado de una Biblia (cacheado) — sin IA. */
+  private vocabulary(module: string): string[] {
+    const cached = this.vocab.get(module)
+    if (cached) return cached
+    const conf = this.module(module)
+    if (!conf || conf.category !== 'Bible' || !conf.bookTable) return []
+    const db = this.open(conf.path)
+    const counts = new Map<string, number>()
+    try {
+      const rows = db
+        .prepare(`SELECT Scripture AS text FROM ${conf.bookTable}`)
+        .all() as Array<{ text: string }>
+      for (const row of rows) {
+        const plain = stripHtml(renderEsword(row.text ?? ''))
+        for (const token of tokenizeQuery(plain)) {
+          if (token.length < 3 || token.length > 18) continue
+          counts.set(token, (counts.get(token) ?? 0) + 1)
+        }
+      }
+    } catch {
+      return []
+    }
+    const list = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([token]) => token)
+    this.vocab.set(module, list)
+    return list
+  }
+
+  /** Sugerencias tipograficas para una consulta sin resultados (0 tokens). */
+  async suggest(
+    query: string,
+    module: string,
+    limit = 6
+  ): Promise<Array<{ word: string; score: number }>> {
+    const vocabulary = this.vocabulary(module)
+    if (!vocabulary.length) return []
+    return suggestWords(vocabulary, query, limit).map((item) => ({
+      word: item.word,
+      score: item.distance
+    }))
+  }
+
+  /** Revisa un lote de palabras contra el vocabulario (0 tokens): devuelve solo
+   * las DESCONOCIDAS con sugerencias cercanas (corrector del modo Escritura). */
+  async checkSpelling(
+    module: string,
+    words: string[],
+    limit = 3
+  ): Promise<Array<{ word: string; known: boolean; suggestions: string[] }>> {
+    const vocabulary = this.vocabulary(module)
+    if (!vocabulary.length) return []
+    const known = new Set(vocabulary)
+    const seen = new Set<string>()
+    const out: Array<{ word: string; known: boolean; suggestions: string[] }> = []
+    for (const raw of words) {
+      const word = normalizeText(raw)
+      if (word.length < 4 || word.length > 18 || seen.has(word)) continue
+      seen.add(word)
+      if (known.has(word)) continue
+      const suggestions = suggestWords(vocabulary, word, limit)
+        .filter((item) => item.distance > 0)
+        .slice(0, limit)
+        .map((item) => item.word)
+      out.push({ word: raw, known: false, suggestions })
+      if (out.length >= 200) break
+    }
+    return out
+  }
+
+  /** Recuento exacto de versiculos que cumplen (mismas reglas que search). */
+  async searchCount(options: SearchOptions): Promise<number> {
+    const targets = options.modules?.length
+      ? options.modules
+      : this.modules.map((m) => m.name)
+    const tokens = tokenizeQuery(options.query)
+    if (!tokens.length) return 0
+    const glob = `*${accentGlob(options.query)}*`
+    const matchOptions = {
+      caseSensitive: options.caseSensitive ?? false,
+      wholeWord: options.wholeWord ?? true
+    }
+    const scopeFrom = options.scope === 'nt' ? 40 : 1
+    const scopeTo = options.scope === 'ot' ? 39 : 66
+    const ranges = BIBLE_AGENT_RANGES.filter(
+      ([from, to]) => to >= scopeFrom && from <= scopeTo
+    ).map(([from, to]) => [Math.max(from, scopeFrom), Math.min(to, scopeTo)] as [number, number])
+    let total = 0
+    for (const name of targets) {
+      const conf = this.module(name)
+      if (!conf || conf.category !== 'Bible' || !conf.bookTable) continue
+      const db = this.open(conf.path)
+      try {
+        for (const [from, to] of ranges) {
+          const rows = db
+            .prepare(
+              `SELECT Book AS book, Chapter AS chapter, Verse AS verse, Scripture AS text FROM ${conf.bookTable} WHERE Book BETWEEN ? AND ? AND Scripture GLOB ?`
+            )
+            .all(from, to, glob) as Array<{ text: string }>
+          for (const row of rows) {
+            const plain = stripHtml(renderEsword(row.text ?? ''))
+            if (matchesQuery(plain, tokens, matchOptions)) total += 1
+          }
+        }
+      } catch {
+        // ignora
+      }
+    }
+    return total
+  }
+
   /** Agente de canon: escanea una franja de libros (e-Sword numera canonicamente). */
   private async searchBibleAgent(
     conf: EswordModule,
@@ -744,7 +971,7 @@ export class EswordProvider implements SwordProvider {
     take: number
   ): Promise<SearchResult[]> {
     const db = this.open(conf.path)
-    const likeLimit = Math.min(Math.max(take * 30, 200), 5000)
+    const likeLimit = Math.min(Math.max(take * 30, 200), 50000)
     const rows = db
       .prepare(
         `SELECT Book AS book, Chapter AS chapter, Verse AS verse, Scripture AS text FROM ${conf.bookTable} WHERE Book BETWEEN ? AND ? AND Scripture GLOB ? LIMIT ?`

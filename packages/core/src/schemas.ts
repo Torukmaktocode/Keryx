@@ -58,6 +58,18 @@ export const strongsSchema = z.object({
   key: z.string().min(1)
 })
 
+export const suggestSchema = z.object({
+  query: z.string().min(1),
+  module: z.string().min(1),
+  limit: z.number().int().positive().max(20).optional()
+})
+
+export const checkSpellingSchema = z.object({
+  module: z.string().min(1),
+  words: z.array(z.string().min(1)).min(1).max(400),
+  limit: z.number().int().positive().max(6).optional()
+})
+
 export const coverageRequestSchema = z.object({
   book: z.string().min(1),
   chapter: z.number().int().positive()
@@ -133,7 +145,24 @@ export const settingsPatchSchema = z.object({
   bibliotecaEnabled: z.boolean().optional(),
   showStrongs: z.boolean().optional(),
   deepSermon: z.boolean().optional(),
+  translateLocale: z.enum(['off', 'es', 'en', 'pt', 'it', 'fr', 'de', 'zh']).optional(),
   study: studyLayoutSchema.optional()
+})
+
+export const presentationSaveSchema = z.object({
+  name: z.string().min(1).max(120),
+  base64: z.string().min(100)
+})
+
+export const translateRequestSchema = z.object({
+  source: z.string().min(2).max(8),
+  target: z.string().min(2).max(8),
+  text: z.string().max(20_000)
+})
+
+export const translatePairSchema = z.object({
+  source: z.string().min(2).max(8),
+  target: z.string().min(2).max(8)
 })
 
 export const aiChatSchema = z.object({
@@ -168,3 +197,6 @@ export type SettingsPatch = z.infer<typeof settingsPatchSchema>
 export type AiChatInput = z.infer<typeof aiChatSchema>
 export type FullscreenInput = z.infer<typeof fullscreenSchema>
 export type ZoomInput = z.infer<typeof zoomSchema>
+export type PresentationSaveInput = z.infer<typeof presentationSaveSchema>
+export type TranslateRequestInput = z.infer<typeof translateRequestSchema>
+export type TranslatePairInput = z.infer<typeof translatePairSchema>

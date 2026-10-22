@@ -14,6 +14,7 @@ import { refLabel, stripTags } from './assistant'
 import { api } from './api'
 import { apiHook, buildDossier, dossierForPrompt, type Dossier } from './agents'
 import { parseReference } from './reference'
+import { buildIntent, intentBlock, type IntentProfile } from './intent'
 import { buildSermonDocument, renderSermon } from './sermonEngine'
 import type { SearchResult } from '@keryx/core'
 
@@ -315,7 +316,9 @@ export const MASTER_PROMPT = [
   '10. "Oracion final": primera persona plural, citando al menos una referencia del texto.',
   '',
   '- Cita referencias como "Libro Capitulo:Versiculo".',
-  '- Densidad: nada de relleno; todo parrafo sostiene la gran idea o abre el texto con la evidencia del dosier.'
+  '- Densidad: nada de relleno; todo parrafo sostiene la gran idea o abre el texto con la evidencia del dosier.',
+  '',
+  'TONO: cálido, pastoral y cercano; escribe de tú a tú, con ternura humana y sin frases infladas. En la aplicación y la oración acércate con cuidado a la necesidad que pidió el usuario (ver la conexión con la petición), siempre sin inventar datos.'
 ].join('\n')
 
 /* ------------------------------------------------- crítico de código (0 tokens) */
@@ -576,13 +579,14 @@ export function composeFromDossier(
 /* ---------------------------------------------------------- esqueleto codig */
 
 const SNIPPET_SYSTEM =
-  'Eres un redactor homiletico de voces amplias y vivas. Te daran el ESQUELETO de un sermon ya ' +
+  'Eres un redactor homiletico de voz cálida, pastoral y cercana: hablas de tú a tú, con ternura humana. Te daran el ESQUELETO de un sermon ya ' +
   'construido con fuentes biblicas ancladas por codigo (sub-agentes, 0 tokens). Tu trabajo SOLO ' +
-  'es de voz humana: (1) gancho inicial de 60-90 palabras que enfrente la necesidad humana del texto con una imagen concreta, ' +
-  '(2) INTRODUCCION de 5-7 frases que presente el pasaje, su contexto esencial y por que nos toca hoy, ' +
-  '(3) puente ligero de 2-3 frases ANTES de cada punto (no repitas contenido, solo transicion que prepare el punto), ' +
-  '(4) meditacion de 90-140 palabras que abraze la frase para meditar y la vuelva oracion del corazon, ' +
+  'es de voz humana: (1) gancho inicial de 60-90 palabras que enfrente la necesidad humana del texto con una imagen concreta, reconociendo la emoción real de quien escucha, ' +
+  '(2) INTRODUCCION de 5-7 frases que presente el pasaje, su contexto esencial y por que nos toca hoy, con cercanía de tú a tú, ' +
+  '(3) puente ligero de 2-3 frases ANTES de cada punto (no repitas contenido, solo transición cálida que prepare el punto y acerque el texto a la petición del usuario), ' +
+  '(4) meditacion de 90-140 palabras que abraze la frase para meditar y la vuelva oración del corazón, con ternura, ' +
   '(5) oracion final de 5-8 lineas en primera plural, citando la referencia del texto y el deseo del mensaje. ' +
+  'Atiende la CONEXION CON LA PETICION que viene en el mensaje del usuario: cada pieza debe acercarse a lo que pidió. ' +
   'NO agregues datos, NO inventes referencias, NO reescribas puntos ni evidencia. Formato EXACTO de marcadores:\n' +
   '==GANCHO==\n...\n==INTRO==\n...\n==PUENTE 1==\n...\n==PUENTE 2==\n...\n==MEDITACION==\n...\n==ORACION==\n...'
 
@@ -615,19 +619,19 @@ function parseSnippets(text: string): VoicePieces {
 }
 
 const FALLBACK_BRIDGES = [
-  '¿Y esto qué tiene que ver contigo? Veamos el primer punto.',
-  'Ahora bien: este dato trae consecuencias directas para tu vida.',
-  'Llegamos a lo esencial: cómo vivir esto esta semana.'
+  'Esto también te alcanza a ti, tal como estás hoy. Vamos con el siguiente paso.',
+  'Y este dato no queda lejos: toca tu semana de cerca. Sigamos juntos.',
+  'Llegamos a lo esencial: cómo vivir esto, con gracia, esta semana.'
 ]
 
 const FALLBACK_HOOKS = [
-  'Hay una frase en la Escritura que confronta algo que casi todos callamos:',
-  'Todos sentimos la misma grieta interior. El texto de hoy la nombra con precisión:',
-  'Comencemos con la Palabra misma, porque ella no rodea: va al punto.'
+  'Hay una frase en la Escritura que toca algo que casi todos callamos, y hoy quiere hablar de eso:',
+  'Todos, en algún momento silencioso, sentimos la misma grieta. El texto de hoy la nombra con cuidado:',
+  'Comencemos con la Palabra misma; ella no rodea: va al punto, y va a ti.'
 ]
 
 function defaultPrayer(ref: string): string {
-  return `Dios, gracias porque tu Palabra habló primero a otro mundo y hoy nos habla con la misma autoridad. Grábala en nosotros. Que lo que oyeron de ${ref} se vuelva vida esta semana antes que llegue el domingo. Amén.`
+  return `Dios, gracias porque tu Palabra habló primero a otro mundo y hoy nos habla a nosotros, con la misma autoridad y la misma paciencia. Grábala en nosotros, sostén lo que hoy pesa, y que lo que oyeron de ${ref} se vuelva vida esta semana. Amén.`
 }
 
 function pointTitles(outlineLines: string[], commentLines: string[]): string[] {
@@ -940,12 +944,18 @@ export async function runCreator(
 
   let aiMs = 0
 
+  /** Sub-agente de intención (0 tokens): interpreta la frase palabra por
+   * palabra y la convierte en "conexión con la petición" para toda la voz. */
+  onStep?.('intent')
+  const intent: IntentProfile = buildIntent(trimmed, kind)
+
   /** Localizador por texto: los resultados se PUNTUAN por cuantas palabras de
    * la consulta cumple cada versiculo (la frase real gana sobre palabras
    * comunes sueltas). Devuelve la ubicacion con mejor puntaje. */
   const locatePassage = async (): Promise<PassageHint | undefined> => {
     const direct = parseReference(trimmed)
     if (direct) return direct
+    const terms = intent.searchTerms.length ? intent.searchTerms : queryTokensOf(trimmed)
     const bibles = [
       ...(ctx.settings.priorityModules ?? []).filter((name) =>
         ctx.modules.some((m) => m.name === name && m.category === 'Bible')
@@ -953,7 +963,7 @@ export async function runCreator(
       ...ctx.modules.filter((m) => m.category === 'Bible').map((m) => m.name)
     ].slice(0, 2)
     for (const bibleName of bibles) {
-      const found = await locatePassageByTokens(queryTokensOf(trimmed), bibleName, async (query) =>
+      const found = await locatePassageByTokens(terms, bibleName, async (query) =>
         api.bible.search({ query, modules: [bibleName], limit: 60 })
       )
       if (found) return found
@@ -963,6 +973,7 @@ export async function runCreator(
 
   onStep?.('locate')
   const located = await locatePassage()
+  const directRef = parseReference(trimmed)
   onStep?.('dossier')
   const dossier = await buildDossier(
     apiHook({
@@ -972,8 +983,8 @@ export async function runCreator(
       selectedModule: ''
     }),
     kind,
-    trimmed,
-    located && !parseReference(trimmed) ? located : undefined,
+    intent.searchTerms.length && !directRef ? intent.searchTerms.slice(0, 4).join(' ') : trimmed,
+    located && !directRef ? located : undefined,
     onProgress
   )
 
@@ -991,14 +1002,15 @@ export async function runCreator(
   // Modo economia (default): AST del sermón construido por codigo
   // (buildSermonDocument) y la IA solo llena los slots de voz.
   if (kind === 'crearsermon' && !ctx.settings.deepSermon) {
-    const doc = buildSermonDocument(dossier, persona as unknown as { id: string; name: string; style: string }, trimmed)
+    const doc = buildSermonDocument(dossier, persona as unknown as { id: string; name: string; style: string }, trimmed, intent)
     if (!ctx.settings.aiEnabled) {
       return {
         markdown: renderSermon(doc),
         passages,
         aiUsed: false,
         aiMs,
-        notice: 'Sermón ensamblado con tus módulos (sin redacción del modelo).',
+        sermonDoc: doc,
+        notice: 'Sermón ensamblado con tus módulos, listo para predicar (sin redacción del modelo).',
         ...citationsData
       }
     }
@@ -1011,6 +1023,11 @@ export async function runCreator(
         personaPrompt(persona),
         `Regla de voz obligatoria: ${personaDirective(persona)}`,
         `Forma: ${PERSONA_PROFILE[persona.id]?.shape ?? 'expositiva'}. Frases típicas del orador (tono, no copiar literal): ${PERSONA_PROFILE[persona.id]?.phrases.join(' | ') ?? ''}`,
+        '',
+        'CONEXIÓN CON LA PETICIÓN (atendida de verdad: es lo que pidió el usuario):',
+        ...intentBlock(intent),
+        '',
+        'TONO OBLIGATORIO: cálido, pastoral y cercano, de tú a tú. En el gancho e intro reconoce la emoción o la necesidad de quien escucha; en cada puente acércalo a su semana real; meditación y oración con ternura. Cercanía concreta, sin frases infladas.',
         '',
         'DATOS REALES ANCLADOS (úsalos tal cual en la intro o en un puente; son verificados, no inventes otros):',
         ...(datosBrief.length ? datosBrief : ['(sin datos disponibles para este pasaje)']),
@@ -1051,7 +1068,8 @@ export async function runCreator(
         passages,
         aiUsed: true,
         aiMs,
-        notice: 'Estructura y fuentes garantizadas; solo gancho/intro/puentes/meditación/oración redactados (1 pasada corta).',
+        sermonDoc: voiced,
+        notice: 'Estructura y fuentes garantizadas por código; se redactó la voz (gancho, intro, puentes, meditación y oración) en modo cercano (1 pasada corta).',
         ...citationsData
       }
     } catch (error) {
@@ -1060,14 +1078,21 @@ export async function runCreator(
         passages,
         aiUsed: false,
         aiMs,
-        notice: error instanceof Error ? error.message : String(error),
+        sermonDoc: doc,
+        notice: `No te preocupes: te dejamos el sermón completo con texto guía. (Detalle: ${error instanceof Error ? error.message : String(error)})`,
         ...citationsData
       }
     }
   }
 
   if (!ctx.settings.aiEnabled) {
-    return { markdown: local, passages, aiUsed: false, aiMs, ...citationsData }
+    return {
+      markdown: [intentBlock(intent).join('\n'), '', local].join('\n'),
+      passages,
+      aiUsed: false,
+      aiMs,
+      ...citationsData
+    }
   }
 
   try {
@@ -1076,6 +1101,9 @@ export async function runCreator(
       addendum(kind),
       '',
       `Tema o pasaje solicitado: ${trimmed}`,
+      'CONEXIÓN CON LA PETICIÓN (atendida de verdad: es lo que pidió el usuario):',
+      ...intentBlock(intent),
+      'TONO: cálido, pastoral y cercano; acércate con ternura a la necesidad detectada, sin inventar datos.',
       '',
       'AUTOCHQUE antes de responder: cada numero Strong citado debe figurar en el DOSIER y cada cita biblica Libro C:V debe estar en el DOSIER o en el texto anclado; corrige o elimina lo que no conste.',
       '',
@@ -1171,7 +1199,7 @@ export async function runCreator(
     markdown = withAnchoredSources(markdown, dossier)
 
     return {
-      markdown,
+      markdown: [intentBlock(intent).join('\n'), '', markdown].join('\n'),
       passages,
       aiUsed: true,
       aiMs,
@@ -1179,11 +1207,11 @@ export async function runCreator(
     }
   } catch (error) {
     return {
-      markdown: local,
+      markdown: [intentBlock(intent).join('\n'), '', local].join('\n'),
       passages,
       aiUsed: false,
       aiMs,
-      notice: error instanceof Error ? error.message : String(error),
+      notice: `La IA no respondió; te dejamos el documento completo ensamblado con tus módulos. (Detalle: ${error instanceof Error ? error.message : String(error)})`,
       ...citationsData
     }
   }

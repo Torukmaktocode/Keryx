@@ -22,6 +22,9 @@ export const IPC = {
   bibleCommentaryVerses: 'bible:commentary-verses',
   bibleCommentaryCoverage: 'bible:commentary-coverage',
   bibleSearch: 'bible:search',
+  bibleSearchCount: 'bible:search-count',
+  bibleSuggest: 'bible:suggest',
+  bibleCheckSpelling: 'bible:check-spelling',
   bibleCompare: 'bible:compare',
 
   dictLookup: 'dict:lookup',
@@ -39,6 +42,12 @@ export const IPC = {
 
   settingsGet: 'settings:get',
   settingsSet: 'settings:set',
+
+  presentationsSave: 'presentations:save',
+
+  translateStatus: 'translate:status',
+  translateRequest: 'translate:translate',
+  translateInstall: 'translate:install',
 
   aiChat: 'ai:chat',
   aiStatus: 'ai:status'

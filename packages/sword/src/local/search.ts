@@ -54,6 +54,51 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+/** Distancia de edicion clasica (insercion/borrado/sustitucion). */
+export function levenshtein(a: string, b: string): number {
+  if (a === b) return 0
+  if (!a.length) return b.length
+  if (!b.length) return a.length
+  let prev = new Array(b.length + 1)
+  let row = new Array(b.length + 1)
+  for (let j = 0; j <= b.length; j++) prev[j] = j
+  for (let i = 1; i <= a.length; i++) {
+    row[0] = i
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1
+      row[j] = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + cost)
+    }
+    const swap = prev
+    prev = row
+    row = swap
+  }
+  return prev[b.length]
+}
+
+/** Sugerencias tipograficas (sin IA): palabras del vocabulario a <=2 ediciones
+ * de la consulta, ordenadas por distancia y frecuencia del vocabulario. */
+export function suggestWords(
+  vocabulary: string[],
+  query: string,
+  max = 6
+): Array<{ word: string; distance: number }> {
+  const needle = normalizeText(query)
+  if (needle.length < 3) return []
+  const tolerance = needle.length <= 4 ? 1 : 2
+  const seen = new Set<string>()
+  const out: Array<{ word: string; distance: number }> = []
+  for (const raw of vocabulary) {
+    const word = normalizeText(raw)
+    if (seen.has(word)) continue
+    seen.add(word)
+    if (Math.abs(word.length - needle.length) > tolerance) continue
+    const distance = levenshtein(needle, word)
+    if (distance > 0 && distance <= tolerance) out.push({ word: raw, distance })
+    else if (distance === 0) return [{ word: raw, distance: 0 }]
+  }
+  return out.sort((a, b) => a.distance - b.distance).slice(0, max)
+}
+
 /** Clases de caracteres (mayuscula/minuscula/variantes acentuadas) para GLOB de SQLite. */
 const GLOB_CLASSES: Record<string, string> = {
   a: 'aáàâäãAÁÀÂÄÃ',

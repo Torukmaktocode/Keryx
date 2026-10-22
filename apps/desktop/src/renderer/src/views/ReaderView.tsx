@@ -8,9 +8,13 @@ import {
 } from '@keryx/core'
 import { api } from '../lib/api'
 import { languageLabel, languageRank } from '../lib/languages'
-import { moduleOptionLabel, moduleShortLabel } from '../lib/modules'
+import { moduleShortLabel } from '../lib/modules'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
+import { TextoTraducido } from '../components/TextoTraducido'
+import { TituloTraducido } from '../components/TituloTraducido'
+import { useEtiquetasModulos } from '../lib/titulos'
+import { plainText } from '../lib/traductor'
 
 const COUNTS = [1, 2, 4, 6] as const
 type CompareCount = (typeof COUNTS)[number]
@@ -127,6 +131,14 @@ export function ReaderView() {
     [allBibles, langFilter]
   )
   const currentBook = CANONICAL_BOOKS.find((b) => b.code === book) ?? CANONICAL_BOOKS[0]
+  const etiquetasBiblias = useEtiquetasModulos(bibleModules)
+  const etiquetaBiblia = (m: { name: string; lang: string }): string => {
+    const index = bibleModules.findIndex((b) => b.name === m.name)
+    const nombre = index >= 0 ? etiquetasBiblias[index] : m.name
+    const lang = (m.lang || '').trim()
+    if (!lang || lang === '?') return nombre
+    return `${nombre} (${languageLabel(lang, locale)})`
+  }
   const displayedBooks = useMemo(
     () => (testament === 'all' ? CANONICAL_BOOKS : booksByTestament(testament)),
     [testament]
@@ -294,23 +306,38 @@ export function ReaderView() {
     })
   }
 
-  const renderVerses = (list: Verse[]): ReactElement => (
-    <div className="scripture">
-      {list.map((verse) => (
-        <div key={`${verse.chapter}-${verse.verse}`}>
-          {verse.heading && <div className="verse-heading">{verse.heading}</div>}
-          <div
-            className={`verse ${selectedVerse === verse.verse ? 'selected' : ''}`}
-            data-verse-num={verse.verse}
-            onClick={() => setSelectedVerse(verse.verse)}
-          >
-            <span className="verse-num">{verse.verse}</span>
-            <span dangerouslySetInnerHTML={{ __html: cleanVerseHtml(verse.text) }} />
+  /** Idioma de origen para traducir un modulo: los de texto original (griego,
+   * hebreo, interlineales) no se tocan. */
+  const langPara = (moduleName?: string | null): string => {
+    const mod = modulesByName.get(moduleName ?? '')
+    if (!mod || mod.profile === 'original') return ''
+    return mod.lang ?? ''
+  }
+
+  const renderVerses = (list: Verse[], moduleName?: string | null): ReactElement => {
+    const lang = langPara(moduleName ?? selectedModule)
+    return (
+      <div className="scripture">
+        {list.map((verse) => (
+          <div key={`${verse.chapter}-${verse.verse}`}>
+            {verse.heading && (
+              <div className="verse-heading">
+                <TextoTraducido plain={verse.heading} lang={lang} />
+              </div>
+            )}
+            <div
+              className={`verse ${selectedVerse === verse.verse ? 'selected' : ''}`}
+              data-verse-num={verse.verse}
+              onClick={() => setSelectedVerse(verse.verse)}
+            >
+              <span className="verse-num">{verse.verse}</span>
+              <TextoTraducido html={cleanVerseHtml(verse.text)} plain={plainText(verse.text)} lang={lang} />
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  )
+        ))}
+      </div>
+    )
+  }
 
   const modulesByName = useMemo(() => new Map(modules.map((m) => [m.name, m])), [modules])
 
@@ -335,7 +362,7 @@ export function ReaderView() {
       >
         {bibleModules.map((m) => (
           <option key={m.name} value={m.name}>
-            {moduleOptionLabel(m, locale)}
+            {etiquetaBiblia(m)}
           </option>
         ))}
       </select>
@@ -374,7 +401,11 @@ export function ReaderView() {
                 ) : verse ? (
                   <>
                     {colIndex === 0 && <span className="verse-num">{baseVerse.verse}</span>}
-                    <span dangerouslySetInnerHTML={{ __html: cleanVerseHtml(verse.text) }} />
+                    <TextoTraducido
+                      html={cleanVerseHtml(verse.text)}
+                      plain={plainText(verse.text)}
+                      lang={langPara(moduleName)}
+                    />
                   </>
                 ) : (
                   <span className="vs-missing">�</span>
@@ -402,13 +433,25 @@ export function ReaderView() {
       <>
         {baseVerses.map((baseVerse) => (
           <section className="vs-block" key={baseVerse.verse} data-verse-num={baseVerse.verse}>
-            {baseVerse.heading && <div className="vs-block-heading">{baseVerse.heading}</div>}
+            {baseVerse.heading && (
+              <div className="vs-block-heading">
+                <TextoTraducido
+                  plain={baseVerse.heading}
+                  lang={langPara(mods[0])}
+                />
+              </div>
+            )}
             <div
               className={`vs-base-row ${selectedVerse === baseVerse.verse ? 'selected' : ''}`}
               onClick={() => setSelectedVerse(baseVerse.verse)}
             >
               <span className="verse-num">{baseVerse.verse}</span>
-              <span className="vs-text" dangerouslySetInnerHTML={{ __html: cleanVerseHtml(baseVerse.text) }} />
+              <TextoTraducido
+                className="vs-text"
+                html={cleanVerseHtml(baseVerse.text)}
+                plain={plainText(baseVerse.text)}
+                lang={langPara(mods[0])}
+              />
             </div>
             {altMods.map((moduleName) => {
               const list = colVerses[moduleName]
@@ -423,16 +466,18 @@ export function ReaderView() {
                 >
                   <span />
                   <span className="vs-label">
-                    {mod ? moduleShortLabel(mod) : moduleName}
+                    <TituloTraducido text={mod ? moduleShortLabel(mod) : moduleName} lang={mod?.lang} />
                     {labelKey && <small>{t(labelKey)}</small>}
                   </span>
                   <span className="vs-alt-text">
                     {!list ? (
                       <span className="spinner" />
                     ) : verse ? (
-                      <span
+                      <TextoTraducido
                         className="vs-text"
-                        dangerouslySetInnerHTML={{ __html: cleanVerseHtml(verse.text) }}
+                        html={cleanVerseHtml(verse.text)}
+                        plain={plainText(verse.text)}
+                        lang={langPara(moduleName)}
                       />
                     ) : (
                       <span className="vs-missing">—</span>
@@ -486,7 +531,7 @@ export function ReaderView() {
           >
             {bibleModules.map((m) => (
               <option key={m.name} value={m.name}>
-                {moduleOptionLabel(m, locale)}
+                {etiquetaBiblia(m)}
               </option>
             ))}
           </select>
@@ -663,7 +708,7 @@ export function ReaderView() {
                     ) : (colVerses[item.name] ?? []).length === 0 ? (
                       <div className="empty">{t('reader.noText', { module: item.name })}</div>
                     ) : (
-                      renderVerses(colVerses[item.name] ?? [])
+                      renderVerses(colVerses[item.name] ?? [], item.name)
                     )}
                   </div>
                 </section>
@@ -684,7 +729,7 @@ export function ReaderView() {
               {t('reader.installHint')}
             </div>
           ) : (
-            renderVerses(verses)
+            renderVerses(verses, selectedModule)
           )}
         </div>
       ) : null}

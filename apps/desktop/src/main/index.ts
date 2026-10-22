@@ -74,6 +74,13 @@ function createWindow(): void {
 
   window.on('ready-to-show', () => window.show())
 
+  if (process.env['KERYX_DEBUG']) {
+    window.webContents.on('console-message', (details) => {
+      const message = typeof details === 'object' && details && 'message' in details ? String((details as { message: unknown }).message) : String(details)
+      console.log('[renderer]', message.slice(0, 300))
+    })
+  }
+
   window.webContents.setWindowOpenHandler((details) => {
     void shell.openExternal(details.url)
     return { action: 'deny' }

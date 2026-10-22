@@ -3,6 +3,7 @@ import { api } from './api'
 import { moduleLabel } from './modules'
 import { parseReference } from './reference'
 import { runCreator } from './creator'
+import type { SermonDocument } from './sermonEngine'
 import type { MineProgressReporter } from './agents'
 
 export type AssistantMode =
@@ -35,9 +36,13 @@ export interface AssistantResult {
   elapsedMs?: number
   /** Tiempo real acumulado de las llamadas IA (ms, medido en el renderer). */
   aiMs?: number
+  /** AST inmutable del sermón (solo modo economía de «crearsermon»):
+   *  alimenta el sub-agente de presentación y la exportación PPTX. */
+  sermonDoc?: SermonDocument
 }
 
 export type AssistantStepId =
+  | 'intent'
   | 'locate'
   | 'search'
   | 'dossier'

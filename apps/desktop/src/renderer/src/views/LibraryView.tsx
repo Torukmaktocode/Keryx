@@ -8,6 +8,9 @@ import { verseThemeWords } from '../lib/agents'
 import { stripTags } from '../lib/assistant'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
+import { TextoTraducido } from '../components/TextoTraducido'
+import { TituloTraducido } from '../components/TituloTraducido'
+import { plainText } from '../lib/traductor'
 
 type TabId = 'all' | 'Commentaries' | 'Dictionaries' | 'Books'
 
@@ -37,6 +40,7 @@ interface LibraryEntry {
 export function LibraryView() {
   const { t, locale } = useI18n()
   const modules = useAppStore((s) => s.modules)
+  const modulesByName = useMemo(() => new Map(modules.map((m) => [m.name, m])), [modules])
   const setView = useAppStore((s) => s.setView)
   const setSelectedModule = useAppStore((s) => s.setSelectedModule)
   const updateStudy = useAppStore((s) => s.updateStudy)
@@ -374,7 +378,7 @@ export function LibraryView() {
                   className={`library-resource-item ${m.name === activeModule ? 'active' : ''}`}
                   onClick={() => setActiveModule(m.name)}
                 >
-                  <strong>{moduleLabel(m)}</strong>
+                  <strong><TituloTraducido text={moduleLabel(m)} lang={m.lang} /></strong>
                   <small>
                     {m.category}
                     {m.lang ? ` - ${languageLabel(m.lang, locale)}` : ''}
@@ -491,7 +495,9 @@ export function LibraryView() {
                     {t('library.sendQuote')}
                   </button>
                 </div>
-                <div className="scripture" dangerouslySetInnerHTML={{ __html: entry.html }} />
+                <div className="scripture">
+                  <TextoTraducido html={entry.html} plain={plainText(entry.html)} lang={modulesByName.get(entry.module)?.lang} />
+                </div>
               </>
             ) : (
               <p className="empty">{t('library.selectResource')}</p>

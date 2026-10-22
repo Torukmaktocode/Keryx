@@ -31,6 +31,20 @@ export interface SwordProvider {
     limit?: number
   ): Promise<Array<{ book: string; chapter: number; verse: number; word: string; morphology: string }>>
   search(options: SearchOptions): Promise<SearchResult[]>
+  /** Total real de versiculos que cumplen la consulta (sin limite de results). */
+  searchCount(options: SearchOptions): Promise<number>
+  /** Sugerencias tipograficas (0 tokens) para consultas sin resultados. */
+  suggest(
+    query: string,
+    module: string,
+    limit?: number
+  ): Promise<Array<{ word: string; score: number }>>
+  /** Lote ortografico para el corrector del modo Escritura (0 tokens). */
+  checkSpelling(
+    module: string,
+    words: string[],
+    limit?: number
+  ): Promise<Array<{ word: string; known: boolean; suggestions: string[] }>>
   lookupDict(module: string, key: string): Promise<string | null>
   /** Indice de temas de un modulo diccionario o libro (e-Sword/Local). */
   dictEntries(module: string, prefix: string, limit?: number): Promise<Array<{ topic: string }>>

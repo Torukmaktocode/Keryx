@@ -14,12 +14,14 @@ export function WritingView() {
   const setActiveDocumentId = useAppStore((s) => s.setActiveDocumentId)
   const notify = useAppStore((s) => s.notify)
   const toggleSidebar = useAppStore((s) => s.toggleSidebar)
+  const modules = useAppStore((s) => s.modules)
 
   const mountRef = useRef<HTMLDivElement>(null)
   const editorRef = useRef<KeryxEditor | null>(null)
   const idRef = useRef<string | null>(null)
   const titleRef = useRef('')
   const saveTimer = useRef<number | null>(null)
+  const checkTimer = useRef<number | null>(null)
   const onChangeRef = useRef<() => void>(() => {})
   const onStatsRef = useRef<(stats: EditorStats) => void>(() => {})
 
@@ -28,6 +30,13 @@ export function WritingView() {
   const [stats, setStats] = useState<EditorStats>({ words: 0, characters: 0, readingMinutes: 0 })
   const [saving, setSaving] = useState(false)
   const [zen, setZen] = useState(false)
+  const [spelling, setSpelling] = useState<Array<{ word: string; suggestions: string[] }>>([])
+
+  const bibleModule = useMemo(() => {
+    const bibles = modules.filter((m) => m.category === 'Bible')
+    const spanish = bibles.find((m) => (m.lang || '').toLowerCase().startsWith('es'))
+    return (spanish ?? bibles[0])?.name ?? ''
+  }, [modules])
 
   const writingFont =
     settings.writingFont && settings.writingFont !== 'iA Writer Quattro'
@@ -58,7 +67,38 @@ export function WritingView() {
     saveTimer.current = window.setTimeout(() => void doSave(), 800)
   }, [doSave])
 
-  onChangeRef.current = scheduleSave
+  /** Corrector automatico (0 tokens): tras una pausa de tipeo compara las
+   * palabras del documento con el vocabulario de la Biblia base. */
+  const scheduleCheck = useCallback(() => {
+    if (checkTimer.current) window.clearTimeout(checkTimer.current)
+    checkTimer.current = window.setTimeout(() => {
+      void (async () => {
+        const editor = editorRef.current
+        if (!editor || !bibleModule) return
+        const value = editor.getValue()
+        const words = [...new Set(value.match(/[\p{L}]{4,}/gu) ?? [])].slice(0, 400)
+        if (!words.length) {
+          setSpelling([])
+          return
+        }
+        try {
+          setSpelling(await api.bible.checkSpelling({ module: bibleModule, words, limit: 3 }))
+        } catch {
+          setSpelling([])
+        }
+      })()
+    }, 1200)
+  }, [bibleModule])
+
+  const fixWord = useCallback((word: string, replacement: string): void => {
+    editorRef.current?.replaceWord(word, replacement)
+    onChangeRef.current()
+  }, [])
+
+  onChangeRef.current = () => {
+    scheduleSave()
+    scheduleCheck()
+  }
   onStatsRef.current = setStats
 
   useEffect(() => {
@@ -252,6 +292,28 @@ export function WritingView() {
             <Icon name="trash" size={14} />
           </button>
         </div>
+        {spelling.length > 0 && (
+          <div className="spelling-bar">
+            <span className="spelling-label">
+              {t('write.spelling', { count: spelling.length })}
+            </span>
+            {spelling.slice(0, 12).map((item) => (
+              <span key={item.word} className="spelling-item">
+                <strong>{item.word}</strong>
+                {item.suggestions.map((sug) => (
+                  <button
+                    key={sug}
+                    className="chip ghost"
+                    title={t('write.spellingFix', { word: sug })}
+                    onClick={() => fixWord(item.word, sug)}
+                  >
+                    {sug}
+                  </button>
+                ))}
+              </span>
+            ))}
+          </div>
+        )}
         <div className="editor-mount" ref={mountRef} />
       </div>
     </div>

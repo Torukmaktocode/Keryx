@@ -5,6 +5,7 @@ export type IconName =
   | 'study'
   | 'write'
   | 'templates'
+  | 'slides'
   | 'modules'
   | 'settings'
   | 'plus'
@@ -107,6 +108,13 @@ const PATHS: Record<IconName, JSX.Element> = {
     <>
       <rect x="3" y="4" width="7.5" height="16" rx="1.5" />
       <rect x="13.5" y="4" width="7.5" height="16" rx="1.5" />
+    </>
+  ),
+  slides: (
+    <>
+      <rect x="3" y="3" width="18" height="13" rx="1.5" />
+      <path d="M12 16v3" />
+      <path d="M8 21h8" />
     </>
   ),
   menu: (

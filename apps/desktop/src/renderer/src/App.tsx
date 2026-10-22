@@ -18,6 +18,10 @@ const WritingView = lazy(() =>
   import('./views/WritingView').then((m) => ({ default: m.WritingView })),
 )
 
+const PresentacionesView = lazy(() =>
+  import('./views/PresentacionesView').then((m) => ({ default: m.PresentacionesView })),
+)
+
 function Shell() {
   const { t } = useI18n()
   const view = useAppStore((s) => s.view)
@@ -113,6 +117,11 @@ function Shell() {
             )}
             {view === 'templates' && <TemplatesView />}
             {view === 'assistant' && <AssistantView />}
+            {view === 'presentaciones' && (
+              <Suspense fallback={<div className="empty"><span className="spinner" /><span style={{ marginLeft: 12 }}>{t('app.loading')}</span></div>}>
+                <PresentacionesView />
+              </Suspense>
+            )}
             {view === 'inspiration' && <InspirationView />}
             {view === 'modules' && <ModulesView />}
             {view === 'settings' && <SettingsView />}

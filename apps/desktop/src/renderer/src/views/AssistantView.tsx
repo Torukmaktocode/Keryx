@@ -15,12 +15,16 @@ import {
 import { PERSONAS } from '../lib/creator'
 import type { MineGroup } from '../lib/agents'
 import { renderMarkdown } from '../lib/markdown'
+import { documentDesdeTexto } from '../lib/presentation'
+import { translateMarkdown, markdownTraducidoToHtml } from '../lib/traductor'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
+import { TituloTraducido } from '../components/TituloTraducido'
 
 const CREATOR_MODES: AssistantMode[] = ['crearsermon', 'crearestudio', 'creardevocional']
 
 const STEP_KEYS: Record<AssistantStepId, TranslationKey> = {
+  intent: 'assistant.step.intent',
   locate: 'assistant.step.locate',
   search: 'assistant.step.search',
   dossier: 'assistant.step.dossier',
@@ -54,6 +58,19 @@ const SOURCE_KEYS: Record<MineGroup, TranslationKey> = {
   theology: 'assistant.src.theology'
 }
 
+const WORK_CREATOR: TranslationKey[] = [
+  'assistant.work.a',
+  'assistant.work.b',
+  'assistant.work.c',
+  'assistant.work.d',
+  'assistant.work.e',
+  'assistant.work.f',
+  'assistant.work.g',
+  'assistant.work.h'
+]
+
+const WORK_LOCAL: TranslationKey[] = ['assistant.work.i', 'assistant.work.j']
+
 interface StepState {
   id: AssistantStepId
   detail?: string
@@ -73,7 +90,9 @@ export function AssistantView() {
   const modules = useAppStore((s) => s.modules)
   const selectedModule = useAppStore((s) => s.selectedModule)
   const sendToWriting = useAppStore((s) => s.sendToWriting)
+  const sendToPresentation = useAppStore((s) => s.sendToPresentation)
   const notify = useAppStore((s) => s.notify)
+  const modulesByName = useMemo(() => new Map(modules.map((m) => [m.name, m])), [modules])
 
   const [mode, setMode] = useState<AssistantMode>('verse')
   const [personaId, setPersonaId] = useState('peterson')
@@ -84,6 +103,33 @@ export function AssistantView() {
   const [steps, setSteps] = useState<StepState[]>([])
   const [elapsed, setElapsed] = useState(0)
   const [mining, setMining] = useState<MineState>({ done: 0, total: 0, groups: [] })
+  const [workPhrase, setWorkPhrase] = useState(0)
+  const [traducido, setTraducido] = useState<string | null>(null)
+  const translateLocale = useAppStore((s) => s.settings.translateLocale)
+
+  useEffect(() => {
+    if (!result?.markdown || translateLocale === 'off' || translateLocale === 'es') {
+      setTraducido(null)
+      return
+    }
+    let alive = true
+    void translateMarkdown(result.markdown, translateLocale)
+      .then((md) => {
+        if (alive) setTraducido(md)
+      })
+      .catch(() => {
+        if (alive) setTraducido(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [result, translateLocale])
+
+  useEffect(() => {
+    if (!loading) return
+    const timer = window.setInterval(() => setWorkPhrase((index) => index + 1), 4500)
+    return () => window.clearInterval(timer)
+  }, [loading])
 
   useEffect(() => {
     api.ai
@@ -223,6 +269,9 @@ export function AssistantView() {
                         : 'assistant.progress.generic'
                 )}
               </div>
+              <div className="assistant-progress-phrase">
+                {t((CREATOR_MODES.includes(mode) ? WORK_CREATOR : WORK_LOCAL)[workPhrase % (CREATOR_MODES.includes(mode) ? WORK_CREATOR.length : WORK_LOCAL.length)])}
+              </div>
               <div className="assistant-timer">
                 <span className="spinner small" />
                 <strong>{formatMs(elapsed)}</strong>
@@ -293,6 +342,22 @@ export function AssistantView() {
                 <button
                   className="btn ghost small"
                   onClick={() => {
+                    const kicker =
+                      mode === 'crearsermon'
+                        ? 'Sermón'
+                        : mode === 'crearestudio'
+                          ? 'Estudio'
+                          : mode === 'creardevocional'
+                            ? 'Devocional'
+                            : 'Mensaje'
+                    sendToPresentation(result.sermonDoc ?? documentDesdeTexto(query || 'Documento', result.markdown, kicker))
+                  }}
+                >
+                  {t('assistant.sendToPresentation')}
+                </button>
+                <button
+                  className="btn ghost small"
+                  onClick={() => {
                     downloadDocument(query || 'documento', result.markdown, 'doc')
                   }}
                 >
@@ -323,7 +388,10 @@ export function AssistantView() {
                   <div className="coverage-chips">
                     {[...new Set(result.citations.map((c) => c.module))].map((module) => (
                       <span key={module} className="coverage-chip" title={module}>
-                        {module.length > 30 ? `${module.slice(0, 28)}…` : module}
+                        <TituloTraducido
+                          text={module.length > 30 ? `${module.slice(0, 28)}…` : module}
+                          lang={modulesByName.get(module)?.lang}
+                        />
                       </span>
                     ))}
                   </div>
@@ -331,7 +399,9 @@ export function AssistantView() {
               )}
               <div
                 className="scripture assistant-content"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(result.markdown) }}
+                dangerouslySetInnerHTML={{
+                  __html: traducido ? markdownTraducidoToHtml(traducido) : renderMarkdown(result.markdown)
+                }}
               />
             </article>
           )}

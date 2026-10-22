@@ -1,5 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { join } from 'node:path'
+import { existsSync } from 'node:fs'
+import { writeFile } from 'node:fs/promises'
 import {
   IPC,
   aiChatSchema,
@@ -16,8 +18,12 @@ import {
   documentSaveSchema,
   fullscreenSchema,
   installModuleSchema,
+  presentationSaveSchema,
+  detectAppLocale,
   searchRequestSchema,
   settingsPatchSchema,
+  suggestSchema,
+  checkSpellingSchema,
   uninstallModuleSchema,
   verseRequestSchema,
   zoomSchema,
@@ -28,6 +34,7 @@ import {
 import { SwordService } from '@keryx/sword'
 import { JsonStore } from '@keryx/db'
 import { aiChat, aiStatus } from './ai'
+import { registerTraductorIpc, precalentarPar } from './traductor'
 
 type Handler = (args: unknown[]) => Promise<unknown> | unknown
 
@@ -50,7 +57,16 @@ export async function registerIpc(
   eswordPath?: string,
   bibliotecaPath?: string
 ): Promise<JsonStore | undefined> {
-  const store = new JsonStore(join(app.getPath('userData'), 'keryx-store.json'))
+  const storePath = join(app.getPath('userData'), 'keryx-store.json')
+  // Primer arranque: nadie ha usado la app → el idioma del sistema manda
+  // (interfaz + traducción del contenido). Nunca se pisa una elección guardada.
+  const primerArranque = !existsSync(storePath)
+  const store = new JsonStore(storePath)
+  if (primerArranque) {
+    const detected = detectAppLocale(app.getLocale())
+    store.setSettings({ uiLocale: detected, translateLocale: detected })
+    store.flush()
+  }
   const sword = await SwordService.create(dataPath, eswordPath, bibliotecaPath)
 
   const currentWindow = (): BrowserWindow | null =>
@@ -123,6 +139,18 @@ export async function registerIpc(
     const req = searchRequestSchema.parse(args[0])
     return sword.search(req)
   })
+  register(IPC.bibleSearchCount, (args) => {
+    const req = searchRequestSchema.parse(args[0])
+    return sword.searchCount(req)
+  })
+  register(IPC.bibleSuggest, (args) => {
+    const req = suggestSchema.parse(args[0])
+    return sword.suggest(req.query, req.module, req.limit)
+  })
+  register(IPC.bibleCheckSpelling, (args) => {
+    const req = checkSpellingSchema.parse(args[0])
+    return sword.checkSpelling(req.module, req.words, req.limit)
+  })
   register(IPC.bibleCompare, async (args) => {
     const req = compareRequestSchema.parse(args[0])
     const columns: CompareColumn[] = []
@@ -177,7 +205,28 @@ export async function registerIpc(
   register(IPC.settingsGet, () => store.getSettings())
   register(IPC.settingsSet, (args) => {
     const patch = settingsPatchSchema.parse(args[0])
-    return store.setSettings(patch)
+    const anterior = store.getSettings().translateLocale
+    const settings = store.setSettings(patch)
+    if (patch.translateLocale && patch.translateLocale !== anterior) {
+      void precalentarPar(patch.translateLocale)
+    }
+    return settings
+  })
+
+  register(IPC.presentationsSave, async (args) => {
+    const input = presentationSaveSchema.parse(args[0])
+    const window = currentWindow()
+    if (!window) return { saved: false, path: '' }
+    const options: Electron.SaveDialogOptions = {
+      title: 'Guardar presentación',
+      defaultPath: `${input.name.replace(/[\\/:*?"<>|]/g, ' ')}.pptx`,
+      filters: [{ name: 'PowerPoint', extensions: ['pptx'] }]
+    }
+    const chosen = await dialog.showSaveDialog(window, options)
+    if (chosen.canceled || !chosen.filePath) return { saved: false, path: '' }
+    const payload = input.base64.replace(/^data:[^;]+;base64,/, '')
+    await writeFile(chosen.filePath, Buffer.from(payload, 'base64'))
+    return { saved: true, path: chosen.filePath }
   })
 
   register(IPC.aiChat, (args) => {
@@ -185,6 +234,8 @@ export async function registerIpc(
     return aiChat(store.getSettings(), req)
   })
   register(IPC.aiStatus, () => aiStatus(store.getSettings()))
+
+  registerTraductorIpc(register, () => store.getSettings().translateLocale)
 
   return store
 }

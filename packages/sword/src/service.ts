@@ -114,6 +114,26 @@ export class SwordService {
     return this.provider.search(options)
   }
 
+  searchCount(options: SearchOptions): Promise<number> {
+    return this.provider.searchCount(options)
+  }
+
+  suggest(
+    query: string,
+    module: string,
+    limit = 6
+  ): Promise<Array<{ word: string; score: number }>> {
+    return this.provider.suggest(query, module, limit)
+  }
+
+  checkSpelling(
+    module: string,
+    words: string[],
+    limit = 3
+  ): Promise<Array<{ word: string; known: boolean; suggestions: string[] }>> {
+    return this.provider.checkSpelling(module, words, limit)
+  }
+
   lookupDict(module: string, key: string): Promise<string | null> {
     return this.provider.lookupDict(module, key)
   }

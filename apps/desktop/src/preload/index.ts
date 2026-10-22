@@ -33,6 +33,9 @@ const api: KeryxApi = {
     commentaryVerses: (req) => invoke(IPC.bibleCommentaryVerses, req),
     commentaryCoverage: (req) => invoke(IPC.bibleCommentaryCoverage, req),
     search: (req) => invoke(IPC.bibleSearch, req),
+    searchCount: (req) => invoke(IPC.bibleSearchCount, req),
+    suggest: (req) => invoke(IPC.bibleSuggest, req),
+    checkSpelling: (req) => invoke(IPC.bibleCheckSpelling, req),
     compare: (req) => invoke(IPC.bibleCompare, req),
     strongsOccurrences: (req) => invoke(IPC.bibleStrongsOccurrences, req)
   },
@@ -53,6 +56,14 @@ const api: KeryxApi = {
   settings: {
     get: () => invoke(IPC.settingsGet),
     set: (patch) => invoke(IPC.settingsSet, patch)
+  },
+  presentations: {
+    save: (input) => invoke(IPC.presentationsSave, input)
+  },
+  translate: {
+    status: () => invoke(IPC.translateStatus),
+    translate: (req) => invoke(IPC.translateRequest, req),
+    install: (req) => invoke(IPC.translateInstall, req)
   },
   ai: {
     chat: (req) => invoke(IPC.aiChat, req),

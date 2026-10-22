@@ -63,6 +63,13 @@ export const api = {
     commentaryCoverage: (req: { book: string; chapter: number }): Promise<ModuleCoverage[]> =>
       unwrap(raw.bible.commentaryCoverage(req)),
     search: (req: SearchOptions) => unwrap(raw.bible.search(req)),
+    searchCount: (req: SearchOptions): Promise<number> => unwrap(raw.bible.searchCount(req)),
+    suggest: (req: { query: string; module: string; limit?: number }): Promise<Array<{ word: string; score: number }>> =>
+      unwrap(raw.bible.suggest(req)),
+    checkSpelling: (
+      req: { module: string; words: string[]; limit?: number }
+    ): Promise<Array<{ word: string; known: boolean; suggestions: string[] }>> =>
+      unwrap(raw.bible.checkSpelling(req)),
     compare: (req: {
       book: string
       chapter: number
@@ -98,6 +105,17 @@ export const api = {
   settings: {
     get: (): Promise<AppSettings> => unwrap(raw.settings.get()),
     set: (patch: Partial<AppSettings>): Promise<AppSettings> => unwrap(raw.settings.set(patch))
+  },
+  presentations: {
+    save: (input: { name: string; base64: string }): Promise<{ saved: boolean; path: string }> =>
+      unwrap(raw.presentations.save(input))
+  },
+  translate: {
+    status: (): Promise<{ available: boolean; pairs: string[] }> => unwrap(raw.translate.status()),
+    translate: (req: { source: string; target: string; text: string }): Promise<string> =>
+      unwrap(raw.translate.translate(req)),
+    install: (req: { source: string; target: string }): Promise<string[]> =>
+      unwrap(raw.translate.install(req))
   },
   ai: {
     chat: (req: AiChatRequest): Promise<AiChatResult> => unwrap(raw.ai.chat(req)),

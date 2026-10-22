@@ -3,7 +3,8 @@ import { useI18n } from '@keryx/i18n'
 import type { StudyPaneKind, SwordModule } from '@keryx/core'
 import { Icon } from './Icon'
 import { PANE_LABELS } from '../lib/studyLayout'
-import { moduleOptionLabel } from '../lib/modules'
+import { languageLabel } from '../lib/languages'
+import { useEtiquetasModulos } from '../lib/titulos'
 
 const PANE_KINDS: StudyPaneKind[] = ['bible', 'commentary', 'dictionary', 'book']
 
@@ -36,6 +37,11 @@ export function PaneShell({
   const { t, locale } = useI18n()
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const etiquetas = useEtiquetasModulos(modules)
+  const etiquetaDe = (name: string): string => {
+    const index = modules.findIndex((m) => m.name === name)
+    return index >= 0 ? etiquetas[index] : name
+  }
 
   useEffect(() => {
     if (!open) return
@@ -62,11 +68,11 @@ export function PaneShell({
             onChange={(e) => onModuleChange(e.target.value)}
           >
             {!modules.some((m) => m.name === moduleId) && (
-              <option value={moduleId}>{moduleId}</option>
+              <option value={moduleId}>{etiquetaDe(moduleId)}</option>
             )}
-            {modules.map((m) => (
+            {modules.map((m, i) => (
               <option key={`${m.driver}-${m.name}`} value={m.name}>
-                {moduleOptionLabel(m, locale)}
+                {`${etiquetas[i]} (${languageLabel(m.lang, locale)})`}
               </option>
             ))}
           </select>

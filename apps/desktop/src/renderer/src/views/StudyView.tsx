@@ -27,6 +27,9 @@ import { HermeneuticPanel } from '../components/HermeneuticPanel'
 import { PaneShell } from '../components/PaneShell'
 import { PaneSplitter } from '../components/PaneSplitter'
 import { CommentaryAccordion } from '../components/CommentaryAccordion'
+import { TextoTraducido } from '../components/TextoTraducido'
+import { TituloTraducido } from '../components/TituloTraducido'
+import { plainText } from '../lib/traductor'
 import { PassageGuide } from '../components/PassageGuide'
 import { applyTemplate, normalizedWidths, resizePanes, resetPanePair, PANE_LABELS } from '../lib/studyLayout'
 
@@ -83,6 +86,9 @@ function effective(list: { name: string }[], wanted: string | undefined): string
 function BookBody({ module: name }: { module: string }) {
   const initial = useRef('')
   const { t } = useI18n()
+  const modules = useAppStore((s) => s.modules)
+  const moduleLang = (moduleName: string): string | undefined =>
+    modules.find((m) => m.name === moduleName)?.lang
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [text, setText] = useState<string | null>(null)
@@ -145,7 +151,9 @@ function BookBody({ module: name }: { module: string }) {
             </button>
             <span>{current}</span>
           </div>
-          <div className="scripture" style={{ fontSize: 16 }} dangerouslySetInnerHTML={{ __html: text }} />
+          <div className="scripture" style={{ fontSize: 16 }}>
+            <TextoTraducido html={text} plain={plainText(text)} lang={moduleLang(name)} />
+          </div>
         </div>
       ) : results.length > 0 ? (
         <div className="list" style={{ marginTop: 12 }}>
@@ -177,8 +185,16 @@ export function StudyView() {
   const sendToWriting = useAppStore((s) => s.sendToWriting)
   const updateStudy = useAppStore((s) => s.updateStudy)
   const settings = useAppStore((s) => s.settings)
+  const modulesByName = useMemo(() => new Map(modules.map((m) => [m.name, m])), [modules])
 
   const study = settings.study
+  /** Idioma de origen para traducir un modulo: los de texto original (griego,
+   * hebreo, interlineales) no se tocan. */
+  const langPara = (name?: string | null): string => {
+    const mod = modulesByName.get(name ?? '')
+    if (!mod || mod.profile === 'original') return ''
+    return mod.lang ?? ''
+  }
   const rank = (name: string): number => (priorities.includes(name) ? 0 : 1)
   const sortBy = <T extends { name: string }>(list: T[]): T[] =>
     list.sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name))
@@ -514,10 +530,18 @@ export function StudyView() {
         >
           {verses.map((verse) => (
             <div key={verse.verse}>
-              {verse.heading && <div className="verse-heading">{verse.heading}</div>}
+              {verse.heading && (
+                <div className="verse-heading">
+                  <TextoTraducido plain={verse.heading} lang={langPara(bibleModule)} />
+                </div>
+              )}
               <div className={`verse ${selectedVerse === verse.verse ? 'selected' : ''}`}>
                 <span className="verse-num">{verse.verse}</span>
-                <span dangerouslySetInnerHTML={{ __html: verse.text }} />
+                <TextoTraducido
+                  html={verse.text}
+                  plain={plainText(verse.text)}
+                  lang={langPara(bibleModule)}
+                />
               </div>
             </div>
           ))}
@@ -562,11 +586,9 @@ export function StudyView() {
             </div>
           )}
           {!dictLoading && dictResult && (
-            <div
-              className="scripture"
-              style={{ fontSize: 16, marginTop: 12 }}
-              dangerouslySetInnerHTML={{ __html: dictResult }}
-            />
+            <div className="scripture" style={{ fontSize: 16, marginTop: 12 }}>
+              <TextoTraducido html={dictResult} plain={plainText(dictResult)} lang={modulesByName.get(dictModule ?? '')?.lang} />
+            </div>
           )}
         </div>
       )
@@ -595,7 +617,7 @@ export function StudyView() {
                 title={`${item.module} — ${item.hits} ${item.hits === 1 ? 'verso' : 'versos'}`}
                 onClick={() => setPaneModule('commentary', item.module)}
               >
-                {shortName(item.module)}
+                <TituloTraducido text={shortName(item.module)} lang={modulesByName.get(item.module)?.lang} />
                 {item.hits > 1 && <b>{item.hits}</b>}
               </button>
             ))}
@@ -615,7 +637,7 @@ export function StudyView() {
                 title={item.module}
                 onClick={() => setPaneModule('dictionary', item.module)}
               >
-                {shortName(item.module)}
+                <TituloTraducido text={shortName(item.module)} lang={modulesByName.get(item.module)?.lang} />
               </button>
             ))}
           </div>

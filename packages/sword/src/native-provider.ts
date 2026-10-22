@@ -154,6 +154,26 @@ export class NativeSwordProvider implements SwordProvider {
     return []
   }
 
+  async searchCount(_options: SearchOptions): Promise<number> {
+    return 0
+  }
+
+  async suggest(
+    _query: string,
+    _module: string,
+    _limit = 6
+  ): Promise<Array<{ word: string; score: number }>> {
+    return []
+  }
+
+  async checkSpelling(
+    _module: string,
+    _words: string[],
+    _limit = 3
+  ): Promise<Array<{ word: string; known: boolean; suggestions: string[] }>> {
+    return []
+  }
+
   async strongs(key: string): Promise<StrongsEntry | null> {
     const entry = this.require('getStrongsEntry')(key)
     if (!entry) return null

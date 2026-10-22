@@ -32,3 +32,6 @@ dev.log
 *.cmtx
 *.lexi
 *.rar
+
+# Fondos fuente (ya incorporados a assets/)
+/fondos para sermones/

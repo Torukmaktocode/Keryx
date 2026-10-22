@@ -4,6 +4,7 @@ import type { DossierSection } from '../lib/agents'
 import { apiHook, buildDossier } from '../lib/agents'
 import { useAppStore } from '../store/appStore'
 import { Icon } from './Icon'
+import { TituloTraducido } from './TituloTraducido'
 import { downloadDocument } from '../lib/exportDoc'
 import { ExegesisCard } from './ExegesisCard'
 
@@ -194,16 +195,22 @@ export function PassageGuide({ book, chapter, verse, bookLabel }: Props) {
           <span className="coverage-label">
             {t('assistant.sources', { count: citations.length })}
           </span>
-          {citations.map(([module, entries]) => (
-            <span
-              key={module}
-              className="coverage-chip"
-              title={`${module} — ${entries.join(', ')}`}
-            >
-              {module.length > 30 ? `${module.slice(0, 28)}…` : module}
-              {entries.length > 1 ? ` (${entries.length})` : ''}
-            </span>
-          ))}
+          {citations.map(([module, entries]) => {
+            const lang = modules.find((m) => m.name === module)?.lang
+            return (
+              <span
+                key={module}
+                className="coverage-chip"
+                title={`${module} — ${entries.join(', ')}`}
+              >
+                <TituloTraducido
+                  text={module.length > 30 ? `${module.slice(0, 28)}…` : module}
+                  lang={lang}
+                />
+                {entries.length > 1 ? ` (${entries.length})` : ''}
+              </span>
+            )
+          })}
         </div>
       )}
     </div>

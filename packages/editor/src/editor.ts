@@ -97,6 +97,19 @@ export class KeryxEditor {
     })
   }
 
+  /** Reemplaza TODAS las ocurrencias de palabra completa (para el corrector). */
+  replaceWord(word: string, replacement: string): void {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`, 'gu')
+    const text = this.view.state.doc.toString()
+    const changes: Array<{ from: number; to: number; insert: string }> = []
+    for (const match of text.matchAll(pattern)) {
+      const from = match.index ?? 0
+      changes.push({ from, to: from + match[0].length, insert: replacement })
+    }
+    if (changes.length) this.view.dispatch({ changes })
+  }
+
   setFocusMode(mode: FocusMode): void {
     this.view.dispatch({
       effects: this.focusCompartment.reconfigure([focusModeFacet.of(mode), focusPlugin])

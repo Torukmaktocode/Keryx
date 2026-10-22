@@ -7,6 +7,7 @@
  */
 import { parseReference } from './reference'
 import type { Dossier } from './agents'
+import type { IntentProfile } from './intent'
 
 export interface OradorInfo {
   id: string
@@ -39,6 +40,9 @@ export interface SermonDocument {
   readonly orador: string
   readonly personaId: string
   readonly voiceHeader: string
+  readonly peticion?: IntentProfile
+  /** Etiqueta de la primera diapositiva (Sermón/Estudio/Devocional); si falta se deduce de orador. */
+  readonly presentacionKicker?: string
   readonly gancho: Slot
   readonly intro: Slot
   readonly texto: string[]
@@ -110,7 +114,8 @@ function pointTitles(outlineLines: string[], commentLines: string[]): string[] {
 export function buildSermonDocument(
   dossier: Dossier,
   persona: OradorInfo,
-  query: string
+  query: string,
+  peticion?: IntentProfile
 ): SermonDocument {
   const parsed = parseReference(query)
   const ref = dossier.section ?? (parsed ? `${parsed.book} ${parsed.chapter}${parsed.verse ? `:${parsed.verse}` : ''}` : query)
@@ -123,8 +128,8 @@ export function buildSermonDocument(
   const isNone = persona.id === 'none'
 
   const introFallback = gran
-    ? `Hoy abrimos ${ref}: ${gran} El texto no vino a decorar la semana: vino a ordenarla.`
-    : `Hoy abrimos ${ref}; prestemos atencion: el texto tambien hablara de tu semana.`
+    ? `Hoy abrimos ${ref}: ${gran} Este texto no vino a decorar la semana: vino a acompañarte en ella.`
+    : `Hoy abrimos ${ref}; acércate con calma: esta Palabra también te busca a ti.`
 
   const textoPlano = textLines[0] ?? ''
   const meditationFallback = textoPlano
@@ -145,6 +150,7 @@ export function buildSermonDocument(
     voiceHeader: isNone
       ? 'Tu propia voz: el cuerpo anclado queda intacto; escribe a tu manera.'
       : `${persona.name} — ${personaDirectiveOf(persona)}`,
+    peticion,
     gancho: slot(`Comencemos con la Palabra misma: «${ref}». ${gran}`, undefined),
     intro: slot(introFallback, undefined),
     texto: textLines.map((line) => shortEntry(line, 400)),
@@ -194,7 +200,7 @@ function personaClosingOf(persona: OradorInfo): string {
 }
 
 function oracionFallbackOf(ref: string): string {
-  return `Dios, gracias porque tu Palabra habló primero a otro mundo y hoy nos habla con la misma autoridad. Grábala en nosotros. Que lo que oyeron de ${ref} se vuelva vida esta semana antes que llegue el domingo. Amén.`
+  return `Dios, gracias porque tu Palabra habló primero a otro mundo y hoy nos habla a nosotros, con la misma autoridad y la misma paciencia. Grábala en nosotros, sostén lo que hoy pesa, y que lo que oyeron de ${ref} se vuelva vida esta semana. Amén.`
 }
 
 /** Render Markdown determinista: sin regex, sin marcadores, 1:1 con el AST. */
@@ -206,6 +212,19 @@ export function renderSermon(doc: SermonDocument): string {
 
   push(`# Sermón: ${doc.ref}`, '')
   push(`> Voz: **${doc.orador}** — ${doc.voiceHeader} · Fuentes ancladas: **${doc.fuentes.length}** de ${new Set(doc.fuentes.map((f) => f.module)).size} módulos.`, '')
+
+  if (doc.peticion && (doc.peticion.tema || doc.peticion.palabras.length)) {
+    push(`> 💬 **Tu petición:** «${doc.peticion.raw}» — la entendí como ${doc.peticion.frase || 'tu frase, tomada tal cual'}.`)
+    if (doc.peticion.palabras.length) {
+      push(
+        `> *Conexión por palabra:* ${doc.peticion.palabras
+          .slice(0, 6)
+          .map((p) => `*${p.word}* → ${p.tema}`)
+          .join(' · ')}.`
+      )
+    }
+    push('')
+  }
 
   push('## Gancho', '', slotText(doc.gancho), '')
   push('## Introducción', '', slotText(doc.intro), '')

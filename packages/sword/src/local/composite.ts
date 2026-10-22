@@ -132,6 +132,50 @@ export class CompositeSwordProvider implements SwordProvider {
     return results.slice(0, options.limit ?? 200)
   }
 
+  async searchCount(options: SearchOptions): Promise<number> {
+    let total = 0
+    for (const provider of this.providers) {
+      try {
+        total += await provider.searchCount(options)
+      } catch {
+        // ignora
+      }
+    }
+    return total
+  }
+
+  async suggest(
+    query: string,
+    module: string,
+    limit = 6
+  ): Promise<Array<{ word: string; score: number }>> {
+    for (const provider of this.providers) {
+      try {
+        const suggestions = await provider.suggest(query, module, limit)
+        if (suggestions.length) return suggestions
+      } catch {
+        // prueba el siguiente
+      }
+    }
+    return []
+  }
+
+  async checkSpelling(
+    module: string,
+    words: string[],
+    limit = 3
+  ): Promise<Array<{ word: string; known: boolean; suggestions: string[] }>> {
+    for (const provider of this.providers) {
+      try {
+        const found = await provider.checkSpelling(module, words, limit)
+        if (found.length || words.length) return found
+      } catch {
+        // prueba el siguiente
+      }
+    }
+    return []
+  }
+
   async lookupDict(module: string, key: string): Promise<string | null> {
     for (const provider of this.providers) {
       const entry = await provider.lookupDict(module, key)

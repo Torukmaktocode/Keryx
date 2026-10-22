@@ -5,9 +5,12 @@ directories:
 files:
   - out/**/*
   - package.json
+extraResources:
+  - from: ../../scripts/traductor_daemon.py
+    to: scripts/traductor_daemon.py
 asar: true
 compression: maximum
-electronLanguages: [es, en-US, pt-BR, pt-PT]
+electronLanguages: [es, en-US, pt-BR, pt-PT, it, fr, de, zh-CN]
 removePackageScripts: true
 nsis:
   differentialPackage: false

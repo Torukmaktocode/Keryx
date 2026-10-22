@@ -2,9 +2,13 @@ import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { es } from './locales/es'
 import { en } from './locales/en'
 import { pt } from './locales/pt'
+import { it } from './locales/it'
+import { fr } from './locales/fr'
+import { de } from './locales/de'
+import { zh } from './locales/zh'
 import { LOCALES, type Locale, type TranslationKey } from './types'
 
-const DICTS: Record<Locale, Record<TranslationKey, string>> = { es, en, pt }
+const DICTS: Record<Locale, Record<TranslationKey, string>> = { es, en, pt, it, fr, de, zh }
 
 export interface I18nValue {
   locale: Locale

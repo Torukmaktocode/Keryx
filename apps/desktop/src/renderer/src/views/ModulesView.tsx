@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { languageLabel } from '../lib/languages'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
+import { TituloTraducido } from '../components/TituloTraducido'
 
 export function ModulesView() {
   const { t, locale } = useI18n()
@@ -107,7 +108,7 @@ export function ModulesView() {
             return (
               <div className="list-item" key={`${m.driver}-${m.name}`}>
                 <div className="meta">
-                  <strong>{m.name}</strong>
+                  <strong><TituloTraducido text={m.name} lang={m.lang} /></strong>
                   <small>
                     {m.category}
                     {langLabel ? ` - ${langLabel}` : ''}
@@ -148,7 +149,7 @@ export function ModulesView() {
           {remote.map((m) => (
             <div className="list-item" key={m.name}>
               <div className="meta">
-                <strong>{m.name}</strong>
+                <strong><TituloTraducido text={m.name} lang={m.lang} /></strong>
                 <small>
                   {m.category} - {m.lang}
                 </small>

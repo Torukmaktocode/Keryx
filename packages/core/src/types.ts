@@ -132,6 +132,8 @@ export interface AppSettings {
   showStrongs: boolean
   /** Doble pasada IA para creadores (borrador / criticado / final). */
   deepSermon: boolean
+  /** Traducción en tiempo real del contenido ('off' o código BCP-47 corto). */
+  translateLocale: string
   /** Layout del modo Estudio (plantilla, paneles, anchos, sincronia). */
   study: StudyLayout
 }
@@ -227,5 +229,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   bibliotecaEnabled: true,
   showStrongs: false,
   deepSermon: false,
+  translateLocale: 'off',
   study: DEFAULT_STUDY
 }

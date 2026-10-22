@@ -8,6 +8,7 @@ import {
 } from '@keryx/core'
 import { api } from '../lib/api'
 import { annotateProfiles } from '../lib/modules'
+import type { SermonDocument } from '../lib/sermonEngine'
 
 export type View =
   | 'reader'
@@ -19,6 +20,7 @@ export type View =
   | 'assistant'
   | 'inspiration'
   | 'modules'
+  | 'presentaciones'
   | 'settings'
 
 interface AppState {
@@ -37,6 +39,8 @@ interface AppState {
   navBook: string
   navChapter: number
   navVerse: number | null
+  /** AST del sermón listo para presentación (vía «Enviar a presentación»). */
+  presentationDoc: SermonDocument | null
   setView: (view: View) => void
   setSelectedModule: (name: string) => void
   setActiveDocumentId: (id: string | null) => void
@@ -53,6 +57,7 @@ interface AppState {
   updateStudy: (patch: Partial<StudyLayout>) => Promise<void>
   togglePriority: (name: string) => Promise<void>
   sendToWriting: (block: string, title?: string) => Promise<void>
+  sendToPresentation: (doc: SermonDocument) => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -71,6 +76,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   navBook: 'John',
   navChapter: 3,
   navVerse: null,
+  presentationDoc: null,
 
   setView: (view) => set({ view }),
   setSelectedModule: (selectedModule) => set({ selectedModule }),
@@ -167,5 +173,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     const doc = await api.documents.create({ title, kind: 'study', content: block })
     set({ activeDocumentId: doc.id, view: 'write' })
     get().notify('Enviado al editor')
+  },
+
+  sendToPresentation: (doc) => {
+    set({ presentationDoc: doc, view: 'presentaciones' })
+    get().notify('Enviado a presentación')
   }
 }))
