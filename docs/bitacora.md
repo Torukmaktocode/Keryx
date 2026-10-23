@@ -464,6 +464,65 @@ hace imposible lo impreciso**:
 6. **Evals como contrato:** si un cambio del motor baja la cobertura de
    los pasajes dorados, `npm run eval` falla y el commit no sale.
 
+### Dos lecturas del potencial: versión técnica y versión teológica
+
+**Versión TÉCNICA (para expertos en tecnología)**
+
+Keryx es un pipeline de dominio con garantías de ingeniería, no una
+aplicación envuelta en un LLM. Lo técnico en una pasada:
+
+- **Datos**: 717 módulos e-Sword (SQLite) escaneados en ~270 ms; corpus
+  paralelos bíblicos alineados por referencia canónica (SQLite, lectura
+  `node:sqlite` readonly en el main) = texto publicado, no generado.
+- **Mina**: 25 agentes concurrentes (`Promise.all`) sobre un harness
+  tipado (`swordTools.ts`): entrada por regex, `ToolCache` con dedupe,
+  presupuesto global de 16k chars, jamás lanza.
+- **Determinismo**: ensamblado canónico, AST inmutable del sermón con
+  fallbacks por slot, fuentes ancladas escritas por código. La IA es 1
+  llamada corta al final (voz), guardada por un crítico de código.
+- **Traducción offline**: daemon Python (JSON-lines sobre stdin/stdout)
+  con CTranslate2 int8 (NLLB-200-600M / M2M-100 afinado), ThreadPool con
+  candados de init, watchdog y banner auto-sanador; verso verificado via
+  `node:sqlite` en el main (~20 ms) — el neural nunca lo bloquea.
+- **Verificación continua**: evals como contrato (5 pasajes dorados 9.0/9,
+  44 casos chrF++/BLEU-4 4/4) — toda regresión se detecta antes del commit.
+- **Costo marginal**: 0 tokens por uso del motor; la única IA de pago es
+  la voz del Asistente (1 llamada, ~centavos).
+
+**Versión TEOLOGICA (para teólogos y pastores, en palabras simples)**
+
+Imagina que un equipo de 25 bibliotecarios expertos revisara tu biblioteca
+completa en un segundo: lecturas de Calvino, MacArthur, Matthew Henry,
+Walton, la gramática griega y hebrea, geografía, costumbres, teología
+sistemática e historia de la Iglesia — y te entregara una ficha con cada
+dato **citado con su libro y página**, listo para predicar. Así trabaja
+Keryx: el sermón nace con estructura y evidencia garantizadas, y una voz
+pastoral (Eugene Peterson, Spurgeon, Lutero…) redacta el gancho y las
+transiciones. Nada inventa: si un libro no da el dato, la sección dice la
+verdad ("sin datos") — la fidelidad textual es su regla moral, como la del
+copista ante el texto sagrado. Cada cita es verificable en un clic.
+
+**Por qué supera incluso a Google Translate**
+
+| | Google Translate | Keryx |
+|---|---|---|
+| Dominio | general (menus, correos, webs) | bíblico y homilético (módulos, versos, sermones) |
+| Lenguas nativas | sin Mapudungun ni Aymara; Guaraní/Quechua genéricos | 5 lenguas con motores propios + corpus VERIFICADO por verso |
+| Autoridad del texto | reformulación estadística | texto publicado tal cual (✓ Sociedades Bíblicas/Wycliffe) o borrador neural marcado como experimental (≈) — honestidad por diseño |
+| Conexión | requiere internet, envía tu texto a la nube | 100 % offline en el dispositivo — privatidad pastoral absoluta |
+| Contexto | frase suelta | la mina completa del pasaje: comentario, Strong, cultura, teología |
+| Consistencia | varía entre traducciones | glosario bíblico estable + texto verificado idéntico siempre |
+
+Y la comparación del tiempo que menciona la historia de las traducciones:
+la Biblia completa en una lengua nueva es un trabajo de **13-15 años de
+equipos humanos** (Wycliffe); un solo libro, alrededor de 2 años de un
+traductor experto. Keryx entrega el texto verificado ya publicado en
+**~20 ms por verso** (instantáneo para el lector) y prepara borradores de
+capítulos enteros en segundos para el misionero — no reemplaza al
+traductor humano: le entrega en minutos el andamio que le tomaría meses,
+y su revisión aprobada se vuelve texto verificado para toda la comunidad.
+El traductor sigue siendo humano; el tiempo de espera, no.
+
 ## Siguiente (candidatos, sin compromiso)
 
 - **Modo Misión**: editor de traducción por verso para misioneros (borrador
