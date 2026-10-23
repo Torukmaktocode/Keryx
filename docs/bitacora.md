@@ -379,23 +379,90 @@ cruzar el Strong con la morfología, buscar geografía y costumbres, copiar
 citas, escribir el bosquejo, redactar, revisar que nada esté mal citado.
 Eso es exactamente lo que la mina de 25 agentes hace en ~1 segundo.
 
-| | Método humano | Keryx |
-|---|---|---|
-| Recolección de fuentes | 2-4 h (10-15 libros a mano) | **~0,4-1 s** (25 agentes, 717 módulos) |
-| Cruce Strong/morfología/geografía | 1-2 h | instantáneo (código) |
-| Verificar citas y referencias | 30-60 min (y con errores) | codeCritic + evals, por construcción |
-| Esqueleto + redacción inicial | 2-3 h | esqueleto ~1 s + voz ~20-30 s (1 llamada) |
-| Costo | 6-8 h de trabajo no pagado o la suscripción de un tool caro | ~1 llamada corta (~centavos) |
-| **Total** | **6-8 h** | **~30 s + la revisión del predicador** |
+| | Método humano | Keryx | Superación |
+|---|---|---|---|
+| Recolección de fuentes | 2-4 h (10-15 libros a mano) | ~0,4-1 s (25 agentes, 717 módulos) | ~7.000-36.000× |
+| Cruce Strong/morfología/geografía | 1-2 h | instantáneo (código) | ~3.600-7.200× |
+| Verificar citas y referencias | 30-60 min (con errores) | codeCritic + evals, por construcción | continua, no puntual |
+| Esqueleto + redacción inicial | 2-3 h | esqueleto ~1 s + voz ~20-30 s (1 llamada) | ~240-540× |
+| Costo | 6-8 h de trabajo no pagado | ~1 llamada corta (~centavos) | — |
+| **Total** | **6-8 h** | **~30 s + revisión del predicador** | **~720-960×** |
 
 La afirmación honesta importa: Keryx no supera al predicador en lo que SOLO
 el predicador puede — discernir a su congregación, orar por el mensaje,
 aplicar con autoridad espiritual, predicar con unción. Lo que comprime es
-la ** mecánica**: el borrador completo, citado y verificado llega en ~30 s
+la **mecánica**: el borrador completo, citado y verificado llega en ~30 s
 y el predicador lo hace SUYO editando con CodeMirror, enviándolo al editor
 o a la presentación. El ahorro real: **5-7 horas por sermón**, y el
 predicador queda en el centro del bucle (Modo Misión planeado: corrige,
 aprueba y su revisión se vuelve texto verificado para toda la app).
+
+### El conato en números (medición real)
+
+**Cuantas cosas hacen AL MISMO TIEMPO.** La mina es un solo estallido de
+paralelismo: `Promise.all` (agents.ts:846) lanza los **25 trabajos de
+investigación a la vez** — 25 consultas SQLite corriendo simultáneas
+sobre 717 módulos, no una cola. El harness deduplica en vuelo: dos
+agentes que piden "GALILEA" al mismo diccionario comparten UNA consulta
+(`ToolCache`, swordTools.ts:50), y todo entra validado por regex
+(expandToolRequests) — nadie compone SQL a mano.
+
+**Cuánto leen.** Cadena de lectura medida:
+
+| Lectura | Magnitud |
+|---|---|
+| Escaneo íntegro de la biblioteca (717 módulos) | ~270 ms al arranque |
+| Texto base (capítulo completo + rangos de comentario) | 1 capítulo / 36 versos típico |
+| Comentarios pesados minados | 2-4 módulos por pasaje (ranking COMMENT_RANK) |
+| Walton-Keener (cultural) | verso POR verso del pasaje |
+| Diccionarios (tema, caso, cita, figura, nombres) | 6-10 lookups con variantes sing/plural + acentos |
+| Geografía + crítica + sintaxis + referencias Lambert | 4-6 búsquedas GLOB/LIKE |
+| **Evidencia resultante** | **14.000-16.000 chars citados** (15-21 secciones, 25-43 citas) |
+
+**Cuantas revisiones.** Tres capas de control, de la más barata a la más
+cara:
+
+1. **codeCritic de código** (0 tokens, creator.ts:333): cada Strong# y
+   cada cita bíblica del documento se coteja contra el dosier — severos →
+   reparación.
+2. **Modo economía (default)**: 1 sola llamada de IA (temp 0.6, máx 1.400
+   tokens) — redacta voz, no datos.
+3. **deepSermon (opcional)**: borrador completo (máx 6.000 tokens) →
+   codeCritic → pasada final crítica (máx 3.000) → salida.
+   Total IA: 2-3 pasadas; el crítico de código SIEMPRE actúa.
+
+Después del commit de cualquier cambio del motor, los **5 pasajes
+dorados** (`npm run eval`, 9.0/9) y los **44 casos de traducción**
+(`npm run eval:trad`, 4/4) vuelven a correr: revisión continua, no
+puntual.
+
+**Cuántos investigan.** De los ~29-33 agentes, **todos investigan menos
+tres**: intención, localizador y ensamblador procesan; los 25-29 restantes
+son investigadores puros con fuente y presupuesto propios. La IA no
+investiga NADA: recibe la investigación hecha y solo pone la voz.
+
+### Por qué es tan preciso
+
+La precisión no es suerte ni un prompt magistral — es **arquitectura que
+hace imposible lo impreciso**:
+
+1. **Única fuente = dosier anclado.** El prompt de la IA exige "usalo como
+   única fuente" y lleva autocheck incorporado: cada Strong y cada cita
+   debe figurar en el dosier o se corrige/elimina (creator.ts:1108).
+2. **El texto verificado no se genera: se cita.** El nivel ✓ (Sociedades
+   Bíblicas/Wycliffe) es texto PUBLicado alineado por referencia canónica
+   en SQLite — la app jamás re-escribe un versículo verificado.
+3. **Principio de silencio:** si un módulo no da el dato, la sección NO
+   existe — jamás se rellena con texto plausible (el anti-hallucination
+   del repo, testeado: los primeros 58 tests del repo eran anti-alucinación).
+4. **Recorte con cita garantizada** (trimEntry): toda cita se recorta en
+   límite de palabra, y su origen `[Módulo · entrada]` viaja pegado — el
+   predicador puede verificar cada dato en un clic desde la Guía.
+5. **Fuentes ancladas por código** al cierre del documento
+   (withAnchoredSources, creator.ts:856): la lista final no la escribe la
+   IA; la escribe el ensamblador desde las citas reales de la mina.
+6. **Evals como contrato:** si un cambio del motor baja la cobertura de
+   los pasajes dorados, `npm run eval` falla y el commit no sale.
 
 ## Siguiente (candidatos, sin compromiso)
 
