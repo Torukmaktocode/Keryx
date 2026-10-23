@@ -140,6 +140,30 @@ regresiones.
 - `npm run eval` ✓ 9.0/9, 0 fallos (5 pasajes dorados)
 - `npm run eval:trad` ✓ 4/4 lenguas, 0 fallos
 
+## Modelos usados y gasto de tokens
+
+### Traducción (todo local y gratuito, 0 tokens IA)
+
+| Componente | Modelo | Nota |
+|---|---|---|
+| Lenguas mayores (es↔en/pt/it/fr/de/zh) | Paquetes Argos Translate (CTranslate2) | descargados 1 vez, pivote por inglés |
+| Quechua / Aymara / Bengali / Guaraní | **NLLB-200-distilled-600M** int8 (~622 MB) | `quy_Latn` / `ayr_Latn` / `ben_Beng` / `grn_Latn` |
+| Mapudungun | **M2M-100 600M afinado por dirección** (byumatrixlab) int8 | m2m-es-arn / m2m-arn-es |
+| Texto verificado (Nivel 1 ✓) | Corpus SQLite: arnNT, guiNT, GDC2006, AYBOL 1986, Bengali ERV | texto real publicado, no generado |
+
+### Asistente (única IA de pago del sistema)
+
+| Dato | Valor |
+|---|---|
+| Proveedor/modelo configurado | OpenAI · **gpt-4o-mini** |
+| Llamadas por sermón | 1 (2 con deepSermon activado) |
+| Tokens por llamada | entrada ~4-5k (dosier 14-16k chars + persona) · salida máx 1.200 |
+| Minado, dosier, traducción, evals | **0 tokens** (todo código/SQLite/CTranslate2) |
+
+Nota honesta: la app aún no registra el `usage` real de las respuestas del
+proveedor (candidato: contabilizar tokens por sermón en Ajustes); las cifras
+del Asistente son estimación por diseño (una llamada, contexto del dosier).
+
 ## Siguiente (candidatos, sin compromiso)
 
 - **Modo Misión**: editor de traducción por verso para misioneros (borrador
