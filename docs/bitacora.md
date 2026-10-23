@@ -164,18 +164,39 @@ Nota honesta: la app aún no registra el `usage` real de las respuestas del
 proveedor (candidato: contabilizar tokens por sermón en Ajustes); las cifras
 del Asistente son estimación por diseño (una llamada, contexto del dosier).
 
-### Tokens gastados en la CONSTRUCCIÓN de la app
+### Tokens gastados en la CONSTRUCCIÓN de la app (MEDIDO)
 
-El desarrollo de Keryx se hace con sesiones de asistente de código
-(opencode, modelo GLM de Z.ai) sobre el repositorio local. Ese gasto **no
-se registra en el repo** (el CLI no escribe logs de uso en el working tree),
-así que la bitácora lo declara cualitativamente: la parte medible y
-verificable del proyecto — minado de los 717 módulos, dosier, SermonEngine,
-traducción nativa y los 5 evals de traducción — corre **íntegramente por
-código local (0 tokens)**; los tokens de construcción son los de las
-sesiones interactivas de desarrollo y de depuración en vivo (CDP sobre la
-app corriendo). Principio del repo: cuanto más corre por código, menos
-tokens cuesta cualquiera de los dos mundos (construcción y uso).
+Fuente: base de sesiones de opencode (`~/.local/share/opencode/opencode.db`,
+tabla `message` → campo `tokens` por cada mensaje del asistente). Cifras
+reales al 23 de octubre de 2026, atribuidas por directorio de sesión:
+
+| Concepto (proyecto Keryx) | Tokens |
+|---|---|
+| Entrada directa (contexto enviado: código, logs, herramientas) | 58.502.331 |
+| Salida directa (código escrito, ediciones, respuestas) | 1.768.735 |
+| Razonamiento (reasoning) | ~1.214.883 |
+| **Subtotal procesado directo** | **61.485.949** |
+| Cache leído (re-lectura de contexto entre pasos) | 1.073.616.768 |
+| **Total procesado incluyendo cache** | **~1.135 millones** |
+
+- Ratio de la agencia: por cada token de salida hay ~33 de entrada — el
+  costo real de construir con agentes es LEER (el 95 % de los tokens son
+  lectura de código/logs), no escribir.
+- Sesión más cara de Keryx: "Generador de presentaciones PPTX para
+  sermones" (13,7 M tokens), seguida de "Activación de aplicación"
+  (13,2 M) e "Integrar 7 volúmenes de Champlin" (10,1 M).
+- Modelos usados en construcción: **glm-5.3-flash** (principal), y para
+  tareas puntuales deepseek-v4-flash(-vision), nemotron-3-ultra-free,
+  muse-spark-1.2/1.3-contributor-free, mimo-v2.5/2.6-free — todos en plan
+  de suscripción gratuito (campo `cost` = 0 en los mensajes).
+- El resto de proyectos del desarrollador (gravitysymbiosis, Gravity
+  Interior, webhula, voxcraft…) suman ~20,4 M tokens adicionales — fuera de
+  esta bitácora.
+
+En contraste con el producto: TODO el motor de Keryx (minado de 717 módulos,
+dosier, SermonEngine, traducción nativa, evals) corre por código local con
+**0 tokens de IA de pago** por cada uso — el usuario no gasta tokens en la
+función central de la app; solo la voz del Asistente consume gpt-4o-mini.
 
 ---
 
