@@ -157,12 +157,154 @@ regresiones.
 |---|---|
 | Proveedor/modelo configurado | OpenAI · **gpt-4o-mini** |
 | Llamadas por sermón | 1 (2 con deepSermon activado) |
-| Tokens por llamada | entrada ~4-5k (dosier 14-16k chars + persona) · salida máx 1.200 |
+| Tokens por llamada | entrada ~4-5k (dosier 14-16k chars + persona) · salida máx 1.400 |
 | Minado, dosier, traducción, evals | **0 tokens** (todo código/SQLite/CTranslate2) |
 
 Nota honesta: la app aún no registra el `usage` real de las respuestas del
 proveedor (candidato: contabilizar tokens por sermón en Ajustes); las cifras
 del Asistente son estimación por diseño (una llamada, contexto del dosier).
+
+### Tokens gastados en la CONSTRUCCIÓN de la app
+
+El desarrollo de Keryx se hace con sesiones de asistente de código
+(opencode, modelo GLM de Z.ai) sobre el repositorio local. Ese gasto **no
+se registra en el repo** (el CLI no escribe logs de uso en el working tree),
+así que la bitácora lo declara cualitativamente: la parte medible y
+verificable del proyecto — minado de los 717 módulos, dosier, SermonEngine,
+traducción nativa y los 5 evals de traducción — corre **íntegramente por
+código local (0 tokens)**; los tokens de construcción son los de las
+sesiones interactivas de desarrollo y de depuración en vivo (CDP sobre la
+app corriendo). Principio del repo: cuanto más corre por código, menos
+tokens cuesta cualquiera de los dos mundos (construcción y uso).
+
+---
+
+## Anatomía: cómo se crea un sermón (todo el código detrás)
+
+### El esquema completo
+
+```
+        PETICIÓN DEL USUARIO («habla sobre el amor de dios», Juan 3:16, Salmo 23:1…)
+                                     │
+        ┌────────────────────────────┴────────────────────────────┐
+        │            1. SUB-AGENTES DE ENTRADA (0 tokens)          │
+        │                                                          │
+        │  • intención   buildIntent (lib/intent.ts)               │
+        │    interpreta la frase → perfil: tema, necesidad,       │
+        │    términos de búsqueda, "conexión con la petición"      │
+        │                                                          │
+        │  • localizador  parseReference + locatePassageByTokens   │
+        │    (lib/reference.ts + creator.ts:896)                   │
+        │    referencia directa… o búsqueda puntuada: gana el      │
+        │    versículo que cumple MÁS palabras de la consulta      │
+        └────────────────────────────┬────────────────────────────┘
+                                     │
+        ┌────────────────────────────┴────────────────────────────┐
+        │        2. LA MINA — 25 agentes de código (0 tokens)      │
+        │                                                          │
+        │   buildDossier (lib/agents.ts:229) ejecuta en paralelo:  │
+        │                                                          │
+        │   texto base (capítulo/versículo e-Sword)                │
+        │   ├─ comentario pesado      commentJob  (ranking)        │
+        │   ├─ bosquejo homilético    outlineJob                  │
+        │   ├─ Strong / léxico        strongsJob                  │
+        │   ├─ idiomas (BDAG-lite)    idiomasJob                  │
+        │   ├─ morfología Robinson    morfologiaJob               │
+        │   ├─ tema/diccionarios      themeJob (+variantes)       │
+        │   ├─ geografía              geoJob + geoVerseJob        │
+        │   ├─ Walton/Keener          waltonJob        (contexto) │
+        │   ├─ crítica textual        criticoJob                  │
+        │   ├─ teología sistemática   sistematicaJob              │
+        │   ├─ historia de la Iglesia historiaJob                 │
+        │   ├─ caso de estudio        casoJob                     │
+        │   ├─ citas                  citaJob                     │
+        │   ├─ figuras de lenguaje    figuraJob                   │
+        │   ├─ consenso de fuentes    consensoJob                 │
+        │   ├─ sintaxis del original  sintaxisJob                 │
+        │   ├─ nombres propios        nombresJob                  │
+        │   ├─ referencias cruzadas   refsJob  (Lambert)          │
+        │   └─ ilustraciones          illusJob                    │
+        │   + 5 trabajos de contexto intercalados (Walton-Keener, │
+        │     historia, teología, homilética)                     │
+        │                                                          │
+        │   Harness: lib/swordTools.ts — ToolCache (dedupe SQLite),│
+        │   lookupTool/searchTool validados, entrada por regex,   │
+        │   presupuesto global 16.000 chars (ENTRY_MAX 620,        │
+        │   máx 3 entradas/sección). "jamás lanza".                │
+        │                                                          │
+        │   Gap-analysis: el motor inspecciona su propia cobertura │
+        │   y hace una 2ª pasada dirigida con variantes de acentos│
+        └────────────────────────────┬────────────────────────────┘
+                                     │
+                       DOSIER: 15-21 secciones · 25-43 citas
+                       ancladas [Módulo · entrada] · ~400-1000 ms
+                                     │
+        ┌────────────────────────────┴────────────────────────────┐
+        │      3. AST INMUTABLE — SermonEngine (0 tokens)          │
+        │                                                          │
+        │   buildSermonDocument (lib/sermonEngine.ts:114):         │
+        │   el documento nace COMPLETO — todos los slots con       │
+        │   fallback determinista extraído del dosier (gran idea,  │
+        │   contexto Histórico/Cultural/Teológico/Cristológico,    │
+        │   puntos con evidencia, citas, caso real, aplicación,    │
+        │   meditación, cierre, bendición, oración, fuentes).      │
+        │   La IA NO puede tocar la estructura ni la evidencia.    │
+        └────────────────────────────┬────────────────────────────┘
+                                     │
+                       esqueleto renderizado (renderSermon)
+                                     │
+        ┌────────────────────────────┴────────────────────────────┐
+        │     4. LA VOZ — la ÚNICA llamada de IA de pago           │
+        │                                                          │
+        │   Modo economía (default): 1 llamada corta (máx 1.400    │
+        │   tokens, temp 0.6) que SOLO redacta marcadores:         │
+        │     ==GANCHO== ==INTRO== ==PUENTE N== ==MEDITACION==     │
+        │     ==ORACION==                                          │
+        │   parseSnippets los extrae y assembleSermon              │
+        │   (creator.ts:833) los inyecta en el AST con fallbacks   │
+        │   deterministas: si la IA falla, el sermón sale igual.   │
+        │                                                          │
+        │   deepSermon (opcional): 1 llamada completa con el       │
+        │   dosier entero (máx 6.000 tokens) → codeCritic de       │
+        │   CÓDIGO (0 tokens, creator.ts:333) verifica cada        │
+        │   Strong# y cada cita contra el dosier → si hay          │
+        │   hallazgos severos, 1 reparación dirigida (máx 3.000)   │
+        └────────────────────────────┬────────────────────────────┘
+                                     │
+        ┌────────────────────────────┴────────────────────────────┐
+        │   5. GARANTÍAS DE SALIDA (código, nunca IA)              │
+        │                                                          │
+        │   • withAnchoredSources: fuentes ancladas al final       │
+        │   • sin marcadores sueltos (assembleSermon limpia)       │
+        │   • [Módulo · entrada] citado en todo lo usado           │
+        │   • evals: npm run eval — 5 pasajes dorados, 9.0/9       │
+        └─────────────────────────────────────────────────────────┘
+```
+
+### Conteo exacto
+
+| Rol | Cuántos | Tokens |
+|---|---|---|
+| Agentes de entrada (intención + localizador) | 2 | 0 |
+| Agentes de mina del dosier | 20 + 5 de contexto = **25** | 0 |
+| Gap-analysis / 2ª pasada | dinámico (0-4) | 0 |
+| Crítico de código (codeCritic) | 1 | 0 |
+| Ensamblador (AST + render + fuentes) | 1 | 0 |
+| **Total sub-agentes de código** | **~29-33** | **0** |
+| Llamada de IA (voz) | 1 (2-3 con deepSermon) | única IA |
+
+### Los archivos detrás (mapa del código)
+
+| Archivo | Líneas | Rol |
+|---|---|---|
+| `lib/agents.ts` | ~970 | buildDossier: los 25 agentes, presupuesto, gap-analysis, apiHook |
+| `lib/creator.ts` | ~1.218 | runCreator, 12 oradores, skeleton, assembleSermon, codeCritic, localizador |
+| `lib/sermonEngine.ts` | ~318 | AST inmutable (buildSermonDocument/renderSermon) |
+| `lib/swordTools.ts` | 132 | harness de herramientas (ToolCache, lookup/search, presupuesto) |
+| `lib/intent.ts` | — | sub-agente de intención (frase → perfil) |
+| `lib/assistant.ts` | — | contexto y mina auxiliar |
+| `main/ai.ts` | — | puente IPC a OpenAI-compatible (única IA de pago) |
+| `scripts/eval-sermons.mts` | ~90 | evals de los 5 pasajes dorados |
 
 ## Siguiente (candidatos, sin compromiso)
 
