@@ -18,6 +18,7 @@
     "typecheck": "npm run typecheck --workspace @keryx/desktop",
     "lint": "eslint .",
     "eval": "npx tsx scripts/eval-sermons.mts",
+    "eval:trad": "npx tsx scripts/eval_traduccion.mts",
     "format": "prettier --write .",
     "test": "vitest run"
   },

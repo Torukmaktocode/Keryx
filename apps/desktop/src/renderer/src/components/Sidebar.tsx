@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
 import { LOCALES, useI18n, type TranslationKey } from '@keryx/i18n'
+import type { AppSettings } from '@keryx/core'
 import { useAppStore, type View } from '../store/appStore'
 import { Icon, type IconName } from './Icon'
-import { estadoTraduccion } from '../lib/traductor'
+import { estadoTraduccion, NATIVAS, useCargaIdioma } from '../lib/traductor'
 
 const ITEMS: { id: View; icon: IconName }[] = [
   { id: 'reader', icon: 'reader' },
@@ -23,6 +24,7 @@ export function Sidebar() {
   const view = useAppStore((s) => s.view)
   const setView = useAppStore((s) => s.setView)
   const locale = useAppStore((s) => s.settings.uiLocale)
+  const translateLocale = useAppStore((s) => s.settings.translateLocale)
   const updateSettings = useAppStore((s) => s.updateSettings)
   const toggleSidebar = useAppStore((s) => s.toggleSidebar)
   const [motor, setMotor] = useState<{ available: boolean } | null>(null)
@@ -30,6 +32,18 @@ export function Sidebar() {
   useEffect(() => {
     void estadoTraduccion().then((status) => setMotor(status))
   }, [])
+
+  /* Revalidar el estado del motor cuando se cambia de idioma: el banner
+   * "no disponible" no puede quedar pegado si el daemon ya se relanzó. */
+  useEffect(() => {
+    let vivo = true
+    void estadoTraduccion().then((status) => {
+      if (vivo) setMotor(status)
+    })
+    return () => {
+      vivo = false
+    }
+  }, [translateLocale])
 
   return (
     <aside className="sidebar">
@@ -63,7 +77,7 @@ export function Sidebar() {
           {LOCALES.map((code) => (
             <button
               key={code}
-              className={locale === code ? 'active' : ''}
+              className={locale === code && !NATIVAS.includes(translateLocale) ? 'active' : ''}
               onClick={() => {
                 void updateSettings({ uiLocale: code, translateLocale: code })
               }}
@@ -73,7 +87,39 @@ export function Sidebar() {
             </button>
           ))}
         </div>
+        <div className="lang-switch nativas" title={t('settings.nativas')}>
+          {NATIVAS.map((code) => (
+            <ChipNativa key={code} code={code} translateLocale={translateLocale} updateSettings={updateSettings} />
+          ))}
+        </div>
       </div>
     </aside>
+  )
+}
+
+function ChipNativa({
+  code,
+  translateLocale,
+  updateSettings
+}: {
+  code: string
+  translateLocale: string
+  updateSettings: (patch: Partial<AppSettings>) => Promise<void>
+}): ReactElement {
+  const { t } = useI18n()
+  const carga = useCargaIdioma(code)
+  const pct = carga && carga.total ? Math.round((carga.listo / carga.total) * 100) : 0
+  return (
+    <button
+      className={translateLocale === code ? 'active' : ''}
+      onClick={() => void updateSettings({ translateLocale: code })}
+      title={t(`language.${code}` as TranslationKey)}
+    >
+      {t(`language.${code}` as TranslationKey)}
+      {carga && carga.estado === 'cargando' && (
+        <span className="nativa-carga" style={{ width: `${pct}%` }} data-pct={pct} />
+      )}
+      {carga?.estado === 'listo' && <span className="nativa-listo" />}
+    </button>
   )
 }

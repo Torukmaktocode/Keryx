@@ -29,7 +29,7 @@ import { PaneSplitter } from '../components/PaneSplitter'
 import { CommentaryAccordion } from '../components/CommentaryAccordion'
 import { TextoTraducido } from '../components/TextoTraducido'
 import { TituloTraducido } from '../components/TituloTraducido'
-import { plainText } from '../lib/traductor'
+import { plainText, precalentarOtrosIdiomas, traducirLoteMulti } from '../lib/traductor'
 import { PassageGuide } from '../components/PassageGuide'
 import { applyTemplate, normalizedWidths, resizePanes, resetPanePair, PANE_LABELS } from '../lib/studyLayout'
 
@@ -233,6 +233,8 @@ export function StudyView() {
 
   const [verses, setVerses] = useState<Verse[]>([])
   const [selectedVerse, setSelectedVerse] = useState(1)
+  const translateLocale = useAppStore((s) => s.settings.translateLocale)
+
   const [tab, setTab] = useState<'panes' | 'hermeneutics' | 'guia'>('panes')
   const [dictKey, setDictKey] = useState('')
   const [dictResult, setDictResult] = useState<string | null>(null)
@@ -257,6 +259,18 @@ export function StudyView() {
     () => CANONICAL_BOOKS.find((b) => b.code === book) ?? CANONICAL_BOOKS[0],
     [book]
   )
+  // Precarga del capitulo por lote (1 llamada): la cache LRU responde al instante.
+  useEffect(() => {
+    if (!verses.length) return
+    const items = verses.map((verse) => ({
+      texto: verse.text,
+      lang: modulesByName.get(study.modules.bible ?? '')?.lang,
+      ref: { code: currentBook.code, cap: verse.chapter, ver: verse.verse }
+    }))
+    void traducirLoteMulti(items, translateLocale).then(() =>
+      precalentarOtrosIdiomas(items, translateLocale)
+    )
+  }, [translateLocale, verses, modulesByName, study.modules.bible, currentBook.code])
   const bibleModule =
     study.modules.bible && bibleModules.some((m) => m.name === study.modules.bible)
       ? study.modules.bible

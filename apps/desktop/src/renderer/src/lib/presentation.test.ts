@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest'
-import { buildSlides, takeLines, truncate, TARGET_SLIDES } from './presentation'
+import {
+  agenteAplicacion,
+  agenteFraseClave,
+  agenteGranIdea,
+  agenteIlustracion,
+  agenteMeditacion,
+  agentePalabras,
+  agentePortada,
+  agentePuntos,
+  agenteReservas,
+  agenteTexto,
+  buildSlides,
+  componerPresentacion,
+  cortaFrase,
+  parsePuleo,
+  pidePuleo,
+  takeLines,
+  truncate,
+  TARGET_SLIDES
+} from './presentation'
 import type { SermonDocument, Slot } from './sermonEngine'
 
 const slot = (fallback: string): Slot => ({ fallback })
@@ -123,7 +142,7 @@ describe('sub-agente de presentación (buildSlides, 0 tokens)', () => {
   })
 })
 
-describe('recortes legibles (takeLines / truncate)', () => {
+describe('recortes legibles (takeLines / truncate / cortaFrase)', () => {
   it('truncate corta en frontera de palabra con elipsis', () => {
     const out = truncate('una frase corta y una frase muy larguisima despues de la frontera', 22)
     expect(out.length).toBeLessThanOrEqual(23)
@@ -139,5 +158,131 @@ describe('recortes legibles (takeLines / truncate)', () => {
     expect(lines.length).toBeGreaterThan(0)
     expect(lines.length).toBeLessThanOrEqual(3)
     for (const line of lines) expect(line.length).toBeLessThanOrEqual(41)
+  })
+
+  it('cortaFrase corta en fin de oracion, no a mitad de palabra', () => {
+    const out = cortaFrase('Primera oracion completa. Y aqui viene otra oracion larguisima que no cabe.', 40)
+    expect(out).toContain('Primera oracion completa.')
+    expect(out.endsWith('…')).toBe(true)
+  })
+})
+
+describe('limpieza proyectable y no repeticion', () => {
+  it('ninguna diapositiva muestra la cita anclada [Modulo · entrada]', () => {
+    const doc = withDoc({
+      puntos: [
+        {
+          signal: 'Primeramente…',
+          title: 'Punto con cita',
+          evidence: '',
+          bridge: slot('[Bovinck - Dogmatica Reformada · 07. La Providencia] La obra de Dios preserva al hombre.')
+        }
+      ],
+      texto: ['[Diccionario Teologico Encicloped · 2 Samuel] Yahve como guerrero. En el tema del guerrero divino, la deidad de Cristo aparece.']
+    })
+    for (const slide of buildSlides(doc)) {
+      expect(slide.title).not.toMatch(/\[/)
+      for (const line of [...slide.lines, slide.quote ?? '']) {
+        expect(line).not.toMatch(/\[[^\]]*·[^\]]*\]/)
+      }
+    }
+  })
+
+  it('no repite el mismo contenido en dos diapositivas cuando hay material', () => {
+    const doc = withDoc({
+      texto: [
+        'Primera pieza del texto biblico anclado para la portada del mensaje.',
+        'Segunda pieza distinta del texto biblico anclado para la comparacion.',
+        'Tercera pieza real del pasaje con contenido suficiente para proyectar.',
+        'Cuarta pieza del pasaje con contenido suficiente para la proyeccion.'
+      ]
+    })
+    const slides = buildSlides(doc)
+    const vistos = new Set<string>()
+    for (const slide of slides) {
+      for (const contenido of [...slide.lines, slide.quote ?? '']) {
+        const clave = contenido.toLowerCase().slice(0, 50)
+        if (contenido.length > 30) {
+          expect(vistos.has(clave)).toBe(false)
+          vistos.add(clave)
+        }
+      }
+    }
+  })
+})
+
+describe('equipo de sub-agentes de codigo (componerPresentacion, 0 tokens)', () => {
+  it('orden de un mensaje en vivo: portada, gran idea, texto, 3 puntos, ilustracion, frase, aplicacion, cierre', () => {
+    const slides = componerPresentacion(mkDoc())
+    expect(slides.map((s) => s.kind).slice(0, 7)).toEqual([
+      'titulo',
+      'granIdea',
+      'texto',
+      'punto',
+      'punto',
+      'punto',
+      'ilustracion'
+    ])
+    expect(slides.filter((s) => s.kind === 'punto')).toHaveLength(3)
+  })
+
+  it('cada agente especialista produce candidatos limpios y detallados', () => {
+    const doc = mkDoc()
+    const usados = new Set<string>()
+    expect(agentePortada(doc, usados)[0].kind).toBe('titulo')
+    expect(agenteGranIdea(doc, usados)[0].lines.length).toBeGreaterThan(0)
+    expect(agenteTexto(doc, usados)[0].lines.length).toBeGreaterThan(0)
+    expect(agentePuntos(doc, usados)).toHaveLength(3)
+    expect(agenteIlustracion(doc, usados)[0].kind).toBe('ilustracion')
+    expect(agenteFraseClave(doc, usados)[0].quote?.length).toBeGreaterThan(0)
+    expect(agenteAplicacion(doc, usados)[0].kind).toBe('aplicacion')
+    expect(agentePalabras(doc, usados)[0].kind).toBe('palabras')
+    expect(agenteReservas(doc, usados).length).toBeGreaterThan(0)
+    expect(agenteMeditacion(doc, usados)[0].kind).toBe('meditacion')
+  })
+
+  it('con un estudio rico llena las 10 y el cierre conserva la oracion', () => {
+    const doc = withDoc({
+      texto: [
+        'Génesis 3:24 Primera frase del pasaje con detalle suficiente para proyectar en pantalla.',
+        'Segunda frase del pasaje que sigue el relato biblico con contenido real anclado.',
+        'Tercera frase del pasaje que describe la salida del jardin con detalle.',
+        'Cuarta frase del pasaje con los querubines y la espada encendida.'
+      ],
+      aplicacion: ['En casa: repite la frase con los tuyos.', 'En el trabajo: la entrega se mide en gestos.', 'En la iglesia: comparte el relato con tu grupo.']
+    })
+    const slides = componerPresentacion(doc)
+    expect(slides).toHaveLength(TARGET_SLIDES)
+    expect(slides[TARGET_SLIDES - 1].quote).toContain('Dios, gracias')
+    expect(slides.find((s) => s.kind === 'aplicacion')?.lines.length).toBe(3)
+  })
+
+  it('los agentes respetan el presupuesto de proyeccion (lineas <= 192, cita <= 310)', () => {
+    for (const slide of componerPresentacion(mkDoc())) {
+      for (const line of slide.lines) expect(line.length).toBeLessThanOrEqual(192)
+      expect(slide.quote?.length ?? 0).toBeLessThanOrEqual(310)
+    }
+  })
+})
+
+describe('puleo con IA (pidePuleo / parsePuleo)', () => {
+  it('el esqueleto lleva todas las diapositivas y el sistema prohibe inventar', () => {
+    const doc = mkDoc()
+    const peticion = pidePuleo(doc, buildSlides(doc))
+    expect(peticion.system).toContain('NO inventes')
+    expect(peticion.user).toContain('==SLIDE 10==')
+  })
+
+  it('parsePuleo rellena textos y mantiene el esqueleto si la IA no respondio', () => {
+    const base = buildSlides(mkDoc())
+    expect(parsePuleo('respuesta basura sin marcadores', base)).toEqual(base)
+    const respuesta = '==SLIDE 2==\nTITULO: La idea central\nLINEA: El amor entrega lo mas precioso.\nCITA: Hoy la cruz sigue siendo la medida.\n==SLIDE 3==\nTITULO: Solo titulo'
+    const puleo = parsePuleo(respuesta, base)
+    expect(puleo[1].title).toBe('La idea central')
+    expect(puleo[1].lines).toEqual(['El amor entrega lo mas precioso.'])
+    expect(puleo[1].quote).toBe('Hoy la cruz sigue siendo la medida.')
+    expect(puleo[2].title).toBe('Solo titulo')
+    expect(puleo[2].lines).toEqual(base[2].lines)
+    expect(puleo).toHaveLength(TARGET_SLIDES)
   })
 })

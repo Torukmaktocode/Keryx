@@ -1,7 +1,7 @@
 # AGENTS.md — Contexto para IAs (leer antes de tocar código)
 
-> Última actualización: 2026-10-13 · Etapa vigente: **E4 — SermonEngine + Guía del
-> Pasaje (post-T6)** · Versión del paquete: `0.1.0` → bump recomendado `0.4.0`
+> Última actualización: 2026-10-22 · Etapa vigente: **E4.3 — Traducción a lenguas
+> nativas** · Versión del paquete: `0.4.0`
 > (ver `docs/etapas.md` para el mapa completo de etapas).
 
 ## 1. Qué es Keryx
@@ -84,6 +84,13 @@ Síntesis en una línea por hito:
   base; RV60↔NVI, +NTV/LBLA, +Amplificada, +original) y chips de perfil de
   traducción (formal/dinámica/paráfrasis/ampliada/original) anotados en el
   init vía `annotateProfiles`.
+  **E4.3 (2026-10-22)**: lenguas nativas completas — verso verificado via
+  `node:sqlite` en el main (instantáneo, sin bloqueos del daemon), AT Guaraní
+  GDC2006 fusionado en corpus (+22.666 versos), Guaraní neural `grn_Latn`,
+  daemon con hilos workers (status instantáneo bajo carga), watchdog +
+  banner auto-sanador, barra de progreso por idioma, comparativa por columna
+  (Base corpus / demás su propio texto), Guía e Inspiración traducidas,
+  evals `npm run eval:trad` chrF++/BLEU-4 4/4 PASS.
 
 ## 5. Principios no negociables (romper uno = regresión)
 
@@ -92,8 +99,10 @@ Síntesis en una línea por hito:
 3. El minado de datos es SIEMPRE de código (0 tokens). La IA solo redacta la voz.
 4. El AST del sermón (`buildSermonDocument`) es inmutable: la IA solo llena
    slots de voz; estructura y evidencia son de código.
-5. Cada cambio en el motor se valida con `npm run eval` (9.0/9 vigente).
-6. `npm run eval` debe mantenerse en 0 fallos antes de cualquier commit de features.
+5. Cada cambio en el motor se valida con `npm run eval` (9.0/9 vigente)
+   y `npm run eval:trad` (4/4 lenguas).
+6. `npm run eval` y `npm run eval:trad` deben mantenerse en 0 fallos antes
+   de cualquier commit de features.
 
 ## 6. Comandos
 
@@ -101,8 +110,9 @@ Síntesis en una línea por hito:
 npm run dev            # electron-vite (main+preload+renderer) — ventana Electron
 npm run typecheck      # tsc --noEmit (workspace desktop)
 npm run lint           # eslint .
-npm run test           # vitest run (70 tests: 58 anti-alucinación + engine + export)
+npm run test           # vitest run (117 tests: anti-alucinación + engine + export + métricas)
 npm run eval           # evals de golden passages — DEBE dar 9.0/9
+npm run eval:trad      # evals de traducción es→nativa contra el daemon — DEBE dar 0 fallos
 npm run build:win      # instalador Windows
 ```
 

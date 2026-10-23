@@ -157,6 +157,8 @@ const MAX_QUOTE = 190
 function clean(value: string): string {
   return value
     .replace(/\[\[([^\]]*)\]\]/g, '$1')
+    // citas ancladas del dosier: [Modulo · entrada] no se proyectan en pantalla
+    .replace(/\[[^\]]*·[^\]]*\]/g, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\*+/g, '')
     .replace(/\s+/g, ' ')
@@ -169,6 +171,49 @@ export function truncate(value: string, max: number): string {
   const cut = text.slice(0, max)
   const space = cut.lastIndexOf(' ')
   return `${cut.slice(0, space > max * 0.6 ? space : max)}…`
+}
+
+/** Corta en frontera de frase (o coma); la elipsis solo si no hubo frontera. */
+export function cortaFrase(value: string, max: number): string {
+  const text = clean(value)
+  if (text.length <= max) return text
+  const cut = text.slice(0, max)
+  const fin = Math.max(
+    cut.lastIndexOf('. '),
+    cut.lastIndexOf('.'),
+    cut.lastIndexOf('! '),
+    cut.lastIndexOf('? '),
+    cut.lastIndexOf('…')
+  )
+  const frontera = fin > max * 0.5 ? fin + 1 : Math.max(cut.lastIndexOf(','), cut.lastIndexOf(' '))
+  return `${cut.slice(0, frontera > 0 ? frontera : max).trimEnd()}…`
+}
+
+/** Trocea en frases PROYECTABLES: frontera de frase y máximo por línea. */
+export function lineasProyectables(text: string, maxLines = MAX_LINES, maxLen = MAX_LINE): string[] {
+  const parts = clean(text)
+    .split(/(?<=[.!?…])\s+/)
+    .filter((part) => part.length > 1)
+  const lines: string[] = []
+  let current = ''
+  for (const part of parts) {
+    const candidate = current ? `${current} ${part}` : part
+    if (candidate.length > maxLen) {
+      if (current) lines.push(cortaFrase(current, maxLen))
+      if (lines.length >= maxLines) return lines
+      current = ''
+      lines.push(cortaFrase(part, maxLen))
+      if (lines.length >= maxLines) return lines
+    } else {
+      current = candidate
+      if (current.length >= maxLen * 0.7 && lines.length + 1 < maxLines) {
+        lines.push(cortaFrase(current, maxLen))
+        current = ''
+      }
+    }
+  }
+  if (current && lines.length < maxLines) lines.push(cortaFrase(current, maxLen))
+  return lines.map((line) => (line.length > maxLen ? `${line.slice(0, maxLen).trimEnd()}…` : line))
 }
 
 function slotText(slot: Slot): string {
@@ -208,120 +253,278 @@ function puntoContent(punto: SermonDocument['puntos'][number]): string {
   return clean(punto.evidence)
 }
 
-function rellenoDeTexto(doc: SermonDocument): PSlide {
-  const texto =
-    doc.texto.slice(2, 8).find((t) => clean(t).length > 60) ??
-    (clean(doc.texto[1] ?? '').length > 60 ? doc.texto[1] : '') ??
-    ''
-  if (texto) return { kind: 'texto', title: doc.ref, lines: takeLines(texto, 2, 220) }
-  return { kind: 'texto', title: doc.ref, lines: takeLines(slotText(doc.meditacion) || doc.granIdea, 2, 220) }
+/** Clave de comparacion para no repetir contenido entre diapositivas. */
+function claveDe(value: string): string {
+  return clean(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9áéíóúñü ]/g, '')
+    .slice(0, 70)
 }
 
-function shiftFrom(pool: PSlide[], doc: SermonDocument): PSlide {
-  const [next] = pool.splice(0, 1)
-  return next ?? rellenoDeTexto(doc)
+/* ════════════════════════════════════════════════════════════════════════
+   EQUIPO DE SUB-AGENTES DE PRESENTACION (codigo puro, 0 tokens)
+   Cada agente es especialista en una parte del deck y devuelve CANDIDATOS
+   ordenados por preferencia (todos con contenido real del AST, cortados en
+   frontera de frase y sin citas de modulos en pantalla). El orquestador
+   consume en orden, deduplica contra el deck y rellena los huecos con las
+   reservas de los otros agentes: presentacion completa, detallada y lista
+   para proyectar, SIN IA.
+   ════════════════════════════════════════════════════════════════════════ */
+
+export type AgenteSlide = (
+  doc: SermonDocument,
+  usados: Set<string>
+) => PSlide[]
+
+const SENALES_PUNTO = ['Primeramente…', 'En segundo lugar…', 'Y para concluir…', 'Para el punto 4…', 'Para el punto 5…']
+
+/** Kicker de portada: etiqueta del genero + orador (si hay). */
+function kickerPortada(doc: SermonDocument): string {
+  if (doc.presentacionKicker) return clean(doc.presentacionKicker)
+  const orador = clean(doc.orador)
+  return orador ? `Sermón · ${orador}` : 'Sermón'
 }
 
-function fillersOf(doc: SermonDocument): PSlide[] {
-  const pool: PSlide[] = []
-  if (slotText(doc.meditacion)) {
-    pool.push({ kind: 'meditacion', kicker: 'Y para la semana…', title: 'Frase para meditar', lines: [], quote: truncate(slotText(doc.meditacion), MAX_QUOTE) })
+/** AGENTE DE PORTADA: referencia + el versiculo/anclaje del mensaje. */
+export const agentePortada: AgenteSlide = (doc, usados) => {
+  const anclaje = clean(doc.texto[0] ?? slotText(doc.gancho) ?? '')
+  if (!anclaje) return []
+  usados.add(claveDe(anclaje))
+  return [
+    {
+      kind: 'titulo',
+      kicker: kickerPortada(doc),
+      title: truncate(doc.ref, MAX_TITLE),
+      lines: [],
+      quote: cortaFrase(anclaje, MAX_QUOTE)
+    }
+  ]
+}
+
+/** AGENTE DE GRAN IDEA: la sintesis doctrinal en 2-3 frases proyectables. */
+export const agenteGranIdea: AgenteSlide = (doc, usados) => {
+  const candidatos = [
+    doc.granIdea,
+    slotText(doc.intro),
+    slotText(doc.gancho),
+    ...doc.puntos.map((p) => slotText(p.bridge))
+  ]
+  const out: PSlide[] = []
+  for (const candidato of candidatos) {
+    if (clean(candidato).length < 30 || usados.has(claveDe(candidato))) continue
+    usados.add(claveDe(candidato))
+    out.push({ kind: 'granIdea', title: 'Gran idea', lines: takeLines(candidato, 3, 150) })
+    break
   }
-  const extra = doc.texto.slice(1).find((line) => clean(line).length > 40)
-  if (extra) pool.push({ kind: 'texto', title: doc.ref, lines: takeLines(extra, 2, 220) })
-  if (doc.palabras.length) {
-    pool.push({ kind: 'palabras', title: 'Palabras originales', lines: doc.palabras.slice(0, 2).map((p) => truncate(p, 150)) })
+  return out
+}
+
+/** AGENTE DE TEXTO: el pasaje biblico entero, frase a frase, para leerlo en voz alta. */
+export const agenteTexto: AgenteSlide = (doc, usados) => {
+  const out: PSlide[] = []
+  for (const pieza of doc.texto.slice(0, 4)) {
+    if (clean(pieza).length < 40 || usados.has(claveDe(pieza))) continue
+    usados.add(claveDe(pieza))
+    out.push({ kind: 'texto', title: doc.ref, lines: takeLines(pieza, 3, 190) })
   }
-  if (doc.consenso.length) {
-    pool.push({ kind: 'consenso', title: 'Consenso doctrinal', lines: doc.consenso.slice(0, 3).map((c) => truncate(c, 150)) })
+  return out
+}
+
+/** AGENTE DE CONTEXTO: historia, teologia, cultura — una linea por dato. */
+export const agenteContexto: AgenteSlide = (doc, usados) => {
+  const lineas: string[] = []
+  for (const c of doc.contexto) {
+    if (usados.has(claveDe(c.text))) continue
+    usados.add(claveDe(c.text))
+    lineas.push(truncate(`${c.label}: ${c.text}`, 110))
+    if (lineas.length >= 3) break
   }
-  const segundaCita = doc.citas[1]
-  if (segundaCita) pool.push({ kind: 'cita', title: 'Frase clave', lines: [], quote: truncate(segundaCita, MAX_QUOTE) })
-  if (slotText(doc.gancho)) {
-    pool.push({ kind: 'cita', kicker: 'El texto abre la puerta…', title: doc.ref, lines: [], quote: truncate(slotText(doc.gancho), MAX_QUOTE) })
+  if (!lineas.length) return []
+  return [{ kind: 'contexto', title: 'Contexto', lines: lineas }]
+}
+
+/** AGENTE DE PUNTOS: los 3 primeros con su senal oral y puente detallado. */
+export const agentePuntos: AgenteSlide = (doc, usados) => {
+  const out: PSlide[] = []
+  for (const [index, punto] of doc.puntos.slice(0, 5).entries()) {
+    const contenido = puntoContent(punto)
+    if (!contenido || usados.has(claveDe(contenido))) continue
+    usados.add(claveDe(contenido))
+    out.push({
+      kind: 'punto',
+      kicker: clean(punto.signal) || SENALES_PUNTO[index] || '',
+      title: truncate(punto.title, MAX_TITLE),
+      lines: takeLines(contenido, 3, 150)
+    })
   }
-  for (const texto of doc.texto.slice(2, 8)) {
-    if (clean(texto).length > 60) {
-      pool.push({ kind: 'texto', title: doc.ref, lines: takeLines(texto, 2, 220) })
+  return out
+}
+
+/** AGENTE DE ILUSTRACION: el caso real o la imagen anclada. */
+export const agenteIlustracion: AgenteSlide = (doc, usados) => {
+  for (const candidato of [...doc.casoReal, ...doc.ilustracion, ...doc.texto.slice(1, 4)]) {
+    if (clean(candidato).length < 40 || usados.has(claveDe(candidato))) continue
+    usados.add(claveDe(candidato))
+    return [{ kind: 'ilustracion', title: 'Ilustración', lines: takeLines(candidato, 3, 170) }]
+  }
+  return []
+}
+
+/** AGENTE DE FRASE CLAVE: cita, consenso doctrinal o el versiculo clave. */
+export const agenteFraseClave: AgenteSlide = (doc, usados) => {
+  const candidatos = [
+    ...doc.citas,
+    ...doc.consenso,
+    ...doc.texto.slice(1, 6),
+    slotText(doc.gancho),
+    slotText(doc.meditacion)
+  ]
+  for (const candidato of candidatos) {
+    if (clean(candidato).length < 30 || usados.has(claveDe(candidato))) continue
+    usados.add(claveDe(candidato))
+    return [{ kind: 'cita', title: 'Frase clave', lines: [], quote: cortaFrase(candidato, MAX_QUOTE) }]
+  }
+  return []
+}
+
+/** AGENTE DE APLICACION: la vida real — casa, trabajo, iglesia. */
+export const agenteAplicacion: AgenteSlide = (doc, usados) => {
+  const lineas: string[] = []
+  for (const a of doc.aplicacion) {
+    if (usados.has(claveDe(a))) continue
+    usados.add(claveDe(a))
+    lineas.push(truncate(a, 160))
+    if (lineas.length >= 3) break
+  }
+  if (!lineas.length) {
+    for (const fuente of [doc.cierre.recap, doc.cierre.llamado]) {
+      if (clean(fuente).length < 20 || usados.has(claveDe(fuente))) continue
+      usados.add(claveDe(fuente))
+      lineas.push(truncate(fuente, 160))
+      if (lineas.length >= 2) break
     }
   }
-  return pool
+  if (!lineas.length) return []
+  return [{ kind: 'aplicacion', title: 'Aplicación', lines: lineas }]
 }
 
-/** Estructura fija de 10 diapositivas a partir del AST. */
-export function buildSlides(doc: SermonDocument): PSlide[] {
-  const pool = fillersOf(doc)
+/** AGENTE DE PALABRAS ORIGINALES: Strong# proyectable (2 terminos). */
+export const agentePalabras: AgenteSlide = (doc, usados) => {
+  const lineas: string[] = []
+  for (const p of doc.palabras) {
+    if (usados.has(claveDe(p))) continue
+    usados.add(claveDe(p))
+    lineas.push(truncate(p, 150))
+    if (lineas.length >= 2) break
+  }
+  if (!lineas.length) return []
+  return [{ kind: 'palabras', title: 'Palabras originales', lines: lineas }]
+}
+
+/** AGENTE DE MEDITACION Y CONSENSO: piezas devocionales y doctrinales. */
+export const agenteMeditacion: AgenteSlide = (doc, usados) => {
+  for (const candidato of [slotText(doc.meditacion), ...doc.consenso, slotText(doc.oracion)]) {
+    if (clean(candidato).length < 40 || usados.has(claveDe(candidato))) continue
+    usados.add(claveDe(candidato))
+    return [
+      {
+        kind: 'meditacion',
+        kicker: 'Y para la semana…',
+        title: 'Frase para meditar',
+        lines: [],
+        quote: cortaFrase(candidato, MAX_QUOTE)
+      }
+    ]
+  }
+  return []
+}
+
+/** AGENTE DE RESERVAS: el resto del material real, listo para rellenar huecos. */
+export const agenteReservas: AgenteSlide = (doc, usados) => {
+  const out: PSlide[] = []
+  const candidatos = [...doc.texto.slice(1, 10), ...doc.consenso, ...doc.citas, ...doc.palabras]
+  for (const candidato of candidatos) {
+    if (clean(candidato).length < 40 || usados.has(claveDe(candidato))) continue
+    usados.add(claveDe(candidato))
+    out.push({ kind: 'texto', title: doc.ref, lines: takeLines(candidato, 3, 190) })
+  }
+  return out
+}
+
+/** AGENTE DE ULTIMA INSTANCIA: piezas honestas del cierre (bendicion, recap,
+ * llamado) cuando todo el material ya salio; jamas texto inventado. */
+export const agenteUltimaInstancia: AgenteSlide = (doc, usados) => {
+  const out: PSlide[] = []
+  for (const candidato of [doc.cierre.bendicion, doc.cierre.recap, doc.cierre.llamado]) {
+    if (clean(candidato).length < 15 || usados.has(claveDe(candidato))) continue
+    usados.add(claveDe(candidato))
+    out.push({
+      kind: 'cita',
+      kicker: 'Y para la semana…',
+      title: 'Frase para meditar',
+      lines: [],
+      quote: cortaFrase(candidato, MAX_QUOTE)
+    })
+  }
+  return out
+}
+
+/** Orquestador del equipo: arma EXACTAMENTE 10 diapositivas con la prioridad
+ * de un mensaje en vivo (portada → idea → texto → 3 puntos → ilustración →
+ * frase clave → aplicación → cierre con oración) y completa huecos con las
+ * reservas reales (contexto, palabras, meditación, más texto). */
+export function componerPresentacion(doc: SermonDocument): PSlide[] {
+  const usados = new Set<string>()
   const slides: PSlide[] = []
+  const reservas: PSlide[] = []
 
-  slides.push({
-    kind: 'titulo',
-    kicker: doc.presentacionKicker ? clean(doc.presentacionKicker) : `Sermón · ${clean(doc.orador)}`,
-    title: truncate(doc.ref, MAX_TITLE),
-    lines: [],
-    quote: doc.texto.length ? truncate(doc.texto[0], MAX_QUOTE) : truncate(slotText(doc.gancho), MAX_QUOTE)
-  })
-  slides.push({
-    kind: 'granIdea',
-    title: 'Gran idea',
-    lines: takeLines(doc.granIdea, 2, 200)
-  })
-  if (doc.contexto.length) {
-    slides.push({
-      kind: 'contexto',
-      title: 'Contexto',
-      lines: doc.contexto.slice(0, 3).map((c) => `${c.label}: ${truncate(c.text, 95)}`)
-    })
+  const fijos: AgenteSlide[] = [agentePortada, agenteGranIdea, agenteTexto]
+  for (const agente of fijos) {
+    const candidatos = agente(doc, usados)
+    if (candidatos.length) slides.push(candidatos[0])
+    reservas.push(...candidatos.slice(1))
   }
 
-  const puntoSlides: PSlide[] = doc.puntos.slice(0, 3).map((punto) => ({
-    kind: 'punto',
-    kicker: clean(punto.signal),
-    title: truncate(punto.title, MAX_TITLE),
-    lines: takeLines(puntoContent(punto), 2, 190)
-  }))
-  while (puntoSlides.length < 3) {
-    puntoSlides.push(shiftFrom(pool, doc))
-  }
-  slides.push(...puntoSlides)
+  const puntos = agentePuntos(doc, usados)
+  for (const slide of puntos.slice(0, 3)) slides.push(slide)
+  reservas.push(...puntos.slice(3))
 
-  const ilustracion = clean(doc.casoReal[0] ?? doc.ilustracion[0] ?? '')
-  if (ilustracion) {
-    slides.push({ kind: 'ilustracion', title: 'Ilustración', lines: takeLines(ilustracion, 2, 200) })
-  } else {
-    slides.push(shiftFrom(pool, doc))
+  for (const agente of [agenteIlustracion, agenteFraseClave, agenteAplicacion]) {
+    const candidatos = agente(doc, usados)
+    if (candidatos.length) slides.push(candidatos[0])
+    reservas.push(...candidatos.slice(1))
   }
 
-  const cita = clean(doc.citas[0] ?? doc.consenso[0] ?? '')
-  if (cita) {
-    slides.push({ kind: 'cita', title: 'Frase clave', lines: [], quote: truncate(cita, MAX_QUOTE) })
-  } else {
-    slides.push(shiftFrom(pool, doc))
+  reservas.push(
+    ...agenteContexto(doc, usados),
+    ...agentePalabras(doc, usados),
+    ...agenteMeditacion(doc, usados),
+    ...agenteReservas(doc, usados),
+    ...agenteUltimaInstancia(doc, usados)
+  )
+
+  for (const reserva of reservas) {
+    if (slides.length >= TARGET_SLIDES - 1) break
+    slides.push(reserva)
   }
 
-  const aplicacion = doc.aplicacion.slice(0, 2).map((a) => truncate(a, 160))
-  if (aplicacion.length) {
-    slides.push({ kind: 'aplicacion', title: 'Aplicación', lines: aplicacion })
-  } else {
-    slides.push({
-      kind: 'aplicacion',
-      title: 'Aplicación',
-      lines: takeLines(doc.cierre.recap, 2, 160)
-    })
-  }
-
-  while (slides.length < TARGET_SLIDES - 1 && pool.length) {
-    slides.push(shiftFrom(pool, doc))
-  }
-
+  const oracion = slotText(doc.oracion)
+  const recap = usados.has(claveDe(doc.cierre.recap)) ? '' : truncate(doc.cierre.recap, 110)
+  const llamado = usados.has(claveDe(doc.cierre.llamado)) ? '' : truncate(doc.cierre.llamado, 110)
   slides.push({
     kind: 'cierre',
     kicker: 'Y para concluir…',
     title: 'Cierre y oración',
-    lines: [truncate(doc.cierre.recap, 110), truncate(doc.cierre.llamado, 110)].filter(Boolean),
-    quote: truncate(slotText(doc.oracion), MAX_QUOTE)
+    lines: [recap, llamado].filter(Boolean),
+    quote: oracion ? truncate(oracion, MAX_QUOTE) : undefined
   })
 
   return slides.slice(0, TARGET_SLIDES)
+}
+
+/** Alias historico del orquestador (misma API de siempre). */
+export function buildSlides(doc: SermonDocument): PSlide[] {
+  return componerPresentacion(doc)
 }
 
 /** Tamaño de fuente del cuerpo según densidad (legibilidad en proyector). */
@@ -331,4 +534,69 @@ export function bodyFontSize(slide: PSlide): number {
   if (chars <= 120) return 26
   if (chars <= 260) return 22
   return 19
+}
+
+/* ── Sub-agente de redaccion (IA opcional, 1 pasada corta) ───────────── */
+
+const SISTEMA_PULEO =
+  'Eres un redactor de diapositivas para predicacion y ensenanza. Recibes el ESQUELETO de una presentacion ya construida ' +
+  'con contenido biblico anclado por codigo. Tu trabajo SOLO es de redaccion para proyeccion: (1) cada diapositiva con 1-2 frases ' +
+  'de maximo 14 palabras cada una, legibles desde el fondo de una sala; (2) lenguaje pastoral, calido y claro, sin jerga academica; ' +
+  '(3) NO inventes datos, versiculos, nombres ni cifras: usa SOLAMENTE el contenido de cada diapositiva; (4) sin corchetes, sin ' +
+  'referencias de modulos, sin siglas de Strong en pantalla; (5) los titulos se quedan cortos y concretos; (6) respeta el orden y ' +
+  'la cantidad de diapositivas. Formato EXACTO de respuesta:\n' +
+  '==SLIDE 1==\nTITULO: ...\nLINEA: ...\nLINEA: ...\nCITA: ...\n' +
+  'LINEA solo si la diapositiva lo tenia; CITA solo si la diapositiva lo tenia.'
+
+export function pidePuleo(doc: SermonDocument, slides: PSlide[]): { system: string; user: string } {
+  const esqueleto = slides
+    .map((slide, index) =>
+      [
+        `==SLIDE ${index + 1}==`,
+        `TIPO: ${slide.kind}`,
+        `TITULO: ${slide.title}`,
+        ...slide.lines.map((line) => `LINEA: ${line}`),
+        ...(slide.quote ? [`CITA: ${slide.quote}`] : [])
+      ].join('\n')
+    )
+    .join('\n\n')
+  return {
+    system: SISTEMA_PULEO,
+    user: `REFERENCIA/TEMA: ${doc.ref}\n\n${esqueleto}`
+  }
+}
+
+/** Puro: rellena los textos redactados sobre el esqueleto base; sin respuesta
+ * valida, el deck de codigo queda intacto (nunca se pierde la presentacion). */
+export function parsePuleo(text: string, base: PSlide[]): PSlide[] {
+  const bloques = new Map<number, { titulo?: string; lineas: string[]; cita?: string }>()
+  const patron = /==\s*SLIDE\s+(\d+)\s*==([\s\S]*?)(?=$|==\s*SLIDE\s+\d+\s*==)/gi
+  for (const match of text.matchAll(patron)) {
+    const index = Number(match[1]) - 1
+    if (index < 0 || index >= base.length) continue
+    const cuerpo = match[2] ?? ''
+    const lineas: string[] = []
+    let titulo: string | undefined
+    let cita: string | undefined
+    for (const line of cuerpo.split('\n')) {
+      const t = /^TITULO:\s*(.+)$/i.exec(line.trim())
+      const l = /^LINEA:\s*(.+)$/i.exec(line.trim())
+      const c = /^CITA:\s*(.+)$/i.exec(line.trim())
+      if (t) titulo = t[1].trim()
+      else if (l) lineas.push(l[1].trim())
+      else if (c) cita = c[1].trim()
+    }
+    if (titulo || lineas.length || cita) bloques.set(index, { titulo, lineas, cita })
+  }
+  if (!bloques.size) return base
+  return base.map((slide, index) => {
+    const puleo = bloques.get(index)
+    if (!puleo) return slide
+    return {
+      ...slide,
+      title: puleo.titulo?.slice(0, MAX_TITLE) || slide.title,
+      lines: puleo.lineas.length ? puleo.lineas.slice(0, MAX_LINES) : slide.lines,
+      quote: puleo.cita?.slice(0, MAX_QUOTE) ?? slide.quote
+    }
+  })
 }

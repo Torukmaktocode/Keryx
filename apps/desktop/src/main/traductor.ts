@@ -6,12 +6,16 @@
  * todo corre offline en el dispositivo.
  */
 import { app } from 'electron'
-import { spawn, type ChildProcess } from 'node:child_process'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { spawn, execFileSync, type ChildProcess } from 'node:child_process'
 import { join } from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
 import {
   IPC,
+  translateBatchSchema,
   translatePairSchema,
   translateRequestSchema,
+  versoBatchSchema,
   type TranslateStatusResult
 } from '@keryx/core'
 
@@ -23,14 +27,43 @@ interface Pending {
 
 let child: ChildProcess | null = null
 let launching: Promise<void> | null = null
+let quitting = false
 const pending = new Map<number, Pending>()
 let nextId = 1
 let buffer = ''
+
+export function prepararSalidaTraductor(): void {
+  quitting = true
+}
 
 function daemonPath(): string {
   return app.isPackaged
     ? join(process.resourcesPath, 'scripts', 'traductor_daemon.py')
     : join(app.getAppPath(), '..', '..', 'scripts', 'traductor_daemon.py')
+}
+
+let pythonCache: string | null = null
+
+/** Python REAL de la maquina: en Windows el PATH suele traer primero el stub
+ * del Python install manager (WindowsApps/pymanager), que en vez de ejecutar
+ * cuelga o abre el updater — rompe el daemon de forma intermitente. */
+function pythonBin(): string {
+  if (pythonCache) return pythonCache
+  pythonCache = 'python'
+  if (process.platform === 'win32') {
+    try {
+      const salida = execFileSync('where.exe', ['python'], { encoding: 'utf8', timeout: 15_000 })
+      const reales = salida
+        .split(/\r?\n/)
+        .map((linea) => linea.trim())
+        .filter(Boolean)
+        .filter((ruta) => !/WindowsApps|pymanager/i.test(ruta))
+      if (reales.length) pythonCache = reales[0]
+    } catch {
+      // sin where.exe: cae al PATH
+    }
+  }
+  return pythonCache
 }
 
 function userDataDir(): string {
@@ -43,14 +76,16 @@ function launchDaemon(): Promise<void> {
   launching = new Promise<void>((resolve, reject) => {
     try {
       const dir = userDataDir()
-      const proc = spawn('python', [daemonPath()], {
+      const proc = spawn(pythonBin(), [daemonPath()], {
         env: {
           ...process.env,
           PYTHONUTF8: '1',
           XDG_DATA_HOME: join(dir, 'datos'),
           XDG_CACHE_HOME: join(dir, 'cache'),
           XDG_CONFIG_HOME: join(dir, 'config'),
-          ARGOS_PACKAGES_DIR: join(dir, 'datos', 'argos-translate', 'packages')
+          ARGOS_PACKAGES_DIR: join(dir, 'datos', 'argos-translate', 'packages'),
+          KERYX_DIALECTOS_DIR: join(dir, 'dialectos'),
+          KERYX_CORPUS_DIR: dir
         },
         windowsHide: true,
         stdio: ['pipe', 'pipe', 'pipe']
@@ -86,6 +121,14 @@ function launchDaemon(): Promise<void> {
           entry.reject(new Error('El motor de traducción se detuvo'))
         }
         pending.clear()
+        /* Watchdog: si el daemon muere en vuelo (OOM, crash de python) la
+         * traduccion no queda muerta hasta reiniciar la app — se relanza en
+         * 2 s mientras la ventana siga abierta. */
+        if (!quitting) {
+          setTimeout(() => {
+            if (!quitting) void launchDaemon().catch(() => undefined)
+          }, 2_000)
+        }
       })
       proc.on('error', (error) => {
         console.log('[traductor] error de spawn:', error.message)
@@ -145,7 +188,11 @@ export async function translateStatus(target?: string): Promise<TranslateStatusR
     const reply = await request<{ pairs: string[] }>({ op: 'pairs' }, 30_000)
     if (target && target !== 'es' && target !== 'off') void precalentarPar(target)
     return { available: true, pairs: reply.pairs ?? [] }
-  } catch {
+  } catch (error) {
+    console.log(
+      '[traductor] status fallo:',
+      error instanceof Error ? error.message : String(error)
+    )
     return { available: false, pairs: [] }
   }
 }
@@ -154,6 +201,24 @@ export async function translateStatus(target?: string): Promise<TranslateStatusR
 export async function precalentarPar(target: string): Promise<void> {
   const fuente = 'es'
   if (!target || fuente === target || target === 'off') return
+  if (ES_DIALECTO.has(target)) {
+    // Lenguas nativas: modelos CTranslate2 propios; se descargan una vez.
+    try {
+      await translateOnce(fuente, target, 'Keryx.')
+      return
+    } catch {
+      const instalado = await instalarDialecto(target)
+      if (instalado) {
+        try {
+          await translateOnce(fuente, target, 'Keryx.')
+          return
+        } catch {
+          // modelo instalado pero fallo de inferencia: degrada al original
+        }
+      }
+    }
+    return
+  }
   try {
     await translateOnce(fuente, target, 'Keryx.')
   } catch {
@@ -166,9 +231,230 @@ export async function precalentarPar(target: string): Promise<void> {
   }
 }
 
+const ES_DIALECTO = new Set(['qu', 'gn', 'arn', 'ay', 'bn'])
+const DIALECTO_A_SPEC = new Map([
+  ['qu', 'quechua'],
+  ['ay', 'quechua'],
+  ['bn', 'quechua'],
+  ['gn', 'quechua'],
+  ['arn', 'mapudungun']
+])
+
+/** Instala el modelo de una lengua nativa (descarga una vez; sub-agente de codigo). */
+async function instalarDialecto(target: string): Promise<boolean> {
+  const spec = DIALECTO_A_SPEC.get(target)
+  if (!spec) return false
+  const script = app.isPackaged
+    ? join(process.resourcesPath, 'scripts', 'instalar_dialectos.py')
+    : join(app.getAppPath(), '..', '..', 'scripts', 'instalar_dialectos.py')
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const proc = spawn(pythonBin(), [script, '--raiz', join(userDataDir(), 'dialectos'), '--dialecto', spec], {
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'pipe']
+      })
+      proc.stdout?.on('data', (chunk) => console.log('[dialectos]', chunk.toString().trim().slice(0, 200)))
+      proc.stderr?.on('data', (chunk) => console.log('[dialectos] ', chunk.toString().trim().slice(0, 300)))
+      const timer = setTimeout(() => reject(new Error('Instalación de dialecto excedió 30 min')), 1_800_000)
+      proc.on('exit', (code) => {
+        clearTimeout(timer)
+        if (code === 0) resolve()
+        else reject(new Error(`instalar_dialectos salió con código ${code}`))
+      })
+      proc.on('error', (error) => {
+        clearTimeout(timer)
+        reject(error)
+      })
+    })
+    return true
+  } catch (error) {
+    console.log('[dialectos] fallo de instalación:', error instanceof Error ? error.message : String(error))
+    return false
+  }
+}
+
 export async function translateOnce(source: string, target: string, text: string): Promise<string> {
+  const enCache = cacheConsegue(source, target, text)
+  if (enCache !== undefined) return enCache
   const reply = await request<{ text: string }>({ op: 'translate', source, target, text }, 120_000)
-  return reply.text ?? text
+  const salida = reply.text ?? text
+  cacheGuarda(source, target, text, salida)
+  return salida
+}
+
+export interface VersoRef {
+  lang: string
+  code: string
+  cap: number
+  ver: number
+}
+
+export interface VersoResultado {
+  texto: string
+  nivel: 'verificado' | 'experimental' | 'original'
+  fuente?: string
+}
+
+/* Memoria de traduccion Nivel 1 (verificado): verso por referencia canonica,
+ * SQLite local instantaneo en el main process (sin depender del daemon
+ * neural: los lotes largos nunca bloquean el texto verificado). */
+
+const CORPUS_LANG_DB: Record<string, string> = {
+  arn: 'arn',
+  gn: 'gn',
+  ay: 'ayr',
+  ayr: 'ayr',
+  bn: 'bn',
+  qu: 'quy',
+  quy: 'quy'
+}
+
+const corpusConns = new Map<string, DatabaseSync>()
+
+function corpusConn(lang: string): DatabaseSync | null {
+  const db = CORPUS_LANG_DB[lang]
+  if (!db) return null
+  let conn = corpusConns.get(db)
+  if (!conn) {
+    const ruta = join(userDataDir(), 'corpus', `${db}.db`)
+    if (!existsSync(ruta)) return null
+    try {
+      conn = new DatabaseSync(ruta, { readOnly: true })
+    } catch {
+      return null
+    }
+    corpusConns.set(db, conn)
+  }
+  return conn
+}
+
+function corpusMetaDe(con: DatabaseSync): Record<string, string> {
+  try {
+    const filas = con.prepare('SELECT key, value FROM meta').all() as Array<{
+      key: string
+      value: string
+    }>
+    return Object.fromEntries(filas.map((f) => [f.key, f.value]))
+  } catch {
+    return {}
+  }
+}
+
+export async function versoLote(
+  items: VersoRef[]
+): Promise<{ versos: Record<string, string | null>; meta: Record<string, Record<string, string>> }> {
+  const porLang = new Map<string, VersoRef[]>()
+  for (const item of items) {
+    const lista = porLang.get(item.lang) ?? []
+    lista.push(item)
+    porLang.set(item.lang, lista)
+  }
+  const versos: Record<string, string | null> = {}
+  const meta: Record<string, Record<string, string>> = {}
+  for (const [lang, lista] of porLang) {
+    const con = corpusConn(lang)
+    if (!con) continue
+    try {
+      const metaTabla = corpusMetaDe(con)
+      if (Object.keys(metaTabla).length) meta[lang] = metaTabla
+      const stmt = con.prepare('SELECT text FROM versos WHERE code=? AND chapter=? AND verse=?')
+      for (const { code, cap, ver } of lista) {
+        const fila = stmt.get(code, cap, ver) as { text?: string } | undefined
+        versos[`${lang}:${code}:${cap}:${ver}`] = fila?.text ?? null
+      }
+    } catch {
+      // corpus ilegible: los versos caen al motor neural
+    }
+  }
+  return { versos, meta }
+}
+
+export async function translateLote(source: string, target: string, items: string[]): Promise<string[]> {  const salida: string[] = []
+  const pendientes: Array<{ index: number; text: string }> = []
+  for (const [index, item] of items.entries()) {
+    const enCache = cacheConsegue(source, target, item)
+    if (enCache !== undefined) salida[index] = enCache
+    else pendientes.push({ index, text: item })
+  }
+  if (pendientes.length) {
+    const LOTE = 120
+    for (let base = 0; base < pendientes.length; base += LOTE) {
+      const chunk = pendientes.slice(base, base + LOTE)
+      const reply = await request<{ texts: string[] }>(
+        { op: 'translate_batch', source, target, items: chunk.map((p) => p.text) },
+        300_000
+      )
+      const textos = reply.texts ?? []
+      for (const [pos, pendiente] of chunk.entries()) {
+        const traducido = textos[pos] ?? pendiente.text
+        salida[pendiente.index] = traducido
+        cacheGuarda(source, target, pendiente.text, traducido)
+      }
+    }
+  }
+  return salida
+}
+
+/* ── Cache persistente de traducciones (userData; instantaneo entre sesiones) ── */
+
+const CACHE_FILE = (): string => join(app.getPath('userData'), 'traduccion', 'cache-traducciones.json')
+const CACHE_MAX = 12_000
+const FLUSH_CADA = 150
+const cacheMemoria = new Map<string, string>()
+let cacheSucia = false
+let sinDescargar = 0
+
+function cacheClave(source: string, target: string, text: string): string {
+  return `${source}>${target}:${text}`
+}
+
+function cacheConsegue(source: string, target: string, text: string): string | undefined {
+  if (!cacheMemoria.size) cacheCarga()
+  const key = cacheClave(source, target, text)
+  const value = cacheMemoria.get(key)
+  if (value === undefined) return undefined
+  cacheMemoria.delete(key)
+  cacheMemoria.set(key, value)
+  return value
+}
+
+function cacheGuarda(source: string, target: string, text: string, traduccion: string): void {
+  if (!cacheMemoria.size) cacheCarga()
+  const key = cacheClave(source, target, text)
+  cacheMemoria.delete(key)
+  cacheMemoria.set(key, traduccion)
+  if (cacheMemoria.size > CACHE_MAX) {
+    const masVieja = cacheMemoria.keys().next().value
+    if (masVieja !== undefined) cacheMemoria.delete(masVieja)
+  }
+  cacheSucia = true
+  sinDescargar += 1
+  if (sinDescargar >= FLUSH_CADA) {
+    sinDescargar = 0
+    cacheDescarga()
+  }
+}
+
+function cacheCarga(): void {
+  try {
+    if (!existsSync(CACHE_FILE())) return
+    const datos = JSON.parse(readFileSync(CACHE_FILE(), 'utf8')) as Record<string, string>
+    for (const [key, value] of Object.entries(datos)) cacheMemoria.set(key, value)
+  } catch {
+    // cache corrupta o inexistente: arranca vacia
+  }
+}
+
+export function cacheDescarga(): void {
+  if (!cacheSucia) return
+  cacheSucia = false
+  try {
+    const datos: Record<string, string> = {}
+    for (const [key, value] of cacheMemoria.entries()) datos[key] = value
+    writeFileSync(CACHE_FILE(), JSON.stringify(datos), 'utf8')
+  } catch {
+    // sin escritura disponible: se pierde solo el cache
+  }
 }
 
 export async function translateInstall(source: string, target: string): Promise<string[]> {
@@ -187,6 +473,14 @@ export function registerTraductorIpc(
   register(IPC.translateRequest, (args) => {
     const req = translateRequestSchema.parse(args[0])
     return translateOnce(req.source, req.target, req.text)
+  })
+  register(IPC.translateBatch, (args) => {
+    const req = translateBatchSchema.parse(args[0])
+    return translateLote(req.source, req.target, req.items)
+  })
+  register(IPC.versoBatch, (args) => {
+    const req = versoBatchSchema.parse(args[0])
+    return versoLote(req.items)
   })
   register(IPC.translateInstall, (args) => {
     const req = translatePairSchema.parse(args[0])

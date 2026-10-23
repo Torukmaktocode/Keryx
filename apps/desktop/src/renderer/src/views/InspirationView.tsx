@@ -9,6 +9,7 @@ import {
 } from '../lib/inspiration'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
+import { TextoTraducido } from '../components/TextoTraducido'
 
 function sermonMarkdownVeracity(sermon: InspirationSermon): string {
   return sermon.veracity === 'reconstruido'
@@ -242,24 +243,32 @@ export function InspirationView() {
               </div>
 
               <div className="inspiration-scene">
-                <p>{open.occasion}</p>
+                <p>
+                  <TextoTraducido plain={open.occasion} lang="es" />
+                </p>
               </div>
 
               {open.preached && (
                 <section>
                   <h3>{t('inspiration.preached')}</h3>
-                  <p className="inspiration-preview">{open.preached}</p>
+                  <p className="inspiration-preview">
+                    <TextoTraducido plain={open.preached} lang="es" />
+                  </p>
                 </section>
               )}
 
               {open.introduction && (
                 <section>
                   <h3>{t('inspiration.introduction')}</h3>
-                  <blockquote className="inspiration-quote">{open.introduction}</blockquote>
+                  <blockquote className="inspiration-quote">
+                    <TextoTraducido plain={open.introduction} lang="es" />
+                  </blockquote>
                 </section>
               )}
 
-              <blockquote className="inspiration-text">{open.text}</blockquote>
+              <blockquote className="inspiration-text">
+                <TextoTraducido plain={open.text} lang="es" />
+              </blockquote>
 
               <div className="inspiration-themes">
                 {open.themes.map((item) => (
@@ -280,7 +289,9 @@ export function InspirationView() {
                 <h3>{t('inspiration.outline')}</h3>
                 <ol className="inspiration-outline">
                   {open.outline.map((step, index) => (
-                    <li key={index}>{step}</li>
+                    <li key={index}>
+                      <TextoTraducido plain={step} lang="es" />
+                    </li>
                   ))}
                 </ol>
               </section>
@@ -314,7 +325,7 @@ export function InspirationView() {
                 <h3>{t('inspiration.quotes')}</h3>
                 {open.quotes.map((quote, index) => (
                   <blockquote key={index} className="inspiration-quote">
-                    {quote}
+                    <TextoTraducido plain={quote} lang="es" />
                   </blockquote>
                 ))}
               </section>
@@ -324,7 +335,9 @@ export function InspirationView() {
                   <h3>{t('inspiration.phrases')}</h3>
                   <ul className="inspiration-apps">
                     {open.phrases.map((phrase, index) => (
-                      <li key={index}>{phrase}</li>
+                      <li key={index}>
+                        <TextoTraducido plain={phrase} lang="es" />
+                      </li>
                     ))}
                   </ul>
                 </section>
@@ -333,7 +346,9 @@ export function InspirationView() {
               {open.bigIdea && (
                 <section>
                   <h3>{t('inspiration.bigIdea')}</h3>
-                  <p className="inspiration-bigidea">{open.bigIdea}</p>
+                  <p className="inspiration-bigidea">
+                    <TextoTraducido plain={open.bigIdea} lang="es" />
+                  </p>
                 </section>
               )}
 
@@ -342,7 +357,9 @@ export function InspirationView() {
                   <h3>{t('inspiration.application')}</h3>
                   <ul className="inspiration-apps">
                     {open.application.map((item, index) => (
-                      <li key={index}>{item}</li>
+                      <li key={index}>
+                        <TextoTraducido plain={item} lang="es" />
+                      </li>
                     ))}
                   </ul>
                 </section>
@@ -387,7 +404,9 @@ export function InspirationView() {
                     <p className="meta">
                       {authorInfo.era} · {authorInfo.tradition}
                     </p>
-                    <p>{authorInfo.bio}</p>
+                    <p>
+                      <TextoTraducido plain={authorInfo.bio} lang="es" />
+                    </p>
                   </div>
                 ) : null
               })()}

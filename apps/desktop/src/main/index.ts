@@ -3,6 +3,9 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { registerIpc } from './ipc'
+import { cacheDescarga, prepararSalidaTraductor } from './traductor'
+
+if (is.dev) app.commandLine.appendSwitch('remote-debugging-port', '9222')
 
 function resolveSwordPath(): string {
   const devCandidates = app.isPackaged
@@ -101,7 +104,10 @@ app.whenReady().then(async () => {
   })
 
   const store = await registerIpc(resolveSwordPath(), resolveEswordPath(), resolveBibliotecaPath())
-  window_all_closed_flush = (): void => store?.flush()
+  window_all_closed_flush = (): void => {
+    store?.flush()
+    cacheDescarga()
+  }
   createWindow()
 
   app.on('activate', () => {
@@ -113,5 +119,6 @@ let window_all_closed_flush: (() => void) | undefined
 
 app.on('window-all-closed', () => {
   window_all_closed_flush?.()
+  prepararSalidaTraductor()
   if (process.platform !== 'darwin') app.quit()
 })

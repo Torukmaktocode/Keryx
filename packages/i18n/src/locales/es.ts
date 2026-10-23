@@ -386,9 +386,17 @@ export const es = {
   'presentaciones.exportError': 'No se pudo guardar la presentación: {error}',
   'presentaciones.bases': 'Fondos base',
   'presentaciones.variantes': 'Variantes',
+  'presentaciones.redactarIA': 'Redactar con IA',
+  'presentaciones.redactando': 'Redactando…',
+  'presentaciones.redactarError': 'No se pudo redactar',
+  'presentaciones.volverCodigo': 'Volver al código',
 
   'traduccion.descargando': 'Preparando el idioma {idioma}…',
   'traduccion.noDisponible': 'Traducción no disponible en este equipo',
+  'traduccion.pendiente': 'Traductor pendiente',
+  'traduccion.verificado': 'Verificado: texto de Sociedades Bíblicas',
+  'traduccion.experimental': 'Traducción experimental (motor local)',
+  'traduccion.sinDatos': 'Sin datos: se muestra el original',
   'traduccion.original': 'Traducido · clic para ver el original',
 
   'inspiration.count': '{count} sermones clásicos',
@@ -425,6 +433,7 @@ export const es = {
 
   'settings.title': 'Ajustes',
   'settings.language': 'Idioma',
+  'settings.nativas': 'Lenguas nativas',
   'settings.theme': 'Tema',
   'settings.writingFont': 'Fuente de escritura',
   'settings.writingFontHint': 'Tipografía del editor minimalista',
@@ -460,5 +469,10 @@ export const es = {
   'language.it': 'Italiano',
   'language.fr': 'Français',
   'language.de': 'Deutsch',
-  'language.zh': '中文'
+  'language.zh': '中文',
+  'language.qu': 'Quechua',
+  'language.ay': 'Aymara',
+  'language.gn': 'Guaraní',
+  'language.arn': 'Mapudungun',
+  'language.bn': 'Bengalí'
 }

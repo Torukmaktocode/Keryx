@@ -145,7 +145,9 @@ export const settingsPatchSchema = z.object({
   bibliotecaEnabled: z.boolean().optional(),
   showStrongs: z.boolean().optional(),
   deepSermon: z.boolean().optional(),
-  translateLocale: z.enum(['off', 'es', 'en', 'pt', 'it', 'fr', 'de', 'zh']).optional(),
+  translateLocale: z
+    .enum(['off', 'es', 'en', 'pt', 'it', 'fr', 'de', 'zh', 'qu', 'gn', 'arn', 'ay', 'bn'])
+    .optional(),
   study: studyLayoutSchema.optional()
 })
 
@@ -160,9 +162,32 @@ export const translateRequestSchema = z.object({
   text: z.string().max(20_000)
 })
 
+export const translateBatchSchema = z.object({
+  source: z.string().min(2).max(8),
+  target: z.string().min(2).max(8),
+  items: z.array(z.string().max(20_000)).max(900)
+})
+
 export const translatePairSchema = z.object({
   source: z.string().min(2).max(8),
   target: z.string().min(2).max(8)
+})
+
+export const versoRefSchema = z.object({
+  lang: z.string().min(2).max(8),
+  code: z.string().min(3).max(6),
+  cap: z.number().int().positive().max(200),
+  ver: z.number().int().positive().max(200)
+})
+
+export const versoBatchSchema = z.object({
+  items: z.array(versoRefSchema).max(900)
+})
+
+export const versoResultadoSchema = z.object({
+  texto: z.string(),
+  nivel: z.enum(['verificado', 'experimental', 'original']),
+  fuente: z.string().max(200).optional()
 })
 
 export const aiChatSchema = z.object({
@@ -199,4 +224,8 @@ export type FullscreenInput = z.infer<typeof fullscreenSchema>
 export type ZoomInput = z.infer<typeof zoomSchema>
 export type PresentationSaveInput = z.infer<typeof presentationSaveSchema>
 export type TranslateRequestInput = z.infer<typeof translateRequestSchema>
+export type TranslateBatchInput = z.infer<typeof translateBatchSchema>
 export type TranslatePairInput = z.infer<typeof translatePairSchema>
+export type VersoRef = z.infer<typeof versoRefSchema>
+export type VersoBatchInput = z.infer<typeof versoBatchSchema>
+export type VersoResultado = z.infer<typeof versoResultadoSchema>

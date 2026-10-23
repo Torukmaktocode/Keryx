@@ -160,6 +160,48 @@ Result: 0/5 fallos Â· score medio 9.0/9
 - Verificado contra los 96 nombres reales de `biblioteca/BIBLIAS`;
   typecheck + lint + 70 tests en verde.
 
+## E4.3 — Traducción a lenguas nativas (2026-10-22) · chips nativas del Sidebar
+
+- **Verso verificado (Nivel 1) via `node:sqlite` en el main** (`versoLote`,
+  `main/traductor.ts`): SQLite local por referencia canónica — instantáneo y
+  sin depender del daemon Python; los lotes neurales nunca bloquean el texto
+  verificado (causa raíz de los "no disponible"). El daemon pierde la op
+  `verso` (código muerto eliminado).
+- **Corpus fusionado**: AT Guaraní GDC2006 (Sociedad Bíblica Paraguaya,
+  misma variante que guiNT) en `gn.db`: +22.666 versos / 39 libros
+  (`instalar_corpus_dialectos.py` con fusión por libro y `solo_testamento`).
+  Aymara AYBOL 1986 Biblia completa; arn/bn NT; quechua sin fuente pública
+  verificable (documentado; queda neural ≈).
+- **Guaraní neural conectado**: `grn_Latn` en `DIALECTOS_NLLB` (el modelo
+  NLLB ya instalado lo cubría sin descargar nada), par es>gn en `pairs`,
+  auto-instalación `DIALECTO_A_SPEC`.
+- **Comparativa por columna**: en modo 4/6 el corpus (1 texto verificado por
+  referencia) alimenta SOLO la columna Base (`corpus:false` en items);
+  las demás traducen su propio texto — comparar traducciones conserva el
+  matiz. En modo simple el corpus aplica completo.
+- **Daemon con hilos workers** (ThreadPoolExecutor, CTranslate2 libera el
+  GIL): `pairs`/`status` responde instantáneo aunque haya un lote pesado en
+  curso (fin de los falsos "Translation not available"); escritura de stdout
+  bajo candado.
+- **Watchdog**: si el daemon muere en vuelo, el main lo relanza en 2 s
+  (`prepararSalidaTraductor` marca la salida limpia).
+- **Banner auto-sanador**: `estadoTraduccion` no cachea el estado negativo;
+  Sidebar revalida al cambiar de idioma.
+- **Barra de progreso por lengua nativa** (`useCargaIdioma`): % animado en el
+  chip mientras carga el capítulo + punto verde "listo" esta sesión.
+- **Traducción global**: Guía del Pasaje (entradas de fichas) e Inspiración
+  (escena, predicación, introducción, texto, bosquejo, citas, frase, gran
+  idea, aplicación, bio) pasan por `TextoTraducido`.
+- Robustez: dedupe de lotes en vuelo (el efecto del Lector re-dispara con
+  colVerses), espera de hooks 90 s para nativas (sin estampida individual),
+  filtro <12→<4 chars, beam 2 en lotes (2× más rápido).
+- **Evals de traducción** `npm run eval:trad` (`eval_traduccion.mts` +
+  `metricas_traduccion.ts` con chrF++/BLEU-4, tests unitarios): 44 casos de
+  control es→nativa contra el daemon real, umbral por lengua, conteo de sin
+  datos — 4/4 PASS (arn 16.9 · gn 28.3 · ay 23.2 · bn 45.4 chrF++).
+- Fix del crash del Estudio: `useEffect` duplicado de precarga usaba
+  `currentBook` antes de su declaración.
+
 ## Siguiente (candidatos, sin compromiso)
 
 - E5: builder de bosquejos desde el AST (editar en vivo), bajar latencia

@@ -385,9 +385,17 @@ export const it: Record<TranslationKey, string> = {
   'presentaciones.exportError': 'Impossibile salvare la presentazione: {error}',
   'presentaciones.bases': 'Sfondi base',
   'presentaciones.variantes': 'Varianti',
+  'presentaciones.redactarIA': 'Redigi con IA',
+  'presentaciones.redactando': 'Redigendo…',
+  'presentaciones.redactarError': 'Impossibile redigere',
+  'presentaciones.volverCodigo': 'Torna al codice',
 
   'traduccion.descargando': 'Preparazione della lingua {idioma}…',
   'traduccion.noDisponible': 'Traduzione non disponibile su questo computer',
+  'traduccion.pendiente': 'Traduttore in preparazione',
+  'traduccion.verificado': 'Verificato: testo delle Società Bibliche',
+  'traduccion.experimental': 'Traduzione sperimentale (motore locale)',
+  'traduccion.sinDatos': 'Senza dati: originale mostrato',
   'traduccion.original': 'Tradotto · clic per vedere l\u2019originale',
 
   'inspiration.count': '{count} sermoni classici',
@@ -424,6 +432,7 @@ export const it: Record<TranslationKey, string> = {
 
   'settings.title': 'Impostazioni',
   'settings.language': 'Lingua',
+  'settings.nativas': 'Lingue native',
   'settings.theme': 'Tema',
   'settings.writingFont': 'Font di scrittura',
   'settings.writingFontHint': 'Tipografia dell\u2019editor minimalista',
@@ -459,5 +468,10 @@ export const it: Record<TranslationKey, string> = {
   'language.it': 'Italiano',
   'language.fr': 'Français',
   'language.de': 'Deutsch',
-  'language.zh': '中文'
+  'language.zh': '中文',
+  'language.qu': 'Quechua',
+  'language.ay': 'Aymara',
+  'language.gn': 'Guaraní',
+  'language.arn': 'Mapudungun',
+  'language.bn': 'Bengalí'
 }

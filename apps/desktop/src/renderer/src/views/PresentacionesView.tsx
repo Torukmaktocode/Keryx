@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, type JSX } from 'react'
 import { useI18n } from '@keryx/i18n'
 import { useAppStore } from '../store/appStore'
-import { buildSlides, type PSlide } from '../lib/presentation'
+import { buildSlides, parsePuleo, pidePuleo, type PSlide } from '../lib/presentation'
+import { api } from '../lib/api'
 import {
   fondosDeTema,
   fondoPorId,
@@ -21,13 +22,17 @@ export function PresentacionesView() {
   const doc = useAppStore((s) => s.presentationDoc)
   const setView = useAppStore((s) => s.setView)
   const notify = useAppStore((s) => s.notify)
+  const aiEnabled = useAppStore((s) => s.settings.aiEnabled)
 
   const [tema, setTema] = useState<TemaId>('azules')
   const [fondoId, setFondoId] = useState<string>('')
   const [style, setStyle] = useState<FondoStyle | null>(null)
   const [exporting, setExporting] = useState(false)
+  const [pulido, setPulido] = useState<PSlide[] | null>(null)
+  const [redactando, setRedactando] = useState(false)
 
-  const slides = useMemo<PSlide[]>(() => (doc ? buildSlides(doc) : []), [doc])
+  const base = useMemo<PSlide[]>(() => (doc ? buildSlides(doc) : []), [doc])
+  const slides = pulido ?? base
   const temaFondos = useMemo<Fondo[]>(() => fondosDeTema(tema), [tema])
   const fondo = useMemo<Fondo>(
     () => (fondoId ? fondoPorId(fondoId) : undefined) ?? temaFondos[0] ?? fondoInicial(),
@@ -44,6 +49,33 @@ export function PresentacionesView() {
       cancelled = true
     }
   }, [fondo])
+
+  useEffect(() => {
+    setPulido(null)
+    setRedactando(false)
+  }, [doc])
+
+  const redactar = async (): Promise<void> => {
+    if (!doc) return
+    setRedactando(true)
+    try {
+      const peticion = pidePuleo(doc, base)
+      const res = await api.ai.chat({
+        messages: [
+          { role: 'system', content: peticion.system },
+          { role: 'user', content: peticion.user }
+        ],
+        temperature: 0.5,
+        maxTokens: 1800
+      })
+      const nuevo = parsePuleo(res.text, base)
+      if (nuevo !== base) setPulido(nuevo)
+    } catch (error) {
+      notify(error instanceof Error ? error.message : t('presentaciones.redactarError'))
+    } finally {
+      setRedactando(false)
+    }
+  }
 
   if (!doc) {
     return (
@@ -138,9 +170,19 @@ export function PresentacionesView() {
           )}
 
           <div className="presentaciones-actions">
+            {aiEnabled && (
+              <button className="btn" onClick={() => void redactar()} disabled={redactando}>
+                {redactando ? t('presentaciones.redactando') : t('presentaciones.redactarIA')}
+              </button>
+            )}
             <button className="btn primary" onClick={() => void exportar()} disabled={exporting}>
               {exporting ? t('presentaciones.exporting') : t('presentaciones.export')}
             </button>
+            {pulido && (
+              <button className="btn ghost" onClick={() => setPulido(null)}>
+                {t('presentaciones.volverCodigo')}
+              </button>
+            )}
             <span className="muted" style={{ fontSize: 12 }}>
               {t('presentaciones.preview')}
             </span>

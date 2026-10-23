@@ -14,7 +14,7 @@ import { Icon } from '../components/Icon'
 import { TextoTraducido } from '../components/TextoTraducido'
 import { TituloTraducido } from '../components/TituloTraducido'
 import { useEtiquetasModulos } from '../lib/titulos'
-import { plainText } from '../lib/traductor'
+import { plainText, precalentarOtrosIdiomas, traducirLoteMulti, type RefVerso } from '../lib/traductor'
 
 const COUNTS = [1, 2, 4, 6] as const
 type CompareCount = (typeof COUNTS)[number]
@@ -340,6 +340,58 @@ export function ReaderView() {
   }
 
   const modulesByName = useMemo(() => new Map(modules.map((m) => [m.name, m])), [modules])
+  const translateLocale = useAppStore((s) => s.settings.translateLocale)
+
+  // Precarga del capitulo por lote: 1 llamada por idioma, la cache LRU
+  // responde al instante para cada versiculo cuando el hook pide. Los
+  // versiculos viajan con referencia canonica para el corpus verificado.
+  // En comparativa el corpus (1 texto verificado por referencia) solo
+  // alimenta la columna Base: las demas traducen SU PROPIO texto, que es
+  // lo que da sentido a comparar traducciones (matices distintos).
+  useEffect(() => {
+    const items: Array<{ texto: string; lang?: string | null; ref?: RefVerso | null; corpus?: boolean }> = []
+    if (compare) {
+      colModules.slice(0, compareCount).forEach((name, index) => {
+        const lista = colVerses[name]
+        if (!lista) return
+        const lang = modulesByName.get(name)?.lang
+        for (const verse of lista)
+          items.push({
+            texto: verse.text,
+            lang,
+            ref: { code: currentBook.code, cap: verse.chapter, ver: verse.verse },
+            corpus: index === 0
+          })
+      })
+    } else {
+      const lang = modulesByName.get(selectedModule)?.lang
+      for (const verse of verses)
+        items.push({ texto: verse.text, lang, ref: { code: currentBook.code, cap: verse.chapter, ver: verse.verse } })
+    }
+    if (!items.length) return
+    void traducirLoteMulti(items, translateLocale).then(() =>
+      precalentarOtrosIdiomas(items, translateLocale)
+    )
+  }, [translateLocale, verses, colVerses, compare, compareCount, colModules, selectedModule, modulesByName, currentBook.code])
+
+  // Prefetch del capitulo siguiente en segundo plano: al pasar de pagina el
+  // switch de idioma responde al instante (todo ya vive en la cache LRU).
+  useEffect(() => {
+    if (!selectedModule || chapter >= currentBook.chapters) return
+    void api.bible
+      .chapter({ module: selectedModule, book, chapter: chapter + 1 })
+      .then((next) =>
+        traducirLoteMulti(
+          next.map((verse) => ({
+            texto: verse.text,
+            lang: modulesByName.get(selectedModule)?.lang,
+            ref: { code: currentBook.code, cap: verse.chapter, ver: verse.verse }
+          })),
+          translateLocale
+        )
+      )
+      .catch(() => undefined)
+  }, [selectedModule, book, chapter, currentBook.chapters, translateLocale, modulesByName, currentBook.code])
 
   const profileKey = (moduleName: string): TranslationKey | null => {
     const profile = modulesByName.get(moduleName ?? '')?.profile

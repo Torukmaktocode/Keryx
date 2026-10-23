@@ -5,6 +5,7 @@ import { apiHook, buildDossier } from '../lib/agents'
 import { useAppStore } from '../store/appStore'
 import { Icon } from './Icon'
 import { TituloTraducido } from './TituloTraducido'
+import { TextoTraducido } from './TextoTraducido'
 import { downloadDocument } from '../lib/exportDoc'
 import { ExegesisCard } from './ExegesisCard'
 
@@ -164,7 +165,9 @@ export function PassageGuide({ book, chapter, verse, bookLabel }: Props) {
             </div>
             <ul>
               {section.entries.map((entry, index) => (
-                <li key={index}>{entry}</li>
+                <li key={index}>
+                  <TextoTraducido plain={entry} lang="es" />
+                </li>
               ))}
             </ul>
           </section>

@@ -114,8 +114,14 @@ export const api = {
     status: (): Promise<{ available: boolean; pairs: string[] }> => unwrap(raw.translate.status()),
     translate: (req: { source: string; target: string; text: string }): Promise<string> =>
       unwrap(raw.translate.translate(req)),
+    batch: (req: { source: string; target: string; items: string[] }): Promise<string[]> =>
+      unwrap(raw.translate.batch(req)),
     install: (req: { source: string; target: string }): Promise<string[]> =>
-      unwrap(raw.translate.install(req))
+      unwrap(raw.translate.install(req)),
+    verso: (
+      req: { items: Array<{ lang: string; code: string; cap: number; ver: number }> }
+    ): Promise<{ versos: Record<string, string | null>; meta: Record<string, Record<string, string>> }> =>
+      unwrap(raw.translate.verso(req))
   },
   ai: {
     chat: (req: AiChatRequest): Promise<AiChatResult> => unwrap(raw.ai.chat(req)),

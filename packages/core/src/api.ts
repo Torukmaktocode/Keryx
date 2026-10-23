@@ -17,8 +17,10 @@ import type {
 } from './types'
 import type {
   PresentationSaveInput,
+  TranslateBatchInput,
   TranslatePairInput,
-  TranslateRequestInput
+  TranslateRequestInput,
+  VersoBatchInput
 } from './schemas'
 
 export interface EngineInfo {
@@ -119,7 +121,12 @@ export interface KeryxApi {
   translate: {
     status(): Promise<Result<TranslateStatusResult>>
     translate(req: TranslateRequestInput): Promise<Result<string>>
+    batch(req: TranslateBatchInput): Promise<Result<string[]>>
     install(req: TranslatePairInput): Promise<Result<string[]>>
+    verso(req: VersoBatchInput): Promise<Result<{
+      versos: Record<string, string | null>
+      meta: Record<string, Record<string, string>>
+    }>>
   }
   ai: {
     chat(req: AiChatRequest): Promise<Result<AiChatResult>>

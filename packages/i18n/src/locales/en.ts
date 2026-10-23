@@ -386,9 +386,17 @@ export const en: Record<TranslationKey, string> = {
   'presentaciones.exportError': 'Could not save the presentation: {error}',
   'presentaciones.bases': 'Base backgrounds',
   'presentaciones.variantes': 'Variants',
+  'presentaciones.redactarIA': 'Draft with AI',
+  'presentaciones.redactando': 'Drafting…',
+  'presentaciones.redactarError': 'Drafting failed',
+  'presentaciones.volverCodigo': 'Back to code',
 
   'traduccion.descargando': 'Preparing {idioma}…',
   'traduccion.noDisponible': 'Translation not available on this computer',
+  'traduccion.pendiente': 'Translator pending',
+  'traduccion.verificado': 'Verified: Bible Societies text',
+  'traduccion.experimental': 'Experimental translation (local engine)',
+  'traduccion.sinDatos': 'No data: original shown',
   'traduccion.original': 'Translated · click to see the original',
 
   'inspiration.count': '{count} classic sermons',
@@ -425,6 +433,7 @@ export const en: Record<TranslationKey, string> = {
 
   'settings.title': 'Settings',
   'settings.language': 'Language',
+  'settings.nativas': 'Native languages',
   'settings.theme': 'Theme',
   'settings.writingFont': 'Writing font',
   'settings.writingFontHint': 'Minimalist editor typography',
@@ -460,5 +469,10 @@ export const en: Record<TranslationKey, string> = {
   'language.it': 'Italiano',
   'language.fr': 'Français',
   'language.de': 'Deutsch',
-  'language.zh': '中文'
+  'language.zh': '中文',
+  'language.qu': 'Quechua',
+  'language.ay': 'Aymara',
+  'language.gn': 'Guaraní',
+  'language.arn': 'Mapudungun',
+  'language.bn': 'Bengalí'
 }

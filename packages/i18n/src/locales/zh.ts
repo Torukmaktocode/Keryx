@@ -385,9 +385,17 @@ export const zh: Record<TranslationKey, string> = {
   'presentaciones.exportError': '无法保存演示文稿：{error}',
   'presentaciones.bases': '基础背景',
   'presentaciones.variantes': '变体',
+  'presentaciones.redactarIA': '用 AI 撰写',
+  'presentaciones.redactando': '撰写中…',
+  'presentaciones.redactarError': '撰写失败',
+  'presentaciones.volverCodigo': '返回代码',
 
   'traduccion.descargando': '正在准备{idioma}…',
   'traduccion.noDisponible': '此电脑不支持翻译',
+  'traduccion.pendiente': '翻译器准备中',
+  'traduccion.verificado': '已验证：圣经公会文本',
+  'traduccion.experimental': '实验性翻译（本地引擎）',
+  'traduccion.sinDatos': '无数据：显示原文',
   'traduccion.original': '已翻译 · 点击查看原文',
 
   'inspiration.count': '{count} 篇经典讲道',
@@ -424,6 +432,7 @@ export const zh: Record<TranslationKey, string> = {
 
   'settings.title': '设置',
   'settings.language': '语言',
+  'settings.nativas': '原住民语言',
   'settings.theme': '主题',
   'settings.writingFont': '写作字体',
   'settings.writingFontHint': '极简编辑器的字体',
@@ -459,5 +468,10 @@ export const zh: Record<TranslationKey, string> = {
   'language.it': 'Italiano',
   'language.fr': 'Français',
   'language.de': 'Deutsch',
-  'language.zh': '中文'
+  'language.zh': '中文',
+  'language.qu': 'Quechua',
+  'language.ay': 'Aymara',
+  'language.gn': 'Guaraní',
+  'language.arn': 'Mapudungun',
+  'language.bn': 'Bengalí'
 }
