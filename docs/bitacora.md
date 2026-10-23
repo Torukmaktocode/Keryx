@@ -327,6 +327,76 @@ función central de la app; solo la voz del Asistente consume gpt-4o-mini.
 | `main/ai.ts` | — | puente IPC a OpenAI-compatible (única IA de pago) |
 | `scripts/eval-sermons.mts` | ~90 | evals de los 5 pasajes dorados |
 
+### Por qué NO es solo un buscador
+
+Un buscador devuelve resultados; Keryx devuelve un **documento con
+garantías**. La diferencia está en lo que ocurre DESPUÉS de buscar:
+
+1. **Ranking experto** (`COMMENT_RANK`, agents.ts:137): no mina cualquier
+   comentario primero — prioriza Calvino, MacArthur, Matthew Henry,
+   Keil-Delitzsch, Robertson, Barclay, Walton, Keener, Metzger… el orden de
+   las fuentes es una decisión editorial de código, no un ORDER BY.
+2. **Presupuesto determinista** (16.000 chars, agents.ts:249): el dosier
+   consume en ORDEN CANÓNICO fijo; cuando el presupuesto se agota, las
+   secciones siguientes no entran — nunca un dosier desbordado ni
+   truncado a mitad de cita.
+3. **Auto-inspección (gap-analysis)**: el motor mira su propia cobertura y
+   si faltan zonas críticas (ej. sin contexto histórico) relanza una
+   **2ª pasada dirigida** con variantes de acentos sobre otros módulos —
+   un buscador no sabe lo que no encontró.
+4. **Estructura garantizada (AST inmutable)**: el documento nace completo
+   con fallbacks extraídos del dosier; la IA solo puede redactar la voz.
+   El "buscar" es la etapa 1 de 5 — el valor está en las otras 4.
+
+### Por qué supera a Claude / Gemini / ChatGPT en ESTA tarea
+
+Ser justo: no es una comparación de inteligencia general — es una ventaja
+de **diseño de dominio**. Un chat de IA es una moneda de muchas caras;
+Keryx es un motor de una sola pieza, construido para este trabajo:
+
+| Límite del chat de IA | Lo que hace Keryx |
+|---|---|
+| No tiene TU biblioteca: reproduce datos de entrenamiento, caduca y alucina | Mina 717 módulos REALES locales (4,8 GB) en ~400-1000 ms — Sociedades Bíblicas, Wycliffe, Calvino, BDAG-lite: texto que existe en tu disco |
+| Cita Strong mal y "casi" cita versículos | codeCritic de CÓDIGO rechaza cada Strong#/referencia que no esté anclada en el dosier; la reparación dirigida solo actúa si hay hallazgos severos |
+| Ensayo no reproducible: la misma pregunta da otro sermón | Pipeline determinista: misma consulta → mismo dosier → misma estructura; los evals (9.0/9, 5 pasajes dorados) bloquean regresiones ANTES del commit |
+| Genera la respuesta entera de un tirón (tokens caros, lento) | 29-33 sub-agentes de código (0 tokens) construyen todo; 1 llamada corta (máx 1.400 tokens) solo redacta gancho/intro/puentes/meditación/oración |
+| Si el modelo cae, no hay sermón | Fallbacks deterministas: sin IA el sermón sale igual (texto guía completo, fuentes ancladas) |
+| No traduce a lenguas nativas con texto verificado | Corpus verificado (✓) de Sociedades Bíblicas/Wycliffe + motor neural offline (≈) para AT y NT en 5 lenguas — 0 tokens |
+
+La "magia" detrás: **la IA es el último eslabón, no el motor**. Todo lo
+difícil (buscar en 717 módulos, rankear, presupuestar, cruzar Strong con
+morfología Robinson, Walton verse-por-verse, verificar, ensamblar, evaluar)
+es TypeScript + SQLite local. Por eso el resultado es verificable línea a
+línea: cada frase del sermón que usa datos lleva su cita
+`[Módulo · entrada]`, y las Fuentes ancladas las escribe el código al
+cierre — jamás la IA.
+
+### Por qué supera el método humano de 6-8 horas
+
+El predicador que prepara a mano dedica esas horas sobre todo a **labores
+mecánicas**: abrir 10-15 libros, buscar el pasaje en cada comentario,
+cruzar el Strong con la morfología, buscar geografía y costumbres, copiar
+citas, escribir el bosquejo, redactar, revisar que nada esté mal citado.
+Eso es exactamente lo que la mina de 25 agentes hace en ~1 segundo.
+
+| | Método humano | Keryx |
+|---|---|---|
+| Recolección de fuentes | 2-4 h (10-15 libros a mano) | **~0,4-1 s** (25 agentes, 717 módulos) |
+| Cruce Strong/morfología/geografía | 1-2 h | instantáneo (código) |
+| Verificar citas y referencias | 30-60 min (y con errores) | codeCritic + evals, por construcción |
+| Esqueleto + redacción inicial | 2-3 h | esqueleto ~1 s + voz ~20-30 s (1 llamada) |
+| Costo | 6-8 h de trabajo no pagado o la suscripción de un tool caro | ~1 llamada corta (~centavos) |
+| **Total** | **6-8 h** | **~30 s + la revisión del predicador** |
+
+La afirmación honesta importa: Keryx no supera al predicador en lo que SOLO
+el predicador puede — discernir a su congregación, orar por el mensaje,
+aplicar con autoridad espiritual, predicar con unción. Lo que comprime es
+la ** mecánica**: el borrador completo, citado y verificado llega en ~30 s
+y el predicador lo hace SUYO editando con CodeMirror, enviándolo al editor
+o a la presentación. El ahorro real: **5-7 horas por sermón**, y el
+predicador queda en el centro del bucle (Modo Misión planeado: corrige,
+aprueba y su revisión se vuelve texto verificado para toda la app).
+
 ## Siguiente (candidatos, sin compromiso)
 
 - **Modo Misión**: editor de traducción por verso para misioneros (borrador
