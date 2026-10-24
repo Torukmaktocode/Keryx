@@ -539,7 +539,6 @@ hace imposible lo impreciso**:
    los pasajes dorados, `npm run eval` falla y el commit no sale.
 
 ### Dos lecturas del potencial: versión técnica y versión teológica
-
 **Versión TÉCNICA (para expertos en tecnología)**
 
 Keryx es un pipeline de dominio con garantías de ingeniería, no una
@@ -596,6 +595,31 @@ capítulos enteros en segundos para el misionero — no reemplaza al
 traductor humano: le entrega en minutos el andamio que le tomaría meses,
 y su revisión aprobada se vuelve texto verificado para toda la comunidad.
 El traductor sigue siendo humano; el tiempo de espera, no.
+
+### Comparativa con Kaleo (withkaleo.com)
+
+Kaleo AI es un servicio de NUBE para la traducción EN VIVO del culto
+(150+ lenguas, subtítulos en tiempo real, escaneo de QR por los asistentes,
+suscripción de $24-149/mes). Keryx es otro deporte: preparación del sermón
+en escritorio. La comparación honesta:
+
+| | Kaleo AI | Keryx |
+|---|---|---|
+| Propósito | interpretación simultánea del culto en vivo | preparación del sermón: minado de 717 módulos, sermón completo, estudio, editor |
+| Arquitectura | nube: audio del servicio se transmite a sus servidores | escritorio local: nada sale del equipo |
+| Traducción | MT de nube en tiempo real (texto generado) | verso verificado PUBLicado (✓) o borrador neural (≈), con corpus propio |
+| Costo | $24-149/mes, por horas de streaming | GPL gratis; único costo: ~centavos de voz en el Asistente |
+| Conexión | requiere internet estable | 100 % offline |
+| Lenguas | 150+ (incluye aymara, guaraní, quechua) — SIN Mapudungun | 5 lenguas nativas con corpus verificado (incl. Mapudungun NT 7.923 versos) |
+| Privacidad | el audio del culto viaja a la nube | privatidad pastoral absoluta |
+| Minado bíblico | ninguno (no prepara sermones) | 25-33 sub-agentes de código, dosier citado, Patrón Cristo/Apostólico |
+
+Síntesis: Kaleo amplifica el culto EN VIVO y cobra suscripción por hora;
+Keryx prepara el mensaje ANTES y entrega el texto verificado offline.
+Son complementarios — y Keryx llega a la lengua que Kaleo no tiene
+(Mapudungun), con texto publicado tal cual en vez de reformulación
+estadística. A futuro (Modo Misión) Keryx podría explorar proyección de
+subtítulos del sermón ya preparado, sin audio en la nube.
 
 ## Siguiente (candidatos, sin compromiso)
 
