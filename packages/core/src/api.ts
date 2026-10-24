@@ -16,6 +16,9 @@ import type {
   Verse
 } from './types'
 import type {
+  GlosarioPar,
+  GlosarioRequest,
+  LenguaEstado,
   PresentationSaveInput,
   TranslateBatchInput,
   TranslatePairInput,
@@ -127,6 +130,8 @@ export interface KeryxApi {
       versos: Record<string, string | null>
       meta: Record<string, Record<string, string>>
     }>>
+    lenguas(): Promise<Result<LenguaEstado[]>>
+    glosario(req: GlosarioRequest): Promise<Result<{ lang: string; pares: GlosarioPar[] }>>
   }
   ai: {
     chat(req: AiChatRequest): Promise<Result<AiChatResult>>

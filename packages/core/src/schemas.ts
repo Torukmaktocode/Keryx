@@ -190,6 +190,26 @@ export const versoResultadoSchema = z.object({
   fuente: z.string().max(200).optional()
 })
 
+export const lenguaEstadoSchema = z.object({
+  code: z.string().min(2).max(8),
+  nombre: z.string().max(60),
+  familia: z.string().max(80),
+  alfabeto: z.string().max(400),
+  motor: z.enum(['corpus', 'neural', 'pendiente']),
+  versosCorpus: z.number().int().nonnegative(),
+  glosario: z.number().int().nonnegative()
+})
+
+export const glosarioRequestSchema = z.object({
+  lang: z.string().min(2).max(8)
+})
+
+export const glosarioParSchema = z.object({
+  es: z.string().max(60),
+  nat: z.string().max(60),
+  peso: z.number()
+})
+
 export const aiChatSchema = z.object({
   messages: z
     .array(
@@ -229,3 +249,6 @@ export type TranslatePairInput = z.infer<typeof translatePairSchema>
 export type VersoRef = z.infer<typeof versoRefSchema>
 export type VersoBatchInput = z.infer<typeof versoBatchSchema>
 export type VersoResultado = z.infer<typeof versoResultadoSchema>
+export type LenguaEstado = z.infer<typeof lenguaEstadoSchema>
+export type GlosarioRequest = z.infer<typeof glosarioRequestSchema>
+export type GlosarioPar = z.infer<typeof glosarioParSchema>

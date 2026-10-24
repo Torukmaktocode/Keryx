@@ -65,7 +65,9 @@ const api: KeryxApi = {
     translate: (req) => invoke(IPC.translateRequest, req),
     batch: (req) => invoke(IPC.translateBatch, req),
     install: (req) => invoke(IPC.translateInstall, req),
-    verso: (req) => invoke(IPC.versoBatch, req)
+    verso: (req) => invoke(IPC.versoBatch, req),
+    lenguas: () => invoke(IPC.translateLenguas),
+    glosario: (req) => invoke(IPC.translateGlosario, req)
   },
   ai: {
     chat: (req) => invoke(IPC.aiChat, req),

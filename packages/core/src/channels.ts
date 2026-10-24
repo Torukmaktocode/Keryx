@@ -50,6 +50,8 @@ export const IPC = {
   translateBatch: 'translate:batch',
   translateInstall: 'translate:install',
   versoBatch: 'translate:verso-batch',
+  translateLenguas: 'translate:lenguas',
+  translateGlosario: 'translate:glosario',
 
   aiChat: 'ai:chat',
   aiStatus: 'ai:status'

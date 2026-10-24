@@ -14,7 +14,9 @@ import type {
   Repository,
   StrongsEntry,
   SwordModule,
-  DocumentMeta
+  DocumentMeta,
+  LenguaEstado,
+  GlosarioPar
 } from '@keryx/core'
 
 async function unwrap<T>(promise: Promise<Result<T>>): Promise<T> {
@@ -121,7 +123,10 @@ export const api = {
     verso: (
       req: { items: Array<{ lang: string; code: string; cap: number; ver: number }> }
     ): Promise<{ versos: Record<string, string | null>; meta: Record<string, Record<string, string>> }> =>
-      unwrap(raw.translate.verso(req))
+      unwrap(raw.translate.verso(req)),
+    lenguas: (): Promise<LenguaEstado[]> => unwrap(raw.translate.lenguas()),
+    glosario: (req: { lang: string }): Promise<{ lang: string; pares: GlosarioPar[] }> =>
+      unwrap(raw.translate.glosario(req))
   },
   ai: {
     chat: (req: AiChatRequest): Promise<AiChatResult> => unwrap(raw.ai.chat(req)),

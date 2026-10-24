@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactElement } from 'react'
 import { LOCALES, useI18n, type TranslationKey } from '@keryx/i18n'
-import type { AppSettings } from '@keryx/core'
+import type { AppSettings, LenguaEstado } from '@keryx/core'
 import { useAppStore, type View } from '../store/appStore'
 import { Icon, type IconName } from './Icon'
+import { api } from '../lib/api'
 import { estadoTraduccion, NATIVAS, useCargaIdioma } from '../lib/traductor'
 
 const ITEMS: { id: View; icon: IconName }[] = [
@@ -28,9 +29,11 @@ export function Sidebar() {
   const updateSettings = useAppStore((s) => s.updateSettings)
   const toggleSidebar = useAppStore((s) => s.toggleSidebar)
   const [motor, setMotor] = useState<{ available: boolean } | null>(null)
+  const [lenguas, setLenguas] = useState<LenguaEstado[]>([])
 
   useEffect(() => {
     void estadoTraduccion().then((status) => setMotor(status))
+    void api.translate.lenguas().then((lenguas) => setLenguas(lenguas))
   }, [])
 
   /* Revalidar el estado del motor cuando se cambia de idioma: el banner
@@ -88,9 +91,19 @@ export function Sidebar() {
           ))}
         </div>
         <div className="lang-switch nativas" title={t('settings.nativas')}>
-          {NATIVAS.map((code) => (
-            <ChipNativa key={code} code={code} translateLocale={translateLocale} updateSettings={updateSettings} />
-          ))}
+          {(lenguas.length ? lenguas.map((l) => l.code) : NATIVAS).map((code) => {
+            const estado = lenguas.find((l) => l.code === code)
+            return (
+              <ChipNativa
+                key={code}
+                code={code}
+                translateLocale={translateLocale}
+                updateSettings={updateSettings}
+                estado={estado}
+                disabled={estado?.motor === 'pendiente'}
+              />
+            )
+          })}
         </div>
       </div>
     </aside>
@@ -100,11 +113,15 @@ export function Sidebar() {
 function ChipNativa({
   code,
   translateLocale,
-  updateSettings
+  updateSettings,
+  estado,
+  disabled = false
 }: {
   code: string
   translateLocale: string
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
+  estado?: LenguaEstado
+  disabled?: boolean
 }): ReactElement {
   const { t } = useI18n()
   const carga = useCargaIdioma(code)
@@ -113,7 +130,14 @@ function ChipNativa({
     <button
       className={translateLocale === code ? 'active' : ''}
       onClick={() => void updateSettings({ translateLocale: code })}
-      title={t(`language.${code}` as TranslationKey)}
+      disabled={disabled}
+      title={
+        disabled
+          ? t('settings.sinCorpus')
+          : estado
+            ? `${estado.nombre} · ${estado.motor === 'corpus' ? 'corpus verificado' : 'motor neural'} · ${estado.versosCorpus.toLocaleString('es')} versos · glosario ${estado.glosario} pares · ${estado.alfabeto}`
+            : t(`language.${code}` as TranslationKey)
+      }
     >
       {t(`language.${code}` as TranslationKey)}
       {carga && carga.estado === 'cargando' && (

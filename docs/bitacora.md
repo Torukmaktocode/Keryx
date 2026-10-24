@@ -206,10 +206,62 @@ regresiones.
 
 ---
 
+## Día 24 (24 oct 2026) - MEGA-MOTOR de lenguas: crear, no instalar
+
+> Regla del pastor: **nada de descargas gigantes ni tokens — CREAR el
+> motor**. El misionero trae la Biblia ya traducida (corpus); el motor de
+> Keryx la procesa: alfabeto, glosario básico estadístico, verso verificado.
+> Una lengua nueva se ACTIVA soltando un corpus, no comprando un modelo.
+
+### El motor genérico (todo código, 0 tokens)
+
+- **Glosario estadístico** (nuevo `scripts/glosario_estadistico.ts` puro +
+  `scripts/extraer_glosarios.mts` CLI): alinea verso por verso el corpus
+  nativo (SQLite, referencia canónica) con el español de la biblioteca
+  e-Sword y extrae el diccionario básico por co-ocurrencia ponderada por
+  rareza inversa (estilo PMI): funcionarios (>8 % frecuencia global) y
+  tokens únicos excluidos, mínimo 4 versos de apoyo, máx 3 candidatos por
+  término con peso ≥1.4 — sin dato, sin par (principio de silencio).
+  Resultado real generado: **gn Dios→tupã/tumpa, fe→mborogüɨrovia,
+  cielo→ara** · **arn Dios→ngünechen, fe→mupiltun, vida→mongen** ·
+  ayr y bn: 296 pares en total (75+75+75+71) en ~30 s por corrida.
+- **Registro de lenguas** (`main/traductor.ts` REGISTRO_LENGUAS): cada
+  lengua con nombre, familia, ALFABETO completo (Mapudungun con ü/tr/ng,
+  Guaraní con g̃/ỹ, Aymara con glotalización ch'/k', Náhuatl y Maya
+  yucateco pendientes) y estado calculado al vuelo: corpus (db+versos),
+  neural (modelo CT2 instalado) o pendiente.
+- **IPC tipado con Zod**: `translate:lenguas` → registro con estado,
+  versosCorpus y glosario; `translate:glosario` → pares del diccionario
+  básico (core schemas + api + preload + api renderer).
+- **Sidebar dinámico**: los chips se renderizan desde el REGISTRO (no
+  lista fija): lengua con corpus/neural → activa; pendiente → deshabilitada
+  con aviso honesto ("traer una Biblia traducida activa esta lengua"); el
+  tooltip muestra nombre, motor, versos del corpus, tamaño del glosario y
+  el alfabeto completo — el pastor ve la lengua que está predicando.
+- **Tests**: 6 nuevos del extractor (alineación, funcionarios fuera,
+  silencio ante semillas sin datos, tokenize con apostrofe/diacríticos).
+  **132 tests en total**.
+
+### Verificación (commit)
+
+- `npm run typecheck` ✓ · `npm run test` ✓ 132/132 · `npm run eval` ✓ 9.0/9 ·
+  `npm run eval:trad` ✓ 0/4 fallos
+
+### Horizonte del mega-motor (siguientes sesiones)
+
+- Glosario como CALIDAD del neural: términos del glosario anclan la
+  traducción neural (post-edición determinista, 0 tokens).
+- Proyección de glosario en la Guía del Pasaje y en la comparativa del
+  Lector (columna nativa con su diccionario al lado).
+- Lengua nueva = 1 archivo: `corpus/<code>.db` (el misionero lo genera con
+  su traducción) + registro `REGISTRO_LENGUAS` — sin modelos externos.
+
+---
+
 ## Estado de verificación al cierre de esta bitácora
 
 - `npm run typecheck` ✓ sin errores
-- `npm run test` ✓ 126/126 tests
+- `npm run test` ✓ 132/132 tests
 - `npm run eval` ✓ 9.0/9, 0 fallos (5 pasajes dorados)
 - `npm run eval:trad` ✓ 4/4 lenguas, 0 fallos
 

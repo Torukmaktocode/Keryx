@@ -12,6 +12,7 @@ import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import {
   IPC,
+  glosarioRequestSchema,
   translateBatchSchema,
   translatePairSchema,
   translateRequestSchema,
@@ -239,6 +240,138 @@ const DIALECTO_A_SPEC = new Map([
   ['gn', 'quechua'],
   ['arn', 'mapudungun']
 ])
+
+/* Registro de LENGUAS NATIVAS: motor generico hecho en Keryx. Cada lengua se
+ * activa con corpus (texto verificado que trae el misionero, db SQLite) o con
+ * motor neural instalado; nada requiere descarga para CREAR una lengua nueva:
+ * basta soltar el corpus en userData/corpus/<code>.db. */
+export interface LenguaRegistro {
+  code: string
+  nombre: string
+  familia: string
+  alfabeto: string
+  corpusDb: string | null
+}
+
+const REGISTRO_LENGUAS: LenguaRegistro[] = [
+  {
+    code: 'arn',
+    nombre: 'Mapudungun',
+    familia: 'lengua aislada (Chile, Argentina)',
+    alfabeto: 'a ch d e f g i k l m n ñ ng p r s t tr u w y ü z',
+    corpusDb: 'arn'
+  },
+  {
+    code: 'gn',
+    nombre: 'Guaraní',
+    familia: 'Tupí-Guaraní (Paraguay, Bolivia, Argentina)',
+    alfabeto: "a ã e ẽ g g̃ i ĩ j k l mb n nd ng nt ñ o õ p r rr s t u ũ y ỹ '",
+    corpusDb: 'gn'
+  },
+  {
+    code: 'qu',
+    nombre: 'Quechua',
+    familia: 'Quechua (Perú, Bolivia, Ecuador)',
+    alfabeto: "a ch chh ch' i j k kh k' l ll m n ñ p ph p' q qh q' r s t th t' u w y",
+    corpusDb: 'quy'
+  },
+  {
+    code: 'ay',
+    nombre: 'Aymara',
+    familia: 'Aymara (Bolivia, Perú, Chile)',
+    alfabeto: "a ch chh ch' i ij j k kh k' l ll m n ñ p ph p' q qh q' r s t th t' u w x y",
+    corpusDb: 'ayr'
+  },
+  {
+    code: 'bn',
+    nombre: 'Bengalí',
+    familia: 'Indoaria (Bangladesh, India)',
+    alfabeto:
+      'অ আ ই ঈ উ ঊ ঋ এ ঐ ও ঔ ক খ গ ঘ ঙ চ ছ জ ঝ ঞ ট ঠ ড ঢ ণ ত থ দ ধ ন প ফ ব ভ ম য র ল শ ষ স হ',
+    corpusDb: 'bn'
+  },
+  {
+    code: 'nah',
+    nombre: 'Náhuatl',
+    familia: 'Uto-Azteca (México)',
+    alfabeto: 'a c ch e hu i j k kw l m n o p qu r s t tl ts u x y z',
+    corpusDb: null
+  },
+  {
+    code: 'yua',
+    nombre: 'Maya yucateco',
+    familia: 'Yucateca (México, Belice)',
+    alfabeto: "a b ch ch' d e f g i j k' k l m n o p p' r s t ts tz u u' w x y '",
+    corpusDb: null
+  }
+]
+
+export interface LenguaEstado {
+  code: string
+  nombre: string
+  familia: string
+  alfabeto: string
+  motor: 'corpus' | 'neural' | 'pendiente'
+  versosCorpus: number
+  glosario: number
+}
+
+export function lenguasEstado(): LenguaEstado[] {
+  return REGISTRO_LENGUAS.map((lengua) => {
+    let motor: LenguaEstado['motor'] = 'pendiente'
+    let versosCorpus = 0
+    if (lengua.corpusDb) {
+      const con = corpusConn(lengua.code)
+      if (con) {
+        try {
+          const fila = con.prepare('SELECT COUNT(*) AS n FROM versos').get() as { n?: number }
+          versosCorpus = fila?.n ?? 0
+          if (versosCorpus > 0) motor = 'corpus'
+        } catch {
+          versosCorpus = 0
+        }
+      }
+    }
+    if (motor === 'pendiente' && DIALECTO_A_SPEC.has(lengua.code)) {
+      const spec = DIALECTO_A_SPEC.get(lengua.code)!
+      if (existsSync(join(userDataDir(), 'dialectos', spec, 'model.bin'))) motor = 'neural'
+    }
+    let glosario = 0
+    try {
+      const ruta = join(userDataDir(), `glosario_${lengua.corpusDb ?? lengua.code}.json`)
+      if (existsSync(ruta)) {
+        const data = JSON.parse(readFileSync(ruta, 'utf-8')) as { pares?: unknown[] }
+        glosario = data.pares?.length ?? 0
+      }
+    } catch {
+      glosario = 0
+    }
+    return {
+      code: lengua.code,
+      nombre: lengua.nombre,
+      familia: lengua.familia,
+      alfabeto: lengua.alfabeto,
+      motor,
+      versosCorpus,
+      glosario
+    }
+  })
+}
+
+export function glosarioDe(lang: string): Array<{ es: string; nat: string; peso: number }> {
+  const lengua = REGISTRO_LENGUAS.find((l) => l.code === lang || l.corpusDb === lang)
+  if (!lengua) return []
+  try {
+    const ruta = join(userDataDir(), `glosario_${lengua.corpusDb ?? lengua.code}.json`)
+    if (!existsSync(ruta)) return []
+    const data = JSON.parse(readFileSync(ruta, 'utf-8')) as {
+      pares?: Array<{ es: string; nat: string; peso: number }>
+    }
+    return data.pares ?? []
+  } catch {
+    return []
+  }
+}
 
 /** Instala el modelo de una lengua nativa (descarga una vez; sub-agente de codigo). */
 async function instalarDialecto(target: string): Promise<boolean> {
@@ -485,5 +618,10 @@ export function registerTraductorIpc(
   register(IPC.translateInstall, (args) => {
     const req = translatePairSchema.parse(args[0])
     return translateInstall(req.source, req.target)
+  })
+  register(IPC.translateLenguas, () => lenguasEstado())
+  register(IPC.translateGlosario, (args) => {
+    const req = glosarioRequestSchema.parse(args[0])
+    return { lang: req.lang, pares: glosarioDe(req.lang) }
   })
 }

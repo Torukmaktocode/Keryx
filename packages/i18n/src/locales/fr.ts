@@ -1,4 +1,4 @@
-import type { TranslationKey } from '../types'
+﻿import type { TranslationKey } from '../types'
 
 export const fr: Record<TranslationKey, string> = {
   'brand.tagline': 'étude',
@@ -474,5 +474,8 @@ export const fr: Record<TranslationKey, string> = {
   'language.ay': 'Aymara',
   'language.gn': 'Guaraní',
   'language.arn': 'Mapudungun',
-  'language.bn': 'Bengalí'
+  'language.bn': 'Bengalí',
+  'language.nah': 'Náhuatl',
+  'language.yua': 'Maya yucateco',
+  'settings.sinCorpus': 'Sin corpus: traer una Biblia traducida activa esta lengua'
 }
