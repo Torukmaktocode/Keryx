@@ -1,4 +1,4 @@
-﻿import type { TranslationKey } from '../types'
+import type { TranslationKey } from '../types'
 
 export const fr: Record<TranslationKey, string> = {
   'brand.tagline': 'étude',
@@ -311,21 +311,9 @@ export const fr: Record<TranslationKey, string> = {
   'assistant.ai.opencode': 'Assistant · OpenCode',
   'assistant.ai.ready': 'Assistant prêt',
   'assistant.ai.offline': 'Mode local',
-  'assistant.mode.verse': 'Verset',
-  'assistant.mode.chapter': 'Chapitre',
-  'assistant.mode.topic': 'Thème',
-  'assistant.mode.word': 'Mot',
-  'assistant.mode.concept': 'Concept',
-  'assistant.mode.hermeneutica': 'Herméneutique',
   'assistant.mode.crearsermon': 'Sermon complet',
   'assistant.mode.crearestudio': 'Étude complète',
   'assistant.mode.creardevocional': 'Dévo complet',
-  'assistant.placeholder.verse': 'Jean 3:16',
-  'assistant.placeholder.chapter': 'Romains 8',
-  'assistant.placeholder.topic': 'grâce, espérance, pardon…',
-  'assistant.placeholder.word': 'amour, G26, H430…',
-  'assistant.placeholder.concept': 'justification, alliance…',
-  'assistant.placeholder.hermeneutica': 'Psaumes 23, Matthieu 13:1-23…',
   'assistant.placeholder.crearsermon': 'Passage ou thème : Jean 3:16, la croix…',
   'assistant.placeholder.crearestudio': 'Passage : Romains 12:1-2…',
   'assistant.placeholder.creardevocional': 'Passage ou thème : Psaumes 91…',

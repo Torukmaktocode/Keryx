@@ -6,10 +6,11 @@
  * todo corre offline en el dispositivo.
  */
 import { app } from 'electron'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { spawn, execFileSync, type ChildProcess } from 'node:child_process'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
+import { analizarCorpus } from './analizar_lengua'
 import {
   IPC,
   glosarioRequestSchema,
@@ -317,7 +318,7 @@ export interface LenguaEstado {
 }
 
 export function lenguasEstado(): LenguaEstado[] {
-  return REGISTRO_LENGUAS.map((lengua) => {
+  const base = REGISTRO_LENGUAS.map((lengua) => {
     let motor: LenguaEstado['motor'] = 'pendiente'
     let versosCorpus = 0
     if (lengua.corpusDb) {
@@ -356,13 +357,37 @@ export function lenguasEstado(): LenguaEstado[] {
       glosario
     }
   })
+  return [...base, ...descubrirLenguas()]
 }
 
-export function glosarioDe(lang: string): Array<{ es: string; nat: string; peso: number }> {
-  const lengua = REGISTRO_LENGUAS.find((l) => l.code === lang || l.corpusDb === lang)
-  if (!lengua) return []
+/* ---- ESTANDAR de adopcion de lengua nueva (0 tokens) ----
+ * Un corpus soltado en userData/corpus/<code>.db se detecta al vuelo: el
+ * analizador infiere alfabeto y funcionarios por contexto, el nombre/familia
+ * vienen de la tabla meta del corpus, el analisis se persiste en
+ * lenguas_descubiertas.json y la lengua aparece en la seccion nativa sola. */
+
+interface LenguaDescubierta {
+  code: string
+  nombre: string
+  familia: string
+  alfabeto: string
+}
+
+const ARCHIVO_DESCUBIERTAS = 'lenguas_descubiertas.json'
+
+function leerDescubiertas(): Record<string, LenguaDescubierta> {
   try {
-    const ruta = join(userDataDir(), `glosario_${lengua.corpusDb ?? lengua.code}.json`)
+    const ruta = join(userDataDir(), ARCHIVO_DESCUBIERTAS)
+    if (!existsSync(ruta)) return {}
+    return JSON.parse(readFileSync(ruta, 'utf-8')) as Record<string, LenguaDescubierta>
+  } catch {
+    return {}
+  }
+}
+
+function glosarioPares(db: string): Array<{ es: string; nat: string; peso: number }> {
+  try {
+    const ruta = join(userDataDir(), `glosario_${db}.json`)
     if (!existsSync(ruta)) return []
     const data = JSON.parse(readFileSync(ruta, 'utf-8')) as {
       pares?: Array<{ es: string; nat: string; peso: number }>
@@ -371,6 +396,80 @@ export function glosarioDe(lang: string): Array<{ es: string; nat: string; peso:
   } catch {
     return []
   }
+}
+
+export function descubrirLenguas(): LenguaEstado[] {
+  const dir = join(userDataDir(), 'corpus')
+  if (!existsSync(dir)) return []
+  const conocidas = new Set(REGISTRO_LENGUAS.map((l) => l.corpusDb ?? l.code))
+  const cache = leerDescubiertas()
+  let cambio = false
+  const estados: LenguaEstado[] = []
+  for (const archivo of readdirSync(dir)) {
+    if (!archivo.endsWith('.db')) continue
+    const db = archivo.slice(0, -3)
+    if (conocidas.has(db)) continue
+    try {
+      const con = new DatabaseSync(join(dir, archivo), { readOnly: true })
+      const fila = con.prepare('SELECT COUNT(*) AS n FROM versos').get() as { n?: number }
+      const versos = fila?.n ?? 0
+      if (versos <= 0) {
+        con.close()
+        continue
+      }
+      const libros = (con.prepare('SELECT COUNT(DISTINCT code) AS n FROM versos').get() as { n?: number })?.n ?? 0
+      const meta = corpusMetaDe(con)
+      const muestra = con
+        .prepare('SELECT text FROM versos LIMIT 3000')
+        .all() as Array<{ text: string }>
+      con.close()
+      const previa = cache[db]
+      const analisis = analizarCorpus(db, muestra.map((f) => f.text), meta, {
+        versos,
+        libros,
+        capitulos: 0
+      })
+      const registro: LenguaDescubierta = {
+        code: db,
+        nombre: previa?.nombre || meta.nombre || analisis.nombre,
+        familia: previa?.familia || meta.fuente || 'lengua indígena',
+        alfabeto: previa?.alfabeto || analisis.alfabeto
+      }
+      if (JSON.stringify(previa) !== JSON.stringify(registro)) {
+        cache[db] = registro
+        cambio = true
+      }
+      estados.push({
+        code: db,
+        nombre: registro.nombre,
+        familia: registro.familia,
+        alfabeto: registro.alfabeto,
+        motor: 'corpus',
+        versosCorpus: versos,
+        glosario: glosarioPares(db).length
+      })
+    } catch {
+      // corpus ilegible: se omite, la biblioteca sigue intacta
+    }
+  }
+  if (cambio) {
+    try {
+      writeFileSync(
+        join(userDataDir(), ARCHIVO_DESCUBIERTAS),
+        JSON.stringify(cache, null, 1),
+        'utf-8'
+      )
+    } catch {
+      // persistencia del analisis: la proxima corrida lo reintenta
+    }
+  }
+  return estados
+}
+
+export function glosarioDe(lang: string): Array<{ es: string; nat: string; peso: number }> {
+  const lengua = REGISTRO_LENGUAS.find((l) => l.code === lang)
+  const db = lengua?.corpusDb ?? CORPUS_LANG_DB[lang] ?? lang
+  return glosarioPares(db)
 }
 
 /** Instala el modelo de una lengua nativa (descarga una vez; sub-agente de codigo). */
@@ -445,7 +544,10 @@ const CORPUS_LANG_DB: Record<string, string> = {
 const corpusConns = new Map<string, DatabaseSync>()
 
 function corpusConn(lang: string): DatabaseSync | null {
-  const db = CORPUS_LANG_DB[lang]
+  /* ESTANDAR de adopcion: db registrada por tabla; cualquier otra lengua se
+   * resuelve por su propio nombre — un corpus nuevo en corpus/<code>.db se
+   * activa solo, sin tocar codigo. */
+  const db = CORPUS_LANG_DB[lang] ?? lang
   if (!db) return null
   let conn = corpusConns.get(db)
   if (!conn) {

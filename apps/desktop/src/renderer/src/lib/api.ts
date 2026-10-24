@@ -124,9 +124,12 @@ export const api = {
       req: { items: Array<{ lang: string; code: string; cap: number; ver: number }> }
     ): Promise<{ versos: Record<string, string | null>; meta: Record<string, Record<string, string>> }> =>
       unwrap(raw.translate.verso(req)),
-    lenguas: (): Promise<LenguaEstado[]> => unwrap(raw.translate.lenguas()),
+    lenguas: (): Promise<LenguaEstado[]> =>
+      raw.translate.lenguas ? unwrap(raw.translate.lenguas()) : Promise.resolve([]),
     glosario: (req: { lang: string }): Promise<{ lang: string; pares: GlosarioPar[] }> =>
-      unwrap(raw.translate.glosario(req))
+      raw.translate.glosario
+        ? unwrap(raw.translate.glosario(req))
+        : Promise.resolve({ lang: req.lang, pares: [] })
   },
   ai: {
     chat: (req: AiChatRequest): Promise<AiChatResult> => unwrap(raw.ai.chat(req)),

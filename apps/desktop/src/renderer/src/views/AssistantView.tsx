@@ -21,8 +21,6 @@ import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
 import { TituloTraducido } from '../components/TituloTraducido'
 
-const CREATOR_MODES: AssistantMode[] = ['crearsermon', 'crearestudio', 'creardevocional']
-
 const STEP_KEYS: Record<AssistantStepId, TranslationKey> = {
   intent: 'assistant.step.intent',
   locate: 'assistant.step.locate',
@@ -69,8 +67,6 @@ const WORK_CREATOR: TranslationKey[] = [
   'assistant.work.h'
 ]
 
-const WORK_LOCAL: TranslationKey[] = ['assistant.work.i', 'assistant.work.j']
-
 interface StepState {
   id: AssistantStepId
   detail?: string
@@ -94,7 +90,7 @@ export function AssistantView() {
   const notify = useAppStore((s) => s.notify)
   const modulesByName = useMemo(() => new Map(modules.map((m) => [m.name, m])), [modules])
 
-  const [mode, setMode] = useState<AssistantMode>('verse')
+  const [mode, setMode] = useState<AssistantMode>('crearsermon')
   const [personaId, setPersonaId] = useState('peterson')
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
@@ -231,31 +227,29 @@ export function AssistantView() {
             </button>
           </div>
 
-          {CREATOR_MODES.includes(mode) && (
-            <div className="creator-options">
-              <div className="creator-option">
-                <label className="creator-option-label" htmlFor="assistant-persona">
-                  {t('assistant.persona')}
-                </label>
-                <select
-                  id="assistant-persona"
-                  className="select"
-                  value={personaId}
-                  onChange={(e) => setPersonaId(e.target.value)}
-                  title={t('assistant.personaHint')}
-                >
-                  {PERSONAS.map((persona) => (
-                    <option key={persona.id} value={persona.id}>
-                      {persona.name}
-                    </option>
-                  ))}
-                </select>
-                <p className="creator-option-desc">
-                  {PERSONAS.find((p) => p.id === personaId)?.style}
-                </p>
-              </div>
+          <div className="creator-options">
+            <div className="creator-option">
+              <label className="creator-option-label" htmlFor="assistant-persona">
+                {t('assistant.persona')}
+              </label>
+              <select
+                id="assistant-persona"
+                className="select"
+                value={personaId}
+                onChange={(e) => setPersonaId(e.target.value)}
+                title={t('assistant.personaHint')}
+              >
+                {PERSONAS.map((persona) => (
+                  <option key={persona.id} value={persona.id}>
+                    {persona.name}
+                  </option>
+                ))}
+              </select>
+              <p className="creator-option-desc">
+                {PERSONAS.find((p) => p.id === personaId)?.style}
+              </p>
             </div>
-          )}
+          </div>
 
           <div className="assistant-examples">
             {examples.map((example) => (
@@ -273,13 +267,11 @@ export function AssistantView() {
                     ? 'assistant.progress.crearsermon'
                     : mode === 'crearestudio'
                       ? 'assistant.progress.crearestudio'
-                      : mode === 'creardevocional'
-                        ? 'assistant.progress.creardevocional'
-                        : 'assistant.progress.generic'
+                      : 'assistant.progress.creardevocional'
                 )}
               </div>
               <div className="assistant-progress-phrase">
-                {t((CREATOR_MODES.includes(mode) ? WORK_CREATOR : WORK_LOCAL)[workPhrase % (CREATOR_MODES.includes(mode) ? WORK_CREATOR.length : WORK_LOCAL.length)])}
+                {t(WORK_CREATOR[workPhrase % WORK_CREATOR.length])}
               </div>
               <div className="assistant-timer">
                 <span className="spinner small" />

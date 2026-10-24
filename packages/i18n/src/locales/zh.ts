@@ -1,4 +1,4 @@
-﻿import type { TranslationKey } from '../types'
+import type { TranslationKey } from '../types'
 
 export const zh: Record<TranslationKey, string> = {
   'brand.tagline': '研经',
@@ -311,21 +311,9 @@ export const zh: Record<TranslationKey, string> = {
   'assistant.ai.opencode': '助手 · OpenCode',
   'assistant.ai.ready': '助手就绪',
   'assistant.ai.offline': '本地模式',
-  'assistant.mode.verse': '经节',
-  'assistant.mode.chapter': '章',
-  'assistant.mode.topic': '主题',
-  'assistant.mode.word': '词语',
-  'assistant.mode.concept': '概念',
-  'assistant.mode.hermeneutica': '释经学',
   'assistant.mode.crearsermon': '完整讲道',
   'assistant.mode.crearestudio': '完整研经',
   'assistant.mode.creardevocional': '完整灵修',
-  'assistant.placeholder.verse': '约翰福音 3:16',
-  'assistant.placeholder.chapter': '罗马书 8',
-  'assistant.placeholder.topic': '恩典、盼望、赦免…',
-  'assistant.placeholder.word': '爱、G26、H430…',
-  'assistant.placeholder.concept': '称义、圣约…',
-  'assistant.placeholder.hermeneutica': '诗篇 23、马太福音 13:1-23…',
   'assistant.placeholder.crearsermon': '段落或主题：约翰福音 3:16、十字架…',
   'assistant.placeholder.crearestudio': '段落：罗马书 12:1-2…',
   'assistant.placeholder.creardevocional': '段落或主题：诗篇 91…',

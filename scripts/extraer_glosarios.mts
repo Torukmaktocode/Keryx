@@ -5,17 +5,25 @@
  * Uso: npx tsx scripts/glosario_estadistico.mts [--db arn]
  */
 import { DatabaseSync } from 'node:sqlite'
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { EswordProvider } from '../packages/sword/src/local/esword'
 import { extraerGlosario, SEMILLAS, type VersoAlineado } from './glosario_estadistico'
 
 const RAIZ = join(process.env.APPDATA ?? '', '@keryx', 'desktop', 'traduccion')
-const DBS = ['arn', 'gn', 'ayr', 'bn']
+
+/** Auto-descubrimiento: TODOS los corpus en corpus/*.db (registrados y nuevos). */
+function descubrirDbs(): string[] {
+  const dir = join(RAIZ, 'corpus')
+  if (!existsSync(dir)) return []
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.db'))
+    .map((f) => f.slice(0, -3))
+}
 
 async function main(): Promise<void> {
   const argDb = process.argv.find((a) => a.startsWith('--db='))?.slice(5)
-  const dbs = argDb ? [argDb] : DBS
+  const dbs = argDb ? [argDb] : descubrirDbs()
   const p = EswordProvider.create('esword', ['biblioteca'])
   if (!p) {
     console.error('sin biblioteca e-Sword; no hay lado espanol para alinear')
