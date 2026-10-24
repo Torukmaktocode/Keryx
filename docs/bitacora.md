@@ -258,10 +258,38 @@ regresiones.
 
 ---
 
+
+### Estandar de adopcion: analizar_lengua (dia 24, tarde)
+
+- `apps/desktop/src/main/analizar_lengua.ts` (+ test): analizador puro que
+  infiere alfabeto, funcionarios (top 15 con n>=3) y perfil de muestra/corpus
+  desde cualquier `corpus/<code>.db`.
+- `descubrirLenguas()` en el main: escanea `corpus/*.db` mas alla del
+  registro builtin, analiza 3.000 versos y fusiona el resultado en
+  `lenguasEstado()` (cache `lenguas_descubiertas.json`). `corpusConn` ahora
+  resuelve `CORPUS_LANG_DB[lang] ?? lang`: cualquier db nueva se auto-activa.
+- Lengua nueva = soltar `corpus/<code>.db`. Sin registrar nada a mano.
+
+### Limpieza del Asistente: fuera los 6 modos muertos
+
+- Eliminados Versículo / Capítulo / Tema / Palabra / Concepto / Hermenéutica:
+  no aportaban al motor (el dosier y el sermón usan sus propias rutas por
+  código) y su función ya vive, mejor, en Lector (versos/capítulos) y
+  Búsqueda (temas/palabras). Quedan solo los 3 de creación: Sermón / Estudio /
+  Devocional completos (selector de orador siempre visible, modo inicial
+  `crearsermon`).
+- Codigo fuera: `localVerse`...`localHermeneutica`, `pickBible`,
+  `dictModules`, `commentaryModules`, `assistantBookOptions`, claves i18n
+  `assistant.mode.*` y `assistant.placeholder.*` en los 7 locales.
+- `stripTags`, `safe` y `refLabel` se conservan (los usan creator / agents /
+  LibraryView).
+
+---
+
 ## Estado de verificación al cierre de esta bitácora
 
 - `npm run typecheck` ✓ sin errores
-- `npm run test` ✓ 132/132 tests
+- `npm run test` ✓ 138/138 tests
 - `npm run eval` ✓ 9.0/9, 0 fallos (5 pasajes dorados)
 - `npm run eval:trad` ✓ 4/4 lenguas, 0 fallos
 
