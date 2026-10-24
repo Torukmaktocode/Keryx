@@ -392,6 +392,7 @@ export const es = {
   'presentaciones.volverCodigo': 'Volver al código',
 
   'traduccion.descargando': 'Preparando el idioma {idioma}…',
+  'traduccion.traduciendo': 'Traduciendo el sermón…',
   'traduccion.noDisponible': 'Traducción no disponible en este equipo',
   'traduccion.pendiente': 'Traductor pendiente',
   'traduccion.verificado': 'Verificado: texto de Sociedades Bíblicas',

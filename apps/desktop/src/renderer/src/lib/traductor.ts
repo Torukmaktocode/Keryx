@@ -521,6 +521,40 @@ export async function translateMarkdown(markdown: string, target: string): Promi
   return translateMarkdownCon(markdown, (text, source) => traducirTexto(text, source, target))
 }
 
+const PREFIJO_ESTRUCTURAL = /^(#{1,6}\s+|>\s?|-\s)/
+
+/** Markdown por LOTE (sermones, guias): 1-2 llamadas translate_batch para el
+ * documento entero en vez de N llamadas individuales encadenadas. Preserva
+ * la estructura (títulos, citas, bullets) y las lineas citacionales intactas. */
+export async function translateMarkdownLote(markdown: string, target: string): Promise<string> {
+  const tgt = normalizarIdioma(target)
+  if (!markdown.trim() || !tgt || tgt === 'off' || tgt === 'es') return markdown
+  const lines = markdown.split('\n')
+  const items: Array<{ texto: string; lang?: string | null }> = []
+  const mapa: number[] = []
+  lines.forEach((line, index) => {
+    if (!line.trim()) return
+    if (CITACION.test(line) || LINEA_ESTRUCTURAL_QUOTE.test(line.replace(/^>\s?/, ''))) return
+    items.push({ texto: line.replace(PREFIJO_ESTRUCTURAL, ''), lang: 'es' })
+    mapa.push(index)
+  })
+  if (!items.length) return markdown
+  const salida = await traducirLoteMulti(items, tgt)
+  const porLinea = new Map<number, string>()
+  mapa.forEach((indexLinea, idx) => {
+    const traducido = salida[idx]
+    if (traducido) porLinea.set(indexLinea, traducido)
+  })
+  return lines
+    .map((line, index) => {
+      const traducido = porLinea.get(index)
+      if (traducido === undefined) return line
+      const marca = PREFIJO_ESTRUCTURAL.exec(line)
+      return marca ? `${marca[1]}${traducido}` : traducido
+    })
+    .join('\n')
+}
+
 /** HTML mínimo del Markdown ya traducido (estructura preservada). */
 export function markdownTraducidoToHtml(markdown: string): string {
   const lines = markdown.split('\n')

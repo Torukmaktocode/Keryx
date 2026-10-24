@@ -391,6 +391,7 @@ export const zh: Record<TranslationKey, string> = {
   'presentaciones.volverCodigo': '返回代码',
 
   'traduccion.descargando': '正在准备{idioma}…',
+  'traduccion.traduciendo': '讲道翻译中…',
   'traduccion.noDisponible': '此电脑不支持翻译',
   'traduccion.pendiente': '翻译器准备中',
   'traduccion.verificado': '已验证：圣经公会文本',

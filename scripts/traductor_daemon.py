@@ -38,6 +38,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, Optional, Tuple
 
 STDOUT_LOCK = threading.Lock()
+CANDADO_INIT = threading.Lock()
 
 
 def respond(payload: Dict[str, Any]) -> None:
@@ -133,13 +134,15 @@ class Dialectos:
     def modelo(self, dir_path: str) -> Tuple[Any, Any]:
         clave = (dir_path, "modelo")
         if clave not in self._modelos:
-            from ctranslate2 import Translator
-            from transformers import AutoTokenizer
+            with CANDADO_INIT:
+                if clave not in self._modelos:
+                    from ctranslate2 import Translator
+                    from transformers import AutoTokenizer
 
-            tok = AutoTokenizer.from_pretrained(dir_path)
-            translator = Translator(dir_path, device="cpu", compute_type="int8")
-            translator.load_model()
-            self._modelos[clave] = (tok, translator)
+                    tok = AutoTokenizer.from_pretrained(dir_path)
+                    translator = Translator(dir_path, device="cpu", compute_type="int8")
+                    translator.load_model()
+                    self._modelos[clave] = (tok, translator)
         return self._modelos[clave]
 
     def traducir(self, dir_path: str, source_lang: str, target_lang: str, text: str) -> str:
@@ -209,9 +212,11 @@ class Motor:
 
     def idiomas(self) -> Dict[str, Any]:
         if self._langs is None:
-            from argostranslate import translate
+            with CANDADO_INIT:
+                if self._langs is None:
+                    from argostranslate import translate
 
-            self._langs = {lang.code: lang for lang in translate.get_installed_languages()}
+                    self._langs = {lang.code: lang for lang in translate.get_installed_languages()}
         return self._langs
 
     def pares(self) -> list[str]:
@@ -235,17 +240,19 @@ class Motor:
     def traductor(self, source: str, target: str):
         clave = (source, target)
         if clave not in self._translators:
-            idiomas = self.idiomas()
-            desde = idiomas.get(source)
-            hasta = idiomas.get(target)
-            if desde is None or hasta is None:
-                raise RuntimeError(
-                    f"Paquete de idioma no instalado: {source} o {target}. Instala primero el par."
-                )
-            tr = desde.get_translation(hasta)
-            if tr is None:
-                raise RuntimeError(f"Par {source}>{target} no instalado (pivote por 'en' si aplica).")
-            self._translators[clave] = tr
+            with CANDADO_INIT:
+                if clave not in self._translators:
+                    idiomas = self.idiomas()
+                    desde = idiomas.get(source)
+                    hasta = idiomas.get(target)
+                    if desde is None or hasta is None:
+                        raise RuntimeError(
+                            f"Paquete de idioma no instalado: {source} o {target}. Instala primero el par."
+                        )
+                    tr = desde.get_translation(hasta)
+                    if tr is None:
+                        raise RuntimeError(f"Par {source}>{target} no instalado (pivote por 'en' si aplica).")
+                    self._translators[clave] = tr
         return self._translators[clave]
 
     @staticmethod
@@ -477,7 +484,7 @@ def atender(motor: "Motor", req: Dict[str, Any]) -> None:
 def main() -> None:
     configurar_velocidad()
     motor = Motor()
-    pesado = ThreadPoolExecutor(max_workers=2)
+    pesado = ThreadPoolExecutor(max_workers=1)
     for line in sys.stdin:
         line = line.strip()
         if not line:

@@ -395,6 +395,7 @@ export const pt: Record<TranslationKey, string> = {
   'presentaciones.volverCodigo': 'Voltar ao código',
 
   'traduccion.descargando': 'Preparando {idioma}…',
+  'traduccion.traduciendo': 'Traduzindo o sermão…',
   'traduccion.noDisponible': 'Tradução não disponível neste computador',
   'traduccion.pendiente': 'Tradutor pendente',
   'traduccion.verificado': 'Verificado: texto das Sociedades Bíblicas',

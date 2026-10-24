@@ -16,7 +16,7 @@ import { PERSONAS } from '../lib/creator'
 import type { MineGroup } from '../lib/agents'
 import { renderMarkdown } from '../lib/markdown'
 import { documentDesdeTexto } from '../lib/presentation'
-import { translateMarkdown, markdownTraducidoToHtml } from '../lib/traductor'
+import { translateMarkdownLote, markdownTraducidoToHtml } from '../lib/traductor'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
 import { TituloTraducido } from '../components/TituloTraducido'
@@ -105,20 +105,29 @@ export function AssistantView() {
   const [mining, setMining] = useState<MineState>({ done: 0, total: 0, groups: [] })
   const [workPhrase, setWorkPhrase] = useState(0)
   const [traducido, setTraducido] = useState<string | null>(null)
+  const [traduciendo, setTraduciendo] = useState(false)
   const translateLocale = useAppStore((s) => s.settings.translateLocale)
 
   useEffect(() => {
     if (!result?.markdown || translateLocale === 'off' || translateLocale === 'es') {
       setTraducido(null)
+      setTraduciendo(false)
       return
     }
     let alive = true
-    void translateMarkdown(result.markdown, translateLocale)
+    setTraduciendo(true)
+    void translateMarkdownLote(result.markdown, translateLocale)
       .then((md) => {
-        if (alive) setTraducido(md)
+        if (alive) {
+          setTraducido(md)
+          setTraduciendo(false)
+        }
       })
       .catch(() => {
-        if (alive) setTraducido(null)
+        if (alive) {
+          setTraducido(null)
+          setTraduciendo(false)
+        }
       })
     return () => {
       alive = false
@@ -403,6 +412,11 @@ export function AssistantView() {
                   __html: traducido ? markdownTraducidoToHtml(traducido) : renderMarkdown(result.markdown)
                 }}
               />
+              {traduciendo && (
+                <small className="muted" style={{ display: 'block', marginTop: 6 }}>
+                  ⟳ {t('traduccion.traduciendo')}
+                </small>
+              )}
             </article>
           )}
 
