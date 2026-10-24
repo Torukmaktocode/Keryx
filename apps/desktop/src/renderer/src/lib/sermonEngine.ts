@@ -8,6 +8,7 @@
 import { parseReference } from './reference'
 import type { Dossier } from './agents'
 import type { IntentProfile } from './intent'
+import { patronLineas } from './redLexica'
 
 export interface OradorInfo {
   id: string
@@ -57,6 +58,8 @@ export interface SermonDocument {
   readonly consenso: string[]
   readonly aplicacion: readonly string[]
   readonly meditacion: Slot
+  /** Aperturas citadas: cómo lo abrió Jesús y lo hablaron Sus apóstoles (0 tokens). */
+  readonly aperturas: readonly string[]
   readonly cierre: { recap: string; llamado: string; bendicion: string }
   readonly oracion: Slot
   readonly fuentes: readonly CitationLine[]
@@ -142,6 +145,20 @@ export function buildSermonDocument(
     evidence: shortEntry(commentLines[index] ?? '', 340),
     bridge: slot('', undefined)
   }))
+  const temaVoz = peticion?.tema ?? ''
+  const aperturas = patronLineas(temaVoz)
+  const ecoPeticion = peticion
+    ? peticion.frase || `Escuché tu frase tal cual: «${peticion.raw}».`
+    : ''
+  const ecoCristo = aperturas[0] ? aperturas[0].replace(/^> \*Como lo abrió Jesús:\* /, '').replace(/^> /, '') : ''
+  const ganchoFallback = [
+    ecoPeticion,
+    ecoCristo,
+    `Comencemos con la Palabra misma: «${ref}».`,
+    gran
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return {
     ref,
@@ -151,10 +168,10 @@ export function buildSermonDocument(
       ? 'Tu propia voz: el cuerpo anclado queda intacto; escribe a tu manera.'
       : `${persona.name} — ${personaDirectiveOf(persona)}`,
     peticion,
-    gancho: slot(`Comencemos con la Palabra misma: «${ref}». ${gran}`, undefined),
+    gancho: slot(ganchoFallback, undefined),
     intro: slot(introFallback, undefined),
     texto: textLines.map((line) => shortEntry(line, 400)),
-    granIdea: gran || '[Lean el texto en voz alta: busca la frase que resuma el mensaje.]',
+    granIdea: gran || `Escucha ${ref} con calma: busca la frase que resuma el mensaje y sostiene la semana.`,
     contexto: [
       { label: 'Histórico', text: depthShort(entriesOf(dossier, 'historico')) },
       { label: 'Cultural', text: depthShort(entriesOf(dossier, 'cultural')) },
@@ -170,6 +187,7 @@ export function buildSermonDocument(
     consenso: entriesOf(dossier, 'consenso').slice(0, 3),
     aplicacion: [...entriesOf(dossier, 'aplicacion').slice(0, 2).map((entry) => shortEntry(entry, 260))],
     meditacion: slot(meditationFallback, undefined),
+    aperturas,
     cierre: {
       recap: gran || 'Vuelve al texto central y repítelo a la congregación.',
       llamado: isNone
@@ -203,6 +221,21 @@ function oracionFallbackOf(ref: string): string {
   return `Dios, gracias porque tu Palabra habló primero a otro mundo y hoy nos habla a nosotros, con la misma autoridad y la misma paciencia. Grábala en nosotros, sostén lo que hoy pesa, y que lo que oyeron de ${ref} se vuelva vida esta semana. Amén.`
 }
 
+/** Aplicación sin datos: directivas honestas por código (nunca corchetes-guía). */
+function aplicacionFalloffOf(tema: string, ref: string): string[] {
+  return tema
+    ? [
+        `- **En casa:** lleva ${tema} a tu mesa esta semana: comparte con los tuyos lo que ${ref} te dio hoy.`,
+        `- **En el trabajo:** deja una frase de ${ref} donde trabajes, y vuelve a ella en la pausa pesada.`,
+        `- **En la iglesia:** anima esta semana a un hermano con ${tema}, con palabras suyas del texto.`
+      ]
+    : [
+        `- **En casa:** comparte con los tuyos una frase de ${ref} y oren juntos por ella.`,
+        `- **En el trabajo:** deja una frase de ${ref} visible donde trabajes; que te encuentre en la pausa.`,
+        `- **En la iglesia:** anima esta semana a un hermano con el pasaje, con sus palabras textuales.`
+      ]
+}
+
 /** Render Markdown determinista: sin regex, sin marcadores, 1:1 con el AST. */
 export function renderSermon(doc: SermonDocument): string {
   const lines: string[] = []
@@ -227,6 +260,10 @@ export function renderSermon(doc: SermonDocument): string {
   }
 
   push('## Gancho', '', slotText(doc.gancho), '')
+  if (doc.aperturas.length) {
+    for (const line of doc.aperturas) push(line)
+    push('')
+  }
   push('## Introducción', '', slotText(doc.intro), '')
 
   push('## Texto: ' + doc.ref, '')
@@ -278,7 +315,7 @@ export function renderSermon(doc: SermonDocument): string {
   if (doc.aplicacion.length) {
     for (const line of doc.aplicacion) push(`- ${line}`)
   } else {
-    push('- **En casa:** [concreto con los tuyos.]', '- **En el trabajo:** [concreto con colegas.]', '- **En la iglesia:** [concreto con la congregación.]')
+    push(...aplicacionFalloffOf(doc.peticion?.tema ?? '', doc.ref))
   }
   push('')
 
@@ -304,6 +341,7 @@ export function renderSermon(doc: SermonDocument): string {
   return lines
     .join('\n')
     .replace(/\[\[([^\]]*)\]\]/g, '$1')
+    .replace(/\[([^\]\n]{14,180})\]/g, (match, inner) => (inner.includes('·') ? match : inner))
     .replace(/\n{3,}/g, '\n\n')
 }
 

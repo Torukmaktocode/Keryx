@@ -67,8 +67,11 @@ for (const gold of CASES) {
   const noLooseMarkers = !markdown.includes('[[')
   const markerAt = markdown.indexOf('[[')
   if (markerAt >= 0) console.log('  MARKER @', markerAt, JSON.stringify(markdown.slice(markerAt - 40, markerAt + 40)))
+  const corchetesGuia = (markdown.match(/\[[^\]\n]{14,180}\]/g) ?? []).filter((m) => !m.includes('·'))
+  const noGuideBrackets = corchetesGuia.length === 0
+  if (!noGuideBrackets) console.log('  CORCHETES-GUIA:', corchetesGuia.slice(0, 3).join(' | '))
   const completeSlots = markdown.length > 800
-  const passed = okKinds && citationOk && budgetOk && noLooseMarkers && completeSlots
+  const passed = okKinds && citationOk && budgetOk && noLooseMarkers && noGuideBrackets && completeSlots
   const score = (okKinds ? 4 : 0) + (citationOk ? 2 : 0) + (budgetOk ? 1 : 0) + (noLooseMarkers ? 2 : 0)
   scores.push(score)
   if (!passed) failed += 1

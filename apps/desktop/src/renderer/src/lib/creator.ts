@@ -15,6 +15,7 @@ import { api } from './api'
 import { apiHook, buildDossier, dossierForPrompt, type Dossier } from './agents'
 import { parseReference } from './reference'
 import { buildIntent, intentBlock, type IntentProfile } from './intent'
+import { patronLineas } from './redLexica'
 import { buildSermonDocument, renderSermon } from './sermonEngine'
 import type { SearchResult } from '@keryx/core'
 
@@ -849,7 +850,9 @@ export function assembleSermon(
   }
   out = out.replace('[[MEDITACION]]', (pieces.meditation ?? '').trim() || meditationFallback || `Lleva contigo esta semana el núcleo de ${ref}.`)
   out = out.replace('[[ORACION]]', (pieces.prayer ?? '').trim() || defaultPrayer(ref))
-  return out.replace(/\[\[[A-ZÑ ]+\d*\]\]/g, '')
+  return out
+    .replace(/\[\[[A-ZÑ ]+\d*\]\]/g, '')
+    .replace(/\[([^\]\n]{14,180})\]/g, (match, inner) => (inner.includes('·') ? match : inner))
 }
 
 /** Citas ancladas por código al final del documento (nunca dependen de la IA). */
@@ -1029,6 +1032,9 @@ export async function runCreator(
         '',
         'TONO OBLIGATORIO: cálido, pastoral y cercano, de tú a tú. En el gancho e intro reconoce la emoción o la necesidad de quien escucha; en cada puente acércalo a su semana real; meditación y oración con ternura. Cercanía concreta, sin frases infladas.',
         '',
+        'PATRONES CITADOS (cómo lo abrió Jesús y lo hablaron Sus apóstoles; citas textuales verificadas — úsalas tal cual, con su referencia, si sirven a la voz):',
+        ...(doc.aperturas.length ? doc.aperturas.map((line) => line.replace(/^> /, '')) : ['(sin patrón citado para este tema)']),
+        '',
         'DATOS REALES ANCLADOS (úsalos tal cual en la intro o en un puente; son verificados, no inventes otros):',
         ...(datosBrief.length ? datosBrief : ['(sin datos disponibles para este pasaje)']),
         '',
@@ -1104,6 +1110,8 @@ export async function runCreator(
       'CONEXIÓN CON LA PETICIÓN (atendida de verdad: es lo que pidió el usuario):',
       ...intentBlock(intent),
       'TONO: cálido, pastoral y cercano; acércate con ternura a la necesidad detectada, sin inventar datos.',
+      'PATRONES CITADOS (cómo lo abrió Jesús y lo hablaron Sus apóstoles; citas textuales verificadas — úsalas tal cual, con su referencia, si sirven a la voz):',
+      ...(patronLineas(intent.tema).length ? patronLineas(intent.tema).map((line) => line.replace(/^> /, '')) : ['(sin patrón citado para este tema)']),
       '',
       'AUTOCHQUE antes de responder: cada numero Strong citado debe figurar en el DOSIER y cada cita biblica Libro C:V debe estar en el DOSIER o en el texto anclado; corrige o elimina lo que no conste.',
       '',

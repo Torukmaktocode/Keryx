@@ -792,18 +792,22 @@ export async function buildDossier(
   }
 
   // ---- 4b) Paralelos y analogias (Lambert): temas ↔ referencias cruzadas.
+  // Red completa: hasta 3 módulos de referencias × 2 entradas por módulo,
+  // sin corte al primer acierto (el mapa de cruzadas debe quedar poblado).
   const refsJob = async (): Promise<Job> => {
     const job: Job = { kind: 'referencia', title: 'Paralelos y referencias cruzadas (Lambert)', entries: [], cites: [] }
-    const topicsForRefs = (themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 3)
+    const topicsForRefs = (themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 4)
     if (!topicsForRefs.length) return job
-    const refMods = hook.modules.filter((m) => SPECIAL_RE.referencia?.test(m.name)).slice(0, 1)
+    const refMods = hook.modules.filter((m) => SPECIAL_RE.referencia?.test(m.name)).slice(0, 3)
     for (const mod of refMods) {
+      let found = 0
       for (const topic of topicsForRefs.flatMap(topicVariants)) {
         const entry = await safe(hook.lookup(mod.name, topic), null)
         if (!entry) continue
-        job.entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 560)}`)
+        job.entries.push(`[${shortName(moduleLabel(mod))} · ${topic}] ${trimEntry(entry, 480)}`)
         job.cites.push({ kind: 'referencia', module: mod.name, entry: topic })
-        break
+        found += 1
+        if (found >= 2) break
       }
     }
     return job

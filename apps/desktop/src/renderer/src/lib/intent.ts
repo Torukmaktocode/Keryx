@@ -155,8 +155,31 @@ const RUIDO = new Set([
   'pasaje', 'texto', 'frase', 'hablar', 'dijo', 'quiere', 'detalle'
 ])
 
+/** Temas reconocibles (para validación de la red léxica en tests/evals). */
+export const TEMAS_INTENT: readonly string[] = LEXICO.map((entry) => entry.tema)
+
 const deacc = (word: string): string =>
   word.normalize('NFD').replace(/\p{Diacritic}/gu, '')
+
+/** Red estadistica (0 tokens): dado un tema lista, cualquier palabra del
+ * usuario se puede aproximar por SIMILITUD de trigramas (coeficiente de
+ * Dice) sobre los stems del lexico — temas fuera de la lista literal
+ * tambien conectan con su enfoque pastoral. */
+function trigramos(s: string): Set<string> {
+  const pads = `  ${s} `
+  const set = new Set<string>()
+  for (let i = 0; i < pads.length - 2; i += 1) set.add(pads.slice(i, i + 3))
+  return set
+}
+
+function similitud(a: string, b: string): number {
+  const ga = trigramos(a)
+  const gb = trigramos(b)
+  const inter = [...ga].filter((g) => gb.has(g)).length
+  return inter / Math.max(1, ga.size + gb.size - inter)
+}
+
+const UMBRAL_TEMA = 0.5
 
 const KIND_LABEL: Record<string, string> = {
   crearsermon: 'un sermón',
@@ -178,6 +201,7 @@ export function buildIntent(query: string, kind: string): IntentProfile {
 
   for (const word of words) {
     const norm = deacc(word)
+    let matched = false
     for (const entry of LEXICO) {
       const hit = entry.stems.some((stem) =>
         stem.length < 4 ? norm === stem : norm.startsWith(stem)
@@ -188,7 +212,22 @@ export function buildIntent(query: string, kind: string): IntentProfile {
       }
       counts.set(entry.tema, (counts.get(entry.tema) ?? 0) + 1)
       enfoques.set(entry.tema, entry.enfoque)
+      matched = true
       break
+    }
+    if (!matched && word.length >= 5) {
+      let mejor = { tema: '', enfoque: '', score: 0 }
+      for (const entry of LEXICO) {
+        for (const stem of entry.stems) {
+          const score = similitud(norm, stem)
+          if (score > mejor.score) mejor = { tema: entry.tema, enfoque: entry.enfoque, score }
+        }
+      }
+      if (mejor.score >= UMBRAL_TEMA) {
+        palabras.push({ word, tema: mejor.tema, enfoque: mejor.enfoque })
+        counts.set(mejor.tema, (counts.get(mejor.tema) ?? 0) + 1)
+        enfoques.set(mejor.tema, mejor.enfoque)
+      }
     }
   }
 

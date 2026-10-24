@@ -97,6 +97,9 @@ export function documentDesdeTexto(ref: string, markdown: string, kicker: string
     if (first) contexto.push({ label, text: truncate(first, 140) })
   }
   const citas = bloques.texto.filter((t) => t.length > 60).slice(1, 3)
+  const aperturas = markdown
+    .split('\n')
+    .filter((line) => /^> \*(?:Como lo abrió Jesús|Como lo habló )/.test(line))
   return {
     ref,
     orador: kicker,
@@ -117,6 +120,7 @@ export function documentDesdeTexto(ref: string, markdown: string, kicker: string
     consenso: seccionDe(bloques, /^teologia sistematica/).slice(0, 3),
     aplicacion: seccionDe(bloques, /^aplicacion/).slice(0, 2),
     meditacion: { fallback: '' },
+    aperturas,
     cierre: { recap: bloques.texto[1] ?? bloques.texto[0] ?? '', llamado: '', bendicion: '' },
     oracion: { fallback: '', text: bloques.oracion },
     fuentes: [],

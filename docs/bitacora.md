@@ -133,10 +133,83 @@ regresiones.
 
 ---
 
+## Día 24 (24 oct 2026) - E4.4 fase 1: conexión por CÓDIGO (complemento)
+
+> Peticiones del pastor: que los sermones conecten con SU frase de entrada,
+> que toquen los temas con la cercanía "como Jesús mismo", que hablen como
+> Sus apóstoles (Pedro, Pablo, Juan, Santiago) y que SIEMPRE pasen por los
+> comentarios bíblicos. Todo por código y estadística — la IA nunca decide
+> la conexión. Complemento puro: nada de lo existente se reemplaza.
+
+### El diagnóstico (3 fugas verificadas en código)
+
+1. La conexión con la petición dependía de un léxico de SOLO 23 temas
+   curados (`intent.ts`): "ayuno", "soberanía", "jubileo", "discipulado"
+   no matcheaban → el prompt de voz iba SIN la conexión.
+2. Los corchetes-guía podían verse en el sermón final ("código roto"):
+   `sermonEngine.ts:157` (gran idea sin datos → "[Lean el texto en voz
+   alta…]") y `sermonEngine.ts:281` (aplicación sin datos → "[concreto con
+   los tuyos.]").
+3. El gancho base del AST era genérico ("Comencemos con la Palabra misma:
+   ¿ref?") y las referencias cruzadas Lambert se minaban con 1 módulo,
+   máx 3 temas y corte al primer acierto.
+
+### Lo implementado (todo TypeScript + estadística, 0 tokens)
+
+- **F0 · Barrido anti-placeholder**: `granIdea` y `aplicación` sin datos
+  ahora renderizan directivas pastorales honestas redactadas por código
+  (nunca corchetes); `renderSermon` y `assembleSermon` tienen barrido de
+  red de seguridad que descorcheta guía y preserva citas `[Módulo ·
+  entrada]` (regla: corchete con `·` intacto, sin `·` descorchetado).
+  Aserción nueva en `npm run eval`: cero corchetes-guía en los 5 pasajes
+  dorados.
+- **F1 · Red léxica estadística** (`intent.ts`): además del léxico curado,
+  las palabras de ≥5 letras sin match directo se aproximan por
+  **similitud de trigramas (coeficiente Dice)** sobre los stems, umbral
+  0.5 — temas fuera de la lista también conectan con su enfoque pastoral.
+  Frase literal del usuario siempre en el eco.
+- **F1 · Patrón Cristo + Apostólico** (nuevo `lib/redLexica.ts`): tabla
+  determinista de 23 temas pastoral × (1 apertura de Jesús + 2-3 de Sus
+  apóstoles), frases TEXTUALES en RV60 con referencia citada y el "modo"
+  de apertura (cómo lo abrió Él: "corriendo primero hacia el que vuelve",
+  "llorando primero", "con un ejemplo de la ventana"...). Principio de
+  silencio: tema sin tabla → sin patrón, sin invención.
+- **F3 · Gancho conectado**: el slot `gancho` del AST se construye con el
+  eco de la petición + el patrón Cristo citado + la referencia + la gran
+  idea; y el render añade el bloque **"Como lo abrió Jesús / Como lo
+  habló Pedro·Pablo·Juan·Santiago"** con citas ancladas tras el gancho.
+- **Voz guiada**: ambos prompts (economía y deepSermon) reciben el bloque
+  "PATRONES CITADOS" — la IA redacta la voz cálida ENCIMA de patrones que
+  fueron de Cristo y de Sus apóstoles; jamás los inventa.
+- **F2 · Referencias cruzadas en red** (`agents.ts` refsJob): de 1 módulo
+  → **3 módulos** de referencias × 2 entradas cada uno, 4 temas, sin corte
+  temprano; el mapa de cruzadas queda poblado.
+- **Tests**: nuevo `redLexica.test.ts` (9 tests): cobertura de patrón para
+  cada tema del léxico (bidireccional, sin huérfanos), sin invención de
+  temas desconocidos, gancho conectado, eco literal, barrido anti-
+  placeholder y preservación de citas. **126 tests en total**.
+
+### Verificación (commit)
+
+- `npm run typecheck` ✓ · `npm run test` ✓ 126/126 · `npm run eval` ✓ 9.0/9 ·
+  `npm run eval:trad` ✓ 0/4 fallos
+
+### Pendiente de esta fase (próximas sesiones)
+
+- F3quater: minar SIEMPRE en los comentarios rankeados el tratamiento
+  apostólico del tema (hoy el patrón es textual citado; falta el aporte
+  de Calvino/MacArthur/Henry sobre el tema por apóstol).
+- F4: sermones temáticos sin pasaje claro (pasaje ancla por ranking
+  estadístico del tema).
+- F5: pasajes dorados de complejidad extra (Juan 1 ↔ Éxodo 12, Hebreos ↔
+  Levítico, tema "jubileo").
+
+---
+
 ## Estado de verificación al cierre de esta bitácora
 
 - `npm run typecheck` ✓ sin errores
-- `npm run test` ✓ 117/117 tests
+- `npm run test` ✓ 126/126 tests
 - `npm run eval` ✓ 9.0/9, 0 fallos (5 pasajes dorados)
 - `npm run eval:trad` ✓ 4/4 lenguas, 0 fallos
 
@@ -320,9 +393,10 @@ función central de la app; solo la voz del Asistente consume gpt-4o-mini.
 |---|---|---|
 | `lib/agents.ts` | ~970 | buildDossier: los 25 agentes, presupuesto, gap-analysis, apiHook |
 | `lib/creator.ts` | ~1.218 | runCreator, 12 oradores, skeleton, assembleSermon, codeCritic, localizador |
-| `lib/sermonEngine.ts` | ~318 | AST inmutable (buildSermonDocument/renderSermon) |
+| `lib/sermonEngine.ts` | ~350 | AST inmutable (buildSermonDocument/renderSermon) + aperturas citadas |
 | `lib/swordTools.ts` | 132 | harness de herramientas (ToolCache, lookup/search, presupuesto) |
-| `lib/intent.ts` | — | sub-agente de intención (frase → perfil) |
+| `lib/intent.ts` | ~260 | sub-agente de intención (frase → perfil) + red de trigramas (Dice) |
+| `lib/redLexica.ts` | ~300 | Patrón Cristo + Apostólico por tema: frases textuales RV60 citadas (0 tokens) |
 | `lib/assistant.ts` | — | contexto y mina auxiliar |
 | `main/ai.ts` | — | puente IPC a OpenAI-compatible (única IA de pago) |
 | `scripts/eval-sermons.mts` | ~90 | evals de los 5 pasajes dorados |

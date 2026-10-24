@@ -53,6 +53,7 @@ function mkDoc(overrides: Partial<SermonDocument> = {}): SermonDocument {
     consenso: ['La iglesia confiesa el amor de Dios como dato primero.'],
     aplicacion: ['En casa: repite la frase con los tuyos.', 'En el trabajo: la entrega se mide en gestos concretos.'],
     meditacion: slot('Lleva contigo esta semana: «Juan 3:16».'),
+    aperturas: [],
     cierre: {
       recap: 'Vuelve al texto central y repítelo a la congregación.',
       llamado: 'Invita a tu familia a leerlo esta noche.',
