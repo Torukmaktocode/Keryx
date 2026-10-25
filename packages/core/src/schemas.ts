@@ -146,7 +146,7 @@ export const settingsPatchSchema = z.object({
   showStrongs: z.boolean().optional(),
   deepSermon: z.boolean().optional(),
   translateLocale: z
-    .enum(['off', 'es', 'en', 'pt', 'it', 'fr', 'de', 'zh', 'qu', 'gn', 'arn', 'ay', 'bn'])
+    .enum(['off', 'es', 'en', 'pt', 'it', 'fr', 'de', 'zh', 'qu', 'gn', 'arn', 'ay', 'bn', 'nah', 'yua'])
     .optional(),
   study: studyLayoutSchema.optional()
 })

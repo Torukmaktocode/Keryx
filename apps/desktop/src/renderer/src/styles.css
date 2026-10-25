@@ -140,6 +140,33 @@
   font-size: 11px;
   padding: 4px 0;
   letter-spacing: 0.04em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  position: relative;
+}
+
+.carga-ms {
+  font-size: 8px;
+  line-height: 9px;
+  height: 9px;
+  letter-spacing: 0;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.carga-ms.visible {
+  opacity: 1;
+}
+
+.lang-switch button.active .carga-ms {
+  color: #fff;
 }
 
 .lang-switch button.active {
@@ -154,6 +181,11 @@
   font-size: 9px;
   letter-spacing: 0.02em;
   padding: 4px 2px;
+  overflow: hidden;
+}
+
+.nativa-nombre {
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -171,7 +203,7 @@
 .nativa-carga {
   position: absolute;
   left: 0;
-  bottom: 0;
+  top: 0;
   height: 3px;
   min-width: 6%;
   background: var(--accent);

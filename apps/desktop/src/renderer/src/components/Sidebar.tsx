@@ -4,7 +4,13 @@ import type { AppSettings, LenguaEstado } from '@keryx/core'
 import { useAppStore, type View } from '../store/appStore'
 import { Icon, type IconName } from './Icon'
 import { api } from '../lib/api'
-import { estadoTraduccion, NATIVAS, useCargaIdioma } from '../lib/traductor'
+import {
+  estadoTraduccion,
+  formatoDuracion,
+  msDeCarga,
+  NATIVAS,
+  useCargaIdioma
+} from '../lib/traductor'
 
 const ITEMS: { id: View; icon: IconName }[] = [
   { id: 'reader', icon: 'reader' },
@@ -78,16 +84,13 @@ export function Sidebar() {
         )}
         <div className="lang-switch" title={t('settings.language')}>
           {LOCALES.map((code) => (
-            <button
+            <ChipMayor
               key={code}
-              className={locale === code && !NATIVAS.includes(translateLocale) ? 'active' : ''}
-              onClick={() => {
-                void updateSettings({ uiLocale: code, translateLocale: code })
-              }}
-              title={t(`language.${code}` as TranslationKey)}
-            >
-              {code.toUpperCase()}
-            </button>
+              code={code}
+              activo={locale === code && !NATIVAS.includes(translateLocale)}
+              titulo={t(`language.${code}` as TranslationKey)}
+              onElegir={() => void updateSettings({ uiLocale: code, translateLocale: code })}
+            />
           ))}
         </div>
         <div className="lang-switch nativas" title={t('settings.nativas')}>
@@ -110,6 +113,33 @@ export function Sidebar() {
   )
 }
 
+function ChipMayor({
+  code,
+  activo,
+  titulo,
+  onElegir
+}: {
+  code: string
+  activo: boolean
+  titulo: string
+  onElegir: () => void
+}): ReactElement {
+  const carga = useCargaIdioma(code)
+  const ms = carga ? msDeCarga(carga) : null
+  const pct = carga && carga.total ? Math.round((carga.listo / carga.total) * 100) : 0
+  return (
+    <button className={activo ? 'active' : ''} onClick={onElegir} title={titulo}>
+      <span>{code.toUpperCase()}</span>
+      {carga?.estado === 'cargando' && (
+        <span className="nativa-carga" style={{ width: `${pct}%` }} data-pct={pct} />
+      )}
+      <span className={`carga-ms ${ms !== null ? 'visible' : ''}`}>
+        {ms !== null ? formatoDuracion(ms) : ''}
+      </span>
+    </button>
+  )
+}
+
 function ChipNativa({
   code,
   translateLocale,
@@ -125,6 +155,7 @@ function ChipNativa({
 }): ReactElement {
   const { t } = useI18n()
   const carga = useCargaIdioma(code)
+  const ms = carga ? msDeCarga(carga) : null
   const pct = carga && carga.total ? Math.round((carga.listo / carga.total) * 100) : 0
   return (
     <button
@@ -139,11 +170,14 @@ function ChipNativa({
             : t(`language.${code}` as TranslationKey)
       }
     >
-      {t(`language.${code}` as TranslationKey)}
+      <span className="nativa-nombre">{t(`language.${code}` as TranslationKey)}</span>
       {carga && carga.estado === 'cargando' && (
         <span className="nativa-carga" style={{ width: `${pct}%` }} data-pct={pct} />
       )}
       {carga?.estado === 'listo' && <span className="nativa-listo" />}
+      <span className={`carga-ms ${ms !== null ? 'visible' : ''}`}>
+        {ms !== null ? formatoDuracion(ms) : ''}
+      </span>
     </button>
   )
 }

@@ -142,8 +142,10 @@ export async function traducirTexto(text: string, source: string, target: string
         await instalarPar(src, tgt)
         out = await api.translate.translate({ source: src, target: tgt, text })
       }
-      cacheSet(key, out)
-      nivelSet(key, out === text ? 'original' : 'experimental')
+      if (out !== text) {
+        cacheSet(key, out)
+        nivelSet(key, 'experimental')
+      }
       return out
     } catch {
       return text
@@ -173,12 +175,15 @@ function nivelSet(key: string, nivel: NivelTraduccion, fuente?: string): void {
   niveles.set(key, { nivel, fuente })
 }
 
-/* ── Progreso de carga por lengua nativa (barra en el selector) ──────── */
+/* ── Progreso de carga por idioma (barra y ms en el selector) ────────── */
 
 export interface CargaIdioma {
   estado: 'cargando' | 'listo'
   total: number
   listo: number
+  inicioMs: number
+  listoMs?: number
+  msFinal?: number
 }
 
 const cargas = new Map<string, CargaIdioma>()
@@ -198,10 +203,35 @@ export function cargaDe(lang: string): CargaIdioma | null {
   return cargas.get(lang) ?? null
 }
 
-/** Hook de suscripcion al progreso de una lengua nativa. */
+const VENTANA_LISTO_MS = 2500
+
+export function formatoDuracion(ms: number): string {
+  if (ms < 1000) return `${Math.max(1, Math.round(ms / 10) * 10)} ms`
+  return `${(ms / 1000).toFixed(1).replace('.', ',')} s`
+}
+
+export function msDeCarga(carga: CargaIdioma): number | null {
+  if (carga.estado === 'cargando') return Date.now() - carga.inicioMs
+  if (carga.listoMs && Date.now() - carga.listoMs < VENTANA_LISTO_MS) return carga.msFinal ?? null
+  return null
+}
+
+/** Hook de suscripcion al progreso de un idioma: tiquea cada 100 ms
+ * mientras corre el contador y abre una ventana breve para el ms final. */
 export function useCargaIdioma(lang: string): CargaIdioma | null {
   const [carga, setCarga] = useState<CargaIdioma | null>(cargaDe(lang))
+  const [, forzar] = useState(0)
   useEffect(() => suscribirCargas(() => setCarga(cargaDe(lang))), [lang])
+  useEffect(() => {
+    if (!carga) return
+    if (carga.estado === 'cargando') {
+      const id = setInterval(() => forzar((n) => n + 1), 100)
+      return () => clearInterval(id)
+    }
+    if (!carga.listoMs) return
+    const id = setTimeout(() => forzar((n) => n + 1), VENTANA_LISTO_MS)
+    return () => clearTimeout(id)
+  }, [carga])
   return carga
 }
 
@@ -231,7 +261,8 @@ export function invalideEstadoTraduccion(): void {
  * lote alineado al orden de entrada (original si no aplica). */
 export async function traducirLoteMulti(
   items: Array<{ texto: string; lang?: string | null; ref?: RefVerso | null; corpus?: boolean }>,
-  target: string
+  target: string,
+  opciones: { silencioso?: boolean } = {}
 ): Promise<string[]> {
   const tgt = normalizarIdioma(target)
   const salida = items.map((item) => plainText(item.texto))
@@ -244,20 +275,59 @@ export async function traducirLoteMulti(
   const firmaLote = `${tgt}:${originales.length}:${originales[0].slice(0, 60)}`
   const enVuelo = lotesCapitulo.get(firmaLote)
   if (enVuelo) return enVuelo
-  const ejecucion = ejecutarLoteMulti(items, salida, originales, tgt)
+  const ejecucion = ejecutarLoteMulti(items, salida, originales, tgt, opciones.silencioso === true)
   lotesCapitulo.set(firmaLote, ejecucion)
   void ejecucion.finally(() => lotesCapitulo.delete(firmaLote))
   return ejecucion
 }
 
 const lotesCapitulo = new Map<string, Promise<string[]>>()
+/** Lotes visibles en vuelo por idioma: solo el último que termina marca
+ * "listo" (evita que un lote traslape el estado de otro del mismo idioma). */
+const vuelosPorLang = new Map<string, number>()
+
+function cargaIniciar(lang: string, total: number): void {
+  const previa = cargas.get(lang)
+  cargaSet(lang, {
+    estado: 'cargando',
+    total,
+    listo: 0,
+    inicioMs: previa?.estado === 'cargando' ? previa.inicioMs : Date.now()
+  })
+}
+
+function cargaProgreso(lang: string, total: number, listo: number): void {
+  const previa = cargas.get(lang)
+  if (previa?.estado !== 'cargando') return
+  cargaSet(lang, { estado: 'cargando', total, listo, inicioMs: previa.inicioMs })
+}
+
+function cargaTerminar(lang: string, total: number): void {
+  const previa = cargas.get(lang)
+  const inicio = previa?.inicioMs ?? Date.now()
+  const ahora = Date.now()
+  cargaSet(lang, {
+    estado: 'listo',
+    total,
+    listo: total,
+    inicioMs: inicio,
+    listoMs: ahora,
+    msFinal: Math.max(1, ahora - inicio)
+  })
+}
 
 async function ejecutarLoteMulti(
   items: Array<{ texto: string; lang?: string | null; ref?: RefVerso | null; corpus?: boolean }>,
   salida: string[],
   originales: string[],
-  tgt: string
+  tgt: string,
+  silencioso = false
 ): Promise<string[]> {
+  const vuelos = (vuelosPorLang.get(tgt) ?? 0) + 1
+  if (!silencioso) {
+    vuelosPorLang.set(tgt, vuelos)
+    cargaIniciar(tgt, items.length)
+  }
   /* Nivel 1: corpus paralelo por referencia (texto real de Sociedades
    * Biblicas/Wycliffe). Una unica llamada para todo el lote. Los items
    * con corpus:false (columnas no-Base en comparativa) saltan el corpus
@@ -311,14 +381,10 @@ async function ejecutarLoteMulti(
     if (!indices.includes(index)) indices.push(index)
     porLang.set(src, indices)
   }
-  if (NATIVAS.includes(tgt)) {
+  if (!silencioso) {
     const pendientes = [...porLang.values()].reduce((n, lista) => n + lista.length, 0)
-    cargaSet(
-      tgt,
-      pendientes
-        ? { estado: 'cargando', total: items.length, listo: items.length - pendientes }
-        : { estado: 'listo', total: items.length, listo: items.length }
-    )
+    if (pendientes) cargaProgreso(tgt, items.length, items.length - pendientes)
+    else if (vuelos <= 1) cargaTerminar(tgt, items.length)
   }
   await Promise.all(
     [...porLang.entries()].map(async ([src, indices]) => {
@@ -340,23 +406,23 @@ async function ejecutarLoteMulti(
                 if (index === undefined || !traducido) continue
                 salida[index] = traducido
                 const clave = cacheKey(src, tgt, originales[index])
-                cacheSet(clave, traducido)
-                nivelSet(
-                  clave,
-                  traducido === originales[index] ? 'original' : 'experimental'
-                )
+                if (traducido !== originales[index]) {
+                  cacheSet(clave, traducido)
+                  nivelSet(clave, 'experimental')
+                }
               }
             } catch {
               // sin motor o sin paquete: los hooks degradan al original
             } finally {
               for (const clave of claves) lotesEnVuelo.delete(clave)
-              if (NATIVAS.includes(tgt)) {
+              if (!silencioso) {
                 const previa = cargaDe(tgt)
-                cargaSet(tgt, {
-                  estado: 'cargando',
-                  total: previa?.total ?? items.length,
-                  listo: Math.min((previa?.listo ?? 0) + grupo.length, previa?.total ?? items.length)
-                })
+                if (previa?.estado === 'cargando')
+                  cargaProgreso(
+                    tgt,
+                    previa.total,
+                    Math.min(previa.listo + grupo.length, previa.total)
+                  )
               }
             }
           })()
@@ -366,9 +432,14 @@ async function ejecutarLoteMulti(
       )
     })
   )
-  if (NATIVAS.includes(tgt)) {
-    cargaSet(tgt, { estado: 'listo', total: items.length, listo: items.length })
+  if (silencioso) return salida
+  const restantes = (vuelosPorLang.get(tgt) ?? 1) - 1
+  if (restantes > 0) {
+    vuelosPorLang.set(tgt, restantes)
+    return salida
   }
+  vuelosPorLang.delete(tgt)
+  cargaTerminar(tgt, items.length)
   return salida
 }
 
@@ -401,7 +472,7 @@ export function precalentarOtrosIdiomas(
     precalentados.add(clave)
     const itemsIdioma = items.map((item) => ({ texto: item.texto, lang: item.lang ?? 'es' }))
     cadenaPrecalentado = cadenaPrecalentado.then(async () => {
-      await traducirLoteMulti(itemsIdioma, idioma)
+      await traducirLoteMulti(itemsIdioma, idioma, { silencioso: true })
     })
   }
 }

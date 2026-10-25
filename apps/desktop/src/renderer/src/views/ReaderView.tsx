@@ -387,7 +387,8 @@ export function ReaderView() {
             lang: modulesByName.get(selectedModule)?.lang,
             ref: { code: currentBook.code, cap: verse.chapter, ver: verse.verse }
           })),
-          translateLocale
+          translateLocale,
+          { silencioso: true }
         )
       )
       .catch(() => undefined)

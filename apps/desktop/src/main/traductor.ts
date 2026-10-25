@@ -234,12 +234,15 @@ export async function precalentarPar(target: string): Promise<void> {
 }
 
 const ES_DIALECTO = new Set(['qu', 'gn', 'arn', 'ay', 'bn'])
+/* Spec = nombre REAL de carpeta en userData/dialectos: qu/ay/bn/gn comparten
+ * el NLLB-600M (nllb-qu) y arn expone el M2M afinado (m2m-es-arn; su inverso
+ * m2m-arn-es no cuenta como disponibilidad es->nativo para el estado). */
 const DIALECTO_A_SPEC = new Map([
-  ['qu', 'quechua'],
-  ['ay', 'quechua'],
-  ['bn', 'quechua'],
-  ['gn', 'quechua'],
-  ['arn', 'mapudungun']
+  ['qu', 'nllb-qu'],
+  ['ay', 'nllb-qu'],
+  ['bn', 'nllb-qu'],
+  ['gn', 'nllb-qu'],
+  ['arn', 'm2m-es-arn']
 ])
 
 /* Registro de LENGUAS NATIVAS: motor generico hecho en Keryx. Cada lengua se
@@ -290,21 +293,12 @@ const REGISTRO_LENGUAS: LenguaRegistro[] = [
     alfabeto:
       'অ আ ই ঈ উ ঊ ঋ এ ঐ ও ঔ ক খ গ ঘ ঙ চ ছ জ ঝ ঞ ট ঠ ড ঢ ণ ত থ দ ধ ন প ফ ব ভ ম য র ল শ ষ স হ',
     corpusDb: 'bn'
-  },
-  {
-    code: 'nah',
-    nombre: 'Náhuatl',
-    familia: 'Uto-Azteca (México)',
-    alfabeto: 'a c ch e hu i j k kw l m n o p qu r s t tl ts u x y z',
-    corpusDb: null
-  },
-  {
-    code: 'yua',
-    nombre: 'Maya yucateco',
-    familia: 'Yucateca (México, Belice)',
-    alfabeto: "a b ch ch' d e f g i j k' k l m n o p p' r s t ts tz u u' w x y '",
-    corpusDb: null
   }
+  /* Nota: Náhuatl y Maya yucateco salieron del registro (25 oct 2026, decisión
+   * del pastor): el NLLB instalado no los cubre (token <unk> verificado) y sin
+   * corpus no hay texto para traducir — mejor que verlos grises para siempre.
+   * Si una Biblia traducida se suelta como corpus/nah.db o corpus/yua.db,
+   * descubrirLenguas() los re-activa solos (código no se toca). */
 ]
 
 export interface LenguaEstado {
@@ -623,7 +617,10 @@ export async function translateLote(source: string, target: string, items: strin
       for (const [pos, pendiente] of chunk.entries()) {
         const traducido = textos[pos] ?? pendiente.text
         salida[pendiente.index] = traducido
-        cacheGuarda(source, target, pendiente.text, traducido)
+        /* Identidad = degradación del motor (respuestas originales): jamás
+         * en cache — si se guardara, el idioma quedaría "pegado" al original
+         * para siempre sin reintentar el motor. */
+        if (traducido !== pendiente.text) cacheGuarda(source, target, pendiente.text, traducido)
       }
     }
   }

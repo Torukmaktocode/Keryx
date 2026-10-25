@@ -38,7 +38,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, Optional, Tuple
 
 STDOUT_LOCK = threading.Lock()
-CANDADO_INIT = threading.Lock()
+CANDADO_INIT = threading.RLock()
 
 
 def respond(payload: Dict[str, Any]) -> None:
@@ -88,6 +88,11 @@ def salida_degenerada(original: str, traducido: str) -> bool:
     if len(original.strip()) > 30 and len(traducido.strip()) < 3:
         return True
     palabras = [p for p in traducido.lower().split() if len(p) >= 2]
+    # Triple repeticion CONSECUTIVA de una palabra: colapso mecanico del
+    # modelo (nunca retorica legítima — "atiyta atiyta atiyta").
+    for i in range(len(palabras) - 2):
+        if palabras[i] == palabras[i + 1] == palabras[i + 2]:
+            return True
     if len(palabras) >= 6:
         for i in range(len(palabras) - 4):
             gramo = tuple(palabras[i : i + 2])
@@ -148,13 +153,14 @@ class Dialectos:
     def traducir(self, dir_path: str, source_lang: str, target_lang: str, text: str) -> str:
         tok, translator = self.modelo(dir_path)
 
-        def inferir(beam: int) -> str:
+        def inferir(beam: int, extra: Optional[Dict[str, Any]] = None) -> str:
             res = translator.translate_batch(
                 [[source_lang] + tok.tokenize(text) + ["</s>"]],
                 beam_size=beam,
                 num_hypotheses=1,
                 return_scores=False,
                 target_prefix=[[target_lang]],
+                **(extra or {}),
             )
             hip = res[0].hypotheses[0]
             if hip and hip[0] in (source_lang, target_lang):
@@ -165,7 +171,11 @@ class Dialectos:
         if salida_degenerada(text, salida):
             salida = normalizar_salida(inferir(1))
             if salida_degenerada(text, salida):
-                return text
+                # Ultimo rescate determinista: los loops de repeticion caen con
+                # penalizacion (probado: verso Juan 3:6 colapsaba en beam 4 y 1).
+                salida = normalizar_salida(inferir(2, {"repetition_penalty": 1.2}))
+                if salida_degenerada(text, salida):
+                    return text
         return salida
 
     def lote(self, dir_path: str, source_lang: str, target_lang: str, textos: list[str]) -> list[str]:
@@ -177,28 +187,43 @@ class Dialectos:
                 tokenized.append([source_lang] + tok.tokenize(texto) + ["</s>"])
                 validas.append(index)
 
-        def inferir(beam: int) -> Dict[int, str]:
+        def inferir(indices: list[int], beam: int, extra: Optional[Dict[str, Any]] = None) -> Dict[int, str]:
+            """Infiere SOLO las filas de indices (posiciones de items validos):
+            los reintentos escalonados no re-infiere el lote entero, que en un
+            capitulo gastaba ~2-5 s por verso malo a lo tonto."""
+            if not indices:
+                return {}
+            pos_de = {index: pos for pos, index in enumerate(validas)}
+            filas = [tokenized[pos_de[indice]] for indice in indices]
             res = translator.translate_batch(
-                tokenized,
+                filas,
                 beam_size=beam,
                 num_hypotheses=1,
                 return_scores=False,
-                target_prefix=[[target_lang]] * len(tokenized),
+                target_prefix=[[target_lang]] * len(filas),
+                **(extra or {}),
             )
             decodas: Dict[int, str] = {}
             for pos, r in enumerate(res):
                 hip = r.hypotheses[0]
                 if hip and hip[0] in (source_lang, target_lang):
                     hip = hip[1:]
-                decodas[validas[pos]] = normalizar_salida(tok.decode(tok.convert_tokens_to_ids(hip)).strip())
+                decodas[indices[pos]] = normalizar_salida(
+                    tok.decode(tok.convert_tokens_to_ids(hip)).strip()
+                )
             return decodas
 
-        decodas = inferir(2)
+        decodas = inferir(validas, 2)
+        RESCATE = {"repetition_penalty": 1.2}
+        malos = [i for i in validas if salida_degenerada(textos[i], decodas.get(i, ""))]
+        if malos:
+            decodas.update(inferir(malos, 1))
+            malos = [i for i in malos if salida_degenerada(textos[i], decodas.get(i, ""))]
+        if malos:
+            decodas.update(inferir(malos, 2, RESCATE))
         for index in validas:
             if salida_degenerada(textos[index], decodas.get(index, "")):
-                decodas.update({k: v for k, v in inferir(1).items() if k == index})
-                if salida_degenerada(textos[index], decodas.get(index, "")):
-                    decodas[index] = textos[index]
+                decodas[index] = textos[index]
         return [decodas.get(index, texto) for index, texto in enumerate(textos)]
 
 
@@ -369,7 +394,9 @@ class Motor:
                     salida.append(texto)
             return salida
         except Exception:
-            return [texto if texto.strip() else texto for texto in textos]
+            # Tradujo mal o no tradujo: NO devolver identidad — se re-lanza para
+            # que el pivote o el camino por item tengan oportunidad de acertar.
+            raise
 
     def traducir(self, source: str, target: str, text: str) -> str:
         if not text.strip():
@@ -415,7 +442,7 @@ class Motor:
                     return str(self.traducir("en", target, paso))
             except Exception:
                 pass
-        return text
+        raise RuntimeError(f"Traducción no disponible para {source}>{target} en este momento.")
 
     def instalar(self, source: str, target: str) -> list[str]:
         from argostranslate import package
