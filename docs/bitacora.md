@@ -286,6 +286,78 @@ regresiones.
 
 ---
 
+## Día 25 (25 oct 2026) — el día de la salud del traductor
+
+> Sesión en vivo con la app abierta: reporte del pastor — "solo funcionan
+> inglés y portugués", "algunos versos no se traducen", "192 s cargando".
+> Tres raíces encontradas (cache envenenada, deadlock del daemon, colapsos
+> del NLLB) y una decisión editorial (fuera las lenguas sin motor).
+
+### Fase 1 · Indicador de carga con ms (terminó lo que quedó a medias)
+
+- Tracker universal de carga: `CargaIdioma` con `inicioMs/listoMs/msFinal`,
+  helpers `cargaIniciar/cargaProgreso/cargaTerminar`, contador
+  `vuelosPorLang` (solo el último lote marca listo), `formatoDuracion`
+  ("840 ms" / "2,4 s") y tick de 100 ms en `useCargaIdioma`
+  (`lib/traductor.ts`). Los `cargaSet` ya no dependen de `NATIVAS.includes`:
+  TODOS los idiomas reportan.
+- Chips (`Sidebar.tsx`): mayores ES/EN/PT/IT/FR/DE/ZH con `ChipMayor` (barra
+  pulsante + ms en vivo); nativos con la misma etiqueta.
+- Precargas de fondo silenciosas (`{ silencioso: true }`): precalentado de
+  otros idiomas y prefetch del capítulo siguiente ya no encienden el
+  indicador con trabajo que el usuario no pidió.
+- CSS: `.carga-ms` (tabular-nums), `.nativa-nombre` con elipsis, barra arriba.
+
+### Fase 2 · Las tres raíces del "solo en y pt funcionan"
+
+1. **Cache persistente envenenada (7.417 entradas)**: cuando el motor falla
+   devolvía el ORIGINAL y el main lo guardaba como traducción
+   (es>zh 1.851 · es>de 1.845 · es>it 1.835 · es>fr 1.835 envenenadas vs
+   es>en 21 / es>pt 19 — por eso "funcionaban"). Limpiadas con script
+   (backup `cache-traducciones.json.bak`); quedan 4.583 legítimas.
+   Prevención: main (`translateLote`) y renderer (`ejecutarLoteMulti` +
+   `traducirTexto`) JAMÁS cachean resultados identidad.
+2. **Deadlock del daemon (preexistente)**: `traductor()` tomaba
+   `CANDADO_INIT` (Lock no reentrante) y adentro llamaba a `idiomas()` que
+   pide el MISMO candado — si el primer pedido era un lote (sin `pairs`
+   antes), el daemon colgaba PARA SIEMPRE (explica los "status fallo:
+   Tiempo agotado"). Fix: `threading.RLock` (`daemon:41`).
+3. **Colapsos del NLLB**: Juan 3:6 producía loops ("chay runaqa, chay
+   runaqa...") en beam 4 y 1 → guard anti-degeneración → identidad. Escalera
+   de rescate determinista: beam 4 → beam 1 → beam 2 + `repetition_penalty`
+   1.2 → identidad; v6 se recupera ("Chuya runaqa, kay pachapi yurisqa kan;
+   Espiritumanta naceqkunapas espiritunmi."). Guard ampliado: triple
+   repetición CONSECUTIVA de palabra = colapso mecánico (v2 salía con
+   "atiyta atiyta atiyta"; ahora limpio).
+   Rendimiento: el rescate ya NO re-infiere el lote completo por verso malo
+   (antes ~2-5 s × N versos malos — causa del 192,4 s del chip); solo las
+   filas malas, una pasada por escalón.
+
+### Fase 3 · Estado de lenguas y decisión editorial
+
+- **Quechua gris = bug**: `DIALECTO_A_SPEC` buscaba carpetas `quechua`/
+  `mapudungun` inexistentes (los reales: `nllb-qu`, `m2m-es-arn`) — la
+  verificación neural nunca se disparó. Fix: spec = nombre real de carpeta →
+  Quechua activo con motor neural.
+- **Náhuatl y Maya yucateco retirados del registro** (decisión del pastor):
+  el NLLB instalado no los cubre (verificado con `infiriendo` tokens:
+  `yua_Latn`/`nah_Latn` = `<unk>` id=3, salida basura) y sin corpus
+  principio de silencio. `descubrirLenguas()` los re-activará solos si
+  llega un `corpus/nah.db` o `corpus/yua.db`.
+- Zod: `translateLocale` acepta `nah`/`yua` (clic de lenguas descubiertas
+  no se bloquea a mitad de camino).
+
+### Verificación (día 25)
+
+- `npm run typecheck` ✓ · `npm run test` ✓ 138/138 · `npm run lint` ✓
+  (1 warning preexistente en eval-sermons.mts)
+- `npm run eval:trad` ✓ 4/4 PASS — **Mapudungun mejoró real**:
+  chrF++ 16.9 → 20.2, sin datos 3 → 0 (6/6 casos); gn 28.1 · ay 23.2 ·
+  bn 45.4 sin regresiones.
+- Lote es→qu medio capítulo + verso colapsado: 17 s frío / sub-segundo tibio.
+
+---
+
 ## Estado de verificación al cierre de esta bitácora
 
 - `npm run typecheck` ✓ sin errores
@@ -700,6 +772,126 @@ Son complementarios — y Keryx llega a la lengua que Kaleo no tiene
 (Mapudungun), con texto publicado tal cual en vez de reformulación
 estadística. A futuro (Modo Misión) Keryx podría explorar proyección de
 subtítulos del sermón ya preparado, sin audio en la nube.
+
+## Plan guardado para la próxima semana — versión Mac + licencias Hotmart
+
+> Decisión tomada (25 oct 2026): **un solo proyecto, sin duplicados**. Electron
+> y electron-builder ya son multiplataforma (`electron-builder.yml` tiene
+> target win/mac/linux); el CI compila cada release para las 3 plataformas
+> desde el mismo repo. Un duplicado = doble mantenimiento y divergencia.
+
+### Fase 1 — Indicador de carga por idioma (quedó a medias, 25 oct)
+
+- Hecho: `CargaIdioma` extendido con `inicioMs/listoMs/msFinal` +
+  `formatoDuracion` + `msDeCarga` + tick de 100 ms en `useCargaIdioma`
+  (`renderer/src/lib/traductor.ts`).
+- Falta: helpers `cargaIniciar/cargaProgreso/cargaTerminar` + contador
+  `vuelosPorLang` en `ejecutarLoteMulti`; quitar el guard `NATIVAS.includes(tgt)`
+  para que TODOS los idiomas (IT/FR/DE/ZH…) reporten carga; opción
+  `{ silencioso: true }` para precalentado de otros idiomas
+  (`traductor.ts:404`) y prefetch del capítulo siguiente (`ReaderView.tsx:384`);
+  chips mayores y nativos con barra + ms en vivo en `Sidebar.tsx`; CSS
+  `.carga-ms` (tabular-nums) + `.nativa-nombre` + barra arriba en `styles.css`.
+- Verificación: `npm run typecheck`, `lint`, `test`.
+
+### Fase 2 — Licencias + suscripción Hotmart (~4-6 días naturales)
+
+Intro del pastor: login de usuarios y cobro mensual cada 30 días vía Hotmart;
+si el cliente no paga, la app se bloquea.
+
+- Stack decidido: **backend Cloudflare Workers + Supabase Postgres (gratís)**,
+  JWT firmado **Ed25519** (clave pública embebida en la app — nadie forja
+  licencias offline), vínculo a dispositivo **máx 3 activaciones**.
+- Login: **email + contraseña** (backend valida el email contra la
+  suscripción en Hotmart).
+- Política: **trial 7 días + gracia offline 7 días** (evita bloquear a
+  clientes sin internet al viajar).
+- Backend `_backend/` (~200 líneas TS, tests Vitest):
+  `POST /webhooks/hotmart` (valida `X-Hotmart-Token`; eventos
+  PURCHASE_APPROVED / SUBSCRIPTION_RENEWED / SUBSCRIPTION_CANCELED /
+  SUBSCRIPTION_EXPIRED → tabla `suscripciones(email, estado, expira_at)`),
+  `POST /auth/login`, `POST /license/activar` (JWT con exp = expira_at + gracia).
+- App: nuevo `packages/licencia` en el proceso main (login, token cifrado en
+  `keryx-store.json` — NEVER en git, validación al abrir + cada 24 h) + pantallas
+  de **login** primer arranque y **bloqueo** con botón "Renovar suscripción"
+  → checkout Hotmart del navegador. Los datos locales NUNCA se borran.
+- Ciclo de 30 días: lo hace Hotmart (tarjeta se renueva automáticamente);
+  la app SOLO lee el estado vía webhook → `expira_at` del próximo ciclo.
+- Parte manual del pastor: cuenta Cloudflare + Supabase, producto de
+  suscripción en Hotmart (pueden demorar 24-48 h en aprobar), URL webhook +
+  hottok, compra de prueba con tarjeta real, y validación extremo a extremo
+  (cobro → renovación → bloqueo → reactivación).
+
+### Fase 3 — Version Mac sin firmar por ahora (~2-3 h)
+
+- Decisión: **sin firmar** (sin pagar Apple Developer ID $99/año de momento).
+  En macOS moderno el usuario debe saltar Gatekeeper (clic derecho → Abrir,
+  o `xattr -cr`); si crece la base de clientes de Mac, se firma y **el código
+  no cambia** — solo el CI.
+- `.github/workflows/release.yml`: job `macos-latest` → `npm run build:mac`
+  (DMG arm64+x64, `identity: null` ya configurado en `electron-builder.yml:20-25`)
+  → GitHub Releases.
+- El DMG solo se construye en macOS (CI obligatorio si no hay Mac física);
+  hace falta probarlo en un MacBook real.
+- Doc nueva `docs/distribucion-mac.md`: instrucciones Gatekeeper para soporte.
+- Punto a revisar en esa fase: qué pasa con `biblioteca/` (4,8 GB, fuera de
+  git) al empaquetar para mac — hoy la app la escanea de disco en desarrollo.
+
+### Comparación de referencia (estimación)
+
+- Fase 1: ~30 min. Fase 2: ~1-2 días de código + 3-4 de config/pruebas Hotmart
+  real. Fase 3: ~2-3 h + prueba en MacBook. **Total ≈ 1 semana natural.**
+
+---
+
+## Hardening pre-comercial (auditoría 25 oct 2026)
+
+> Auditoría de calidad solicitada por el pastor ("¿está a nivel de app
+> profesional?"). Veredicto: **"indie profesional" confirmado** — la calidad
+> del código está cerca del nivel comercial; el gap real es de OPERACIÓN de
+> producto (firma, updater, CI, telemetría, packaging), no de código. La
+> lentitud de los idiomas es frío de modelo + cola del daemon, no mala
+> construcción — ya es visible con el indicador de ms de la Fase 1.
+
+### Lo VERIFICADO a nivel profesional (evidencia)
+
+- 42/45 canales IPC con validación Zod estricta + límites de tamaño
+  (`ipc.ts:41-53`, `core/schemas.ts`).
+- 0 `catch {}` vacíos en el renderer; degradación explícita con fallbacks.
+- 0 TODO/FIXME/HACK reales en todo el código.
+- 138 tests reales contra el motor e-Sword + evals como contrato
+  (9.0/9 sermons, 4/4 traducción) — más que la mayoría de apps indie.
+- Escritura atómica tmp+rename con flush al cerrar (`db/index.ts:82-92`).
+- Watchdog del daemon (relanza en 2 s) y arranque no bloqueante.
+- Escaneo de seguridad del main correcto: contextIsolation on,
+  nodeIntegration off, deny-all de popups (`main/index.ts:70-90`).
+
+### Los 6 cierres para nivel comercial (checklist accionable)
+
+| # | Punto | Detalle | Referencia | Estimación |
+|---|---|---|---|---|
+| 1 | **Bug packaging: `instalar_dialectos.py` no se embarca** | extraResources solo lleva `traductor_daemon.py`; la app INSTALADA no puede instalar modelos de lenguas nativas (solo funciona en dev) | `electron-builder.yml:8-10` vs `main/traductor.ts:479-481` | 15 min |
+| 2 | **CI obligatorio en push/PR** | workflow con test + typecheck + lint + eval + eval:trad; hoy la regla "evals 0 fallos antes de commit" se cumple a mano, solo hay 1 workflow manual de mac | `.github/workflows/` nuevo | ~1 h |
+| 3 | **Backup de `keryx-store.json`** | un JSON corrupto hoy borra documentos del usuario sin aviso; agregar backup rotativo (.bak, N generaciones) antes de recrear | `packages/db/src/index.ts:65-67` | ~45 min |
+| 4 | **Handlers de crash del main** | no existen `uncaughtException`/`unhandledRejection`; un error no capturado muere silencioso; agregar log a archivo | `main/index.ts` | ~30 min |
+| 5 | **Endurecimiento de seguridad** | CSP en `renderer/index.html` (hoy inexistente), `sandbox: true`, allowlist de esquema en `shell.openExternal` (hoy abre cualquier URL) y handler `will-navigate`; cerrar 3 canales IPC con args sin validar (`modulesRemote`, `bibleBooks`, `dictStrongs`) | `main/index.ts` + `ipc.ts:107,121,172` | ~2-3 h |
+| 6 | **Runtime del traductor empaquetado** | el instalador exige Python en la máquina del usuario (el daemon); congelar con PyInstaller (Windows/mac) para instalador sin dependencias externas | `scripts/traductor_daemon.py` + builder | 1 sesión (probar en ambas plataformas) |
+
+### Notas de la auditoría (sin acción inmediata)
+
+- Puntos 5 secundarios mitigados por diseño: saneo regex del HTML de módulos
+  y escape del markdown de IA (contextIsolation cubre el resto); DOMPurify
+  sería más robusto si se quisiera blindar del todo.
+- `aiApiKey` vive en texto plano en `keryx-store.json` — aceptable para app
+  local, documentar en soporte.
+- `node:sqlite` sigue experimental heredado de Electron/Node — riesgo de API
+  entre versiones, reconocido en AGENTS.md.
+- Sin tests E2E ni de `ipc.ts`/`JsonStore` — candidatos a agregar con el CI
+  del punto 2.
+- La tríada firma/updater/licencias ya está cubierta por las Fases 2 y 3 del
+  plan guardado arriba — este hardening NO los duplica.
+
+---
 
 ## Siguiente (candidatos, sin compromiso)
 

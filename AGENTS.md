@@ -1,7 +1,7 @@
 # AGENTS.md — Contexto para IAs (leer antes de tocar código)
 
-> Última actualización: 2026-10-22 · Etapa vigente: **E4.3 — Traducción a lenguas
-> nativas** · Versión del paquete: `0.4.0`
+> Última actualización: 2026-10-25 · Etapa vigente: **E4.3 — Traducción a
+> lenguas nativas** (día 25: salud del traductor) · Versión del paquete: `0.4.0`
 > (ver `docs/etapas.md` para el mapa completo de etapas).
 
 ## 1. Qué es Keryx
@@ -25,7 +25,7 @@ Nombre: κῆρυξ = heraldo.
 | TypeScript | ~5.9 | tsconfig estricto desde `tsconfig.base.json` |
 | Zod | 4.6 | validación de todos los canales IPC |
 | Zustand | 5.0 | estado UI |
-| Vitest | 5.0 | `npm test` (70 tests) |
+| Vitest | 5.0 | `npm test` (138 tests) |
 | ESLint | 9 + typescript-eslint 8 | flat config |
 | Node runtime | probado con Node 24 | requerido 20+ por README |
 
@@ -91,6 +91,38 @@ Síntesis en una línea por hito:
   banner auto-sanador, barra de progreso por idioma, comparativa por columna
   (Base corpus / demás su propio texto), Guía e Inspiración traducidas,
   evals `npm run eval:trad` chrF++/BLEU-4 4/4 PASS.
+  **E4.4 — salud del traductor (2026-10-25)**, día 25:
+  - **Indicador de carga ms** en los chips de idioma (mayores y nativos,
+    `formatoDuracion`, tick 100 ms, precargas de fondo `{ silencioso: true }`).
+  - **Cache de traducciones nunca guarda identidad**: si el motor devuelve el
+    original, no se cachea (main + renderer) — jamás un idioma "pegado".
+  - **Daemon**: `CANDADO_INIT` es `RLock` (deadlock del primer lote
+    resuelto); fallo = `ok:false` (NO identidad); escalera de rescate
+    beam 4 → beam 1 → beam 2 + `repetition_penalty` 1.2 → identidad; guard
+    anti-colapso con triple repetición consecutiva; el rescate re-infiere
+    SOLO las filas malas (nada de re-lotes completos — causa del "192 s").
+  - **Quechua activo**: `DIALECTO_A_SPEC` usa dirs reales (`nllb-qu`,
+    `m2m-es-arn`), no nombres fantasmas; bengalí/aymara/guaraní por corpus.
+  - **Náhuatl y Maya yucateco REMOVIDOS** del registro (NLLB no los cubre,
+    `<unk>` verificado; decisión del pastor) — `descubrirLenguas()` los
+    re-activará si llega `corpus/nah.db` o `corpus/yua.db`.
+  - Verificación del día: 138/138 tests, eval:trad 4/4 (arn 16.9 → 20.2
+    chrF++, sin datos 3 → 0). Cache envenenada limpiada (7.417 entradas
+    identidad; backup `.bak` junto a `cache-traducciones.json`).
+
+### Planes guardados para la próxima semana (ver docs/bitacora.md)
+
+1. **Fase 2 — Licencias Hotmart**: login email+contraseña, backend
+   Cloudflare Workers + Supabase (gratis), JWT Ed25519, trial 7 días +
+   gracia 7 días, máx 3 dispositivos; app bloqueada al expirar sin borrar
+   datos. `POST /webhooks/hotmart` valida hottok y actualiza `expira_at`.
+2. **Fase 3 — Mac sin firmar**: CI GitHub Actions `macos-latest` →
+   `npm run build:mac` (DMG arm64+x64, `identity: null`) → GitHub Releases +
+   instrucciones Gatekeeper (`docs/distribucion-mac.md`).
+3. **Hardening pre-comercial** (6 cierres): bug `instalar_dialectos.py` en
+   extraResources, CI obligatorio push/PR, backup de `keryx-store.json`,
+   handlers `uncaughtException`, CSP/sandbox/openExternal + 3 canales IPC
+   sin validar, daemon empaquetado con PyInstaller.
 
 ## 5. Principios no negociables (romper uno = regresión)
 
@@ -110,7 +142,7 @@ Síntesis en una línea por hito:
 npm run dev            # electron-vite (main+preload+renderer) — ventana Electron
 npm run typecheck      # tsc --noEmit (workspace desktop)
 npm run lint           # eslint .
-npm run test           # vitest run (117 tests: anti-alucinación + engine + export + métricas)
+npm run test           # vitest run (138 tests: anti-alucinación + engine + export + métricas)
 npm run eval           # evals de golden passages — DEBE dar 9.0/9
 npm run eval:trad      # evals de traducción es→nativa contra el daemon — DEBE dar 0 fallos
 npm run build:win      # instalador Windows
