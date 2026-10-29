@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import {
   DEFAULT_SETTINGS,
   type AppSettings,
+  type CustomTemplate,
   type EngineInfo,
   type StudyLayout,
   type SwordModule
@@ -55,6 +56,8 @@ interface AppState {
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
   /** Parchea settings.study (layout del modo Estudio) sin reemplazar el array entero. */
   updateStudy: (patch: Partial<StudyLayout>) => Promise<void>
+  saveCustomTemplate: (template: CustomTemplate) => Promise<void>
+  removeCustomTemplate: (id: string) => Promise<void>
   togglePriority: (name: string) => Promise<void>
   sendToWriting: (block: string, title?: string) => Promise<void>
   sendToPresentation: (doc: SermonDocument) => void
@@ -147,6 +150,20 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   updateStudy: async (patch) => {
     const settings = await api.settings.set({ study: { ...get().settings.study, ...patch } })
+    set({ settings })
+  },
+
+  saveCustomTemplate: async (template) => {
+    const current = get().settings.templates?.custom ?? []
+    const next = [...current.filter((item) => item.id !== template.id), template]
+    const settings = await api.settings.set({ templates: { custom: next } })
+    set({ settings })
+  },
+
+  removeCustomTemplate: async (id) => {
+    const current = get().settings.templates?.custom ?? []
+    const next = current.filter((item) => item.id !== id)
+    const settings = await api.settings.set({ templates: { custom: next } })
     set({ settings })
   },
 

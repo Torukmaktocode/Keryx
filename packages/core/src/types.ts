@@ -136,6 +136,26 @@ export interface AppSettings {
   translateLocale: string
   /** Layout del modo Estudio (plantilla, paneles, anchos, sincronia). */
   study: StudyLayout
+  /** Plantillas propias del usuario definidas en la vista Plantillas. */
+  templates: TemplatesSettings
+}
+
+export interface TemplatesSettings {
+  custom: CustomTemplate[]
+}
+
+/** Plantilla creada por el usuario en el editor de Plantillas. */
+export interface CustomTemplate {
+  id: string
+  name: string
+  kind: 'free' | 'sermon' | 'study' | 'devotional'
+  sections: CustomTemplateSection[]
+}
+
+export interface CustomTemplateSection {
+  id: string
+  heading: string
+  hint?: string
 }
 
 export type StudyPaneKind = 'bible' | 'commentary' | 'dictionary' | 'book'
@@ -230,5 +250,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showStrongs: false,
   deepSermon: false,
   translateLocale: 'off',
-  study: DEFAULT_STUDY
+  study: DEFAULT_STUDY,
+  templates: { custom: [] }
 }

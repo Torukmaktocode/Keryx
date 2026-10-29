@@ -126,6 +126,25 @@ export const documentSaveSchema = z.object({
   title: z.string().optional()
 })
 
+export const customTemplateSectionSchema = z.object({
+  id: z.string().min(1).max(40),
+  heading: z.string().min(1).max(60),
+  hint: z.string().max(200).optional()
+})
+
+export const customTemplateSchema = z.object({
+  id: z.string().min(1).max(60),
+  name: z.string().min(1).max(80),
+  kind: z.enum(['free', 'sermon', 'study', 'devotional']).default('free'),
+  sections: z.array(customTemplateSectionSchema).max(40).default([])
+})
+
+export const templatesSettingsSchema = z
+  .object({
+    custom: z.array(customTemplateSchema).max(100).default([])
+  })
+  .default({ custom: [] })
+
 export const settingsPatchSchema = z.object({
   theme: z.enum(['light', 'dark', 'sepia']).optional(),
   uiLocale: z.string().optional(),
@@ -148,7 +167,8 @@ export const settingsPatchSchema = z.object({
   translateLocale: z
     .enum(['off', 'es', 'en', 'pt', 'it', 'fr', 'de', 'zh', 'qu', 'gn', 'arn', 'ay', 'bn', 'nah', 'yua'])
     .optional(),
-  study: studyLayoutSchema.optional()
+  study: studyLayoutSchema.optional(),
+  templates: templatesSettingsSchema.optional()
 })
 
 export const presentationSaveSchema = z.object({

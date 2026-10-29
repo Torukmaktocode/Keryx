@@ -29,14 +29,13 @@ export const SERMON_SECTIONS: TemplateSection[] = [
 
 import { HERMENEUTIC_STEPS, SERMON_FRAMEWORK } from './library'
 
-const EXPOSITIVE_SECTIONS: TemplateSection[] = SERMON_FRAMEWORK.map((step) => ({
+export const EXPOSITIVE_SECTIONS: TemplateSection[] = SERMON_FRAMEWORK.map((step) => ({
   id: step.id,
   heading: step.heading,
   hint: step.description
 }))
 
-const HERMENEUTIC_SECTIONS: TemplateSection[] = [
-  ...HERMENEUTIC_STEPS.map((step) => ({
+export const HERMENEUTIC_SECTIONS: TemplateSection[] = [  ...HERMENEUTIC_STEPS.map((step) => ({
     id: step.id,
     heading: step.heading,
     hint: step.help
@@ -57,12 +56,48 @@ export function buildSermonSkeleton(title = 'Nueva predicacion'): string {
   return blocks.join('\n')
 }
 
+export function buildFromSections(sections: TemplateSection[], title = 'Nuevo documento'): string {
+  const hasTitle = sections.some((section) => section.id === 'title')
+  const head = hasTitle ? '' : `# ${title}\n\n`
+  const body = sections
+    .filter((section) => section.id !== 'title')
+    .map((section) => {
+      const suggestion = section.hint ? `> _Sugerencia: ${section.hint}_\n` : ''
+      return `## ${section.heading}\n\n${suggestion}\n`
+    })
+    .join('\n')
+  return `${head}${body}`
+}
+
+export const STUDY_SECTIONS: TemplateSection[] = [
+  { id: 'passage', heading: 'Pasaje', hint: 'referencia biblica principal' },
+  { id: 'observation', heading: 'Observacion', hint: 'que dice el texto? Detalles, palabras clave, contexto' },
+  { id: 'interpretation', heading: 'Interpretacion', hint: 'que significa? Compara con otros pasajes' },
+  { id: 'application', heading: 'Aplicacion', hint: 'como lo vivo esta semana?' },
+  { id: 'questions', heading: 'Preguntas', hint: 'preguntas para profundizar' }
+]
+
+export const DEVOTIONAL_SECTIONS: TemplateSection[] = [
+  { id: 'verse', heading: 'Versiculo', hint: 'elige un versiculo clave' },
+  { id: 'reflection', heading: 'Reflexion', hint: 'que te dice Dios a traves de este texto?' },
+  { id: 'prayer', heading: 'Oracion', hint: 'responde a Dios en tus palabras' }
+]
+
+export type SectionPresetId = 'sermon' | 'devotional' | 'study' | 'blank'
+
+export const SECTION_PRESETS: Record<SectionPresetId, TemplateSection[]> = {
+  sermon: SERMON_SECTIONS,
+  devotional: DEVOTIONAL_SECTIONS,
+  study: STUDY_SECTIONS,
+  blank: []
+}
+
 export function buildStudySkeleton(title = 'Nuevo estudio'): string {
-  return `# ${title}\n\n## Pasaje\n\n> _Sugerencia: referencia biblica principal_\n\n> \n\n## Observacion\n\n> _Sugerencia: que dice el texto? Detalles, palabras clave, contexto_\n\n## Interpretacion\n\n> _Sugerencia: que significa? Compara con otros pasajes_\n\n## Aplicacion\n\n> _Sugerencia: como lo vivo esta semana?_\n\n## Preguntas\n\n> _Sugerencia: preguntas para profundizar_\n\n- \n`
+  return `${buildFromSections(STUDY_SECTIONS, title)}> \n\n- \n`
 }
 
 export function buildDevotionalSkeleton(title = 'Nuevo devocional'): string {
-  return `# ${title}\n\n## Versiculo\n\n> _Sugerencia: elige un versiculo clave_\n\n> \n\n## Reflexion\n\n> _Sugerencia: que te dice Dios a traves de este texto?_\n\n## Oracion\n\n> _Sugerencia: responde a Dios en tus palabras_\n\n`
+  return `${buildFromSections(DEVOTIONAL_SECTIONS, title)}> \n`
 }
 
 /** Marco persuasivo: Gancho -> Concepto -> Ejemplo -> Desafio. */
@@ -97,14 +132,14 @@ export const TEMPLATES: DocumentTemplate[] = [
     id: 'study',
     name: 'Estudio biblico',
     description: 'Observacion, interpretacion y aplicacion.',
-    sections: [],
+    sections: STUDY_SECTIONS,
     build: buildStudySkeleton
   },
   {
     id: 'devotional',
     name: 'Devocional',
     description: 'Versiculo, reflexion y oracion.',
-    sections: [],
+    sections: DEVOTIONAL_SECTIONS,
     build: buildDevotionalSkeleton
   },
   {
