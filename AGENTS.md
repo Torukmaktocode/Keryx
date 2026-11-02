@@ -168,10 +168,13 @@ npm run build:win      # instalador Windows
 
 ## 8. Datos y tamaños medidos
 
-- `biblioteca/` = ~5,3 GB / 727 módulos (96 Biblias, 89 comentarios — incluye
-  10 clásicos EN de dominio público añadidos el día 32: Clarke, Barnes, Gill,
-  Wesley, Pulpit, Spurgeon, Lange, Nicoll, ECF, ANF —, 120 diccionarios,
-  422 libros) · escaneo completo ~270 ms.
+- `biblioteca/` = ~4,5 GB / 726 módulos verificados en disco (96 Biblias,
+  89 comentarios — incluye 10 clásicos EN de dominio público raíz: Clarke,
+  Barnes, Gill, Wesley, Pulpit, Spurgeon, Lange, Nicoll, ECF, ANF —,
+  119 diccionarios, 422 libros) · escaneo completo ~270 ms.
+  Fuentes de la descarga del día 32 (zips SI-*.cmti.zip, respaldo) en
+  `esword/clasicos-src/si-zips/`; OCR crudo de Lange en
+  `esword/clasicos-src/lange/` (ya no hace falta: hay módulo instalado).
 - `sword/` = ~0,74 GB (opcional; incluye `TDavid`/) · código de la app ~11 MB ·
   repo total ~8,7 GB.
 - Lector zCom4: fix día 32 — índices de verso de 12 bytes (`readers.ts`

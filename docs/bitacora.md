@@ -970,3 +970,21 @@ serial → ~4-5 h de reloj.
 - CCEL (~1.000 libros clásicos PD): fase futura vía exportador `.refi` (la
   app lee pero NO escribe módulos e-Sword todavía) — estimación 1-2 días de
   exporter + importación masiva.
+
+### Verificación del día 33 (2026-11-02) — los 10 clásicos EN están
+
+Auditoría de disco en la sesión de revisión: los 10 módulos EN del día 32
+**sí están en `biblioteca/` (raíz, plana)**; la búsqueda por fecha fallaba
+porque llevan LastWriteTime 1980. Verificado con el scan del
+`EswordProvider` + lectura real:
+
+- 726 módulos en `biblioteca/` (96 Biblias, 89 comentarios, 119
+  diccionarios, 422 libros); AGENTS.md corregido a los datos medidos.
+- Lee verificado: Gill Gen 1:1 y Pulpit Gen 1:1-2 (texto real, entradas
+  de 36.000+ y 28.500+ caracteres).
+- Respaldo de los zips de SermonIndex en `esword/clasicos-src/si-zips/`
+  (SI-GILL/LANGE/PULPIT/ECF/ANF/EB, ~131 MB comprimidos).
+- OCR de Lange (`esword/clasicos-src/lange/`, 22 txt Cornell) se conserva
+  como fuente cruda; el módulo instalado lo hace innecesario.
+
+Tests tras la verificación: 145/145; typecheck OK.
