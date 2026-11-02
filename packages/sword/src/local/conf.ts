@@ -48,7 +48,7 @@ function categoryFor(conf: Record<string, string>): ModuleCategory {
   return 'Unknown'
 }
 
-const TEXT_DRIVERS = new Set(['zText', 'RawText', 'RawText4', 'zCom', 'RawCom', 'RawCom4'])
+const TEXT_DRIVERS = new Set(['zText', 'RawText', 'RawText4', 'zCom', 'zCom4', 'RawCom', 'RawCom4'])
 const LD_DRIVERS = new Set(['zLD', 'RawLD', 'RawLD4'])
 
 export function resolveModuleDir(root: string, dataPath: string): { dataFull: string; moduleDir: string; prefix: string } {

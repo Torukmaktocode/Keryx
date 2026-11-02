@@ -84,7 +84,12 @@ export class LocalSwordProvider implements SwordProvider {
   private textModule(conf: ModuleConf): ZTextModule {
     let module = this.textModules.get(conf.name)
     if (!module) {
-      module = new ZTextModule(conf.moduleDir, conf.cipherKey, conf.compressType)
+      module = new ZTextModule(
+        conf.moduleDir,
+        conf.cipherKey,
+        conf.compressType,
+        conf.driver === 'zCom4' ? 12 : 10
+      )
       this.textModules.set(conf.name, module)
     }
     return module

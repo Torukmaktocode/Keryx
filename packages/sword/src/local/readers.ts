@@ -36,7 +36,7 @@ function normalizeKey(value: string): string {
   return value.trim().toUpperCase()
 }
 
-/** Biblias y comentarios comprimidos (zText / zCom). */
+/** Biblias y comentarios comprimidos (zText / zCom / zCom4). */
 export class ZTextModule {
   private readonly verseIndex = new Map<number, Buffer>()
   private readonly blockIndex = new Map<number, Buffer>()
@@ -47,7 +47,9 @@ export class ZTextModule {
   constructor(
     private readonly dir: string,
     cipherKey?: string | null,
-    compressType = 'ZIP'
+    compressType = 'ZIP',
+    // zText/zCom v2 usa entradas de 10 bytes (size u16); la serie 4 usa 12 (size u32).
+    private readonly entrySize = 10
   ) {
     this.cipher = cipherKey ? new SwordCipher(cipherKey) : null
     this.compressType = compressType.toUpperCase()
@@ -104,11 +106,13 @@ export class ZTextModule {
   getVerse(testament: 1 | 2, slot: number): string | null {
     if (!this.load(testament)) return null
     const index = this.verseIndex.get(testament)!
-    const pos = slot * 10
-    if (pos + 10 > index.length) return null
-    const block = index.readUInt32LE(pos)
+    const pos = slot * this.entrySize
+    if (pos + this.entrySize > index.length) return null
+    const block =
+      this.entrySize === 12 ? index.readUInt32LE(pos) : index.readUInt32LE(pos)
     const offset = index.readUInt32LE(pos + 4)
-    const size = index.readUInt16LE(pos + 8)
+    const size =
+      this.entrySize === 12 ? index.readUInt32LE(pos + 8) : index.readUInt16LE(pos + 8)
     if (size === 0) return ''
     const out = this.readBlock(testament, block)
     return out.subarray(offset, offset + size).toString('utf8')
@@ -118,7 +122,7 @@ export class ZTextModule {
   iterateVerses(testament: 1 | 2): Array<{ slot: number; text: string }> {
     if (!this.load(testament)) return []
     const index = this.verseIndex.get(testament)!
-    const total = Math.floor(index.length / 10)
+    const total = Math.floor(index.length / this.entrySize)
     const result: Array<{ slot: number; text: string }> = []
     for (let slot = 0; slot < total; slot++) {
       const text = this.getVerse(testament, slot)
