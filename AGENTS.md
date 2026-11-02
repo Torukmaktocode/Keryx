@@ -1,7 +1,7 @@
 # AGENTS.md — Contexto para IAs (leer antes de tocar código)
 
-> Última actualización: 2026-10-25 · Etapa vigente: **E4.3 — Traducción a
-> lenguas nativas** (día 25: salud del traductor) · Versión del paquete: `0.4.0`
+> Última actualización: 2026-11-01 · Etapa vigente: **E4.4/E4.5 — Biblioteca
+> clásica EN + motor zCom4** (día 32) · Versión del paquete: `0.4.0`
 > (ver `docs/etapas.md` para el mapa completo de etapas).
 
 ## 1. Qué es Keryx
