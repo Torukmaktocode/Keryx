@@ -904,3 +904,69 @@ si el cliente no paga, la app se bloquea.
 - NLLB 1.3B opcional (calidad +8-15 pts chrF, ~1.4 GB).
 - Corpus quechua: sin fuente pública verificable hoy (documentado en
   `instalar_corpus_dialectos.py`); queda en motor neural (≈).
+
+---
+
+## Día 32 — 2026-11-01 — Biblioteca: clásicos históricos EN completos
+
+**Objetivo del día**: cerrar la lista pedida "grandes comentaristas de la
+historia" (lo bajable legalmente) y sanar el lector de módulos SWORD zCom4.
+
+### Módulos instalados (dominio público, SermonIndex.net → `biblioteca/`)
+
+| Módulo (.cmti) | Entradas | Peso |
+|---|---|---|
+| Adam Clarke — Comentario sobre la Biblia | 21.153 | 25,4 MB |
+| Albert Barnes — Notas sobre la Biblia | 19.344 | 40,8 |
+| John Gill — Exposición de toda la Biblia | 32.139 | 61,0 |
+| John Wesley — Notas Expositivas | 17.188 | 6,6 |
+| The Pulpit Commentary (Exell-Spence) | 1.451 secc. | 116,1 |
+| Charles Spurgeon — Comentario y Exposiciones | 997 | 14,6 |
+| Lange — Comentario de las Escrituras | 1.886 secc. | 79,6 |
+| Expositor's Bible (Nicoll) | 1.982 secc. | 45,2 |
+| Padres de la Iglesia — Comentario (ECF) | 18.656 | 89,5 |
+| Padres Ante-Nicenos — Referencias NT (ANF) | 4.080 | 3,5 |
+
+Subtotal `biblioteca/`: **~482 MB / 10 módulos EN** (+9,9 % sobre 4,8 GB).
+Además **Tesoro de David completo** (`TDavid`, zCom4, CrossWire) → `sword/`
+(~5,3 MB). Descarga de la sesión: ~164 MB (los zips van ~3× comprimidos).
+
+Estos módulos se detectan con idioma `en`: ya sirven en la comparativa del
+Lector; el dosier NO los cita todavía (filtra módulos es — ver plan abajo).
+
+### FIX del motor: lector `zCom4` (readers.ts + conf.ts)
+
+- `TEXT_DRIVERS` no incluía `zCom4` → cualquier comentario zCom4 se listaba
+  pero devolvía 0 entradas al leer (TDavid afectado).
+- zCom4 usa índices de verso de **12 bytes** (block/offset/size int32) vs los
+  10 bytes (size u16) de zText/zCom v2: `ZTextModule` ahora recibe `entrySize`
+  y `LocalSwordProvider.textModule` lo fija según driver
+  (`conf.driver === 'zCom4' ? 12 : 10`).
+- Verificación: TDavid lee Salmos 23 (smoke); `npm test` 146/146;
+  `npm run typecheck` OK.
+
+### PLAN GUARDADO — "Cambio A": integrar clásicos EN al dosier (~1 día)
+
+El dosier cita solo módulos en español; conectar los EN requiere:
+
+1. **Sub A** (TS): abrir el filtro de idioma en `buildDossier` + etiquetado
+   de citas traducidas (`[Módulo · entrada]` + nota "traducción automática").
+2. **Sub B** (daemon): par de traducción en→es (`spa_Latn`) en el motor del
+   E4.3 ya integrado + cache.
+3. Integración serial + evals: `npm run eval` (5 pasajes dorados, medir citas
+   antes/después) y `npm run eval:trad` en 0 fallos.
+
+Salvaguarda: NO citar si la traducción falla (ok:false → sección vacía,
+principio nº 2). Ejecutable con 2 sub-agentes paralelos (A y B) + integración
+serial → ~4-5 h de reloj.
+
+### Descartado por límite legal (decisión del día)
+
+- Sección 1 de la lista (AYBC, Hermeneia, ICC, NICOT/NICNT, WBC, BECNT, NIGTC,
+  OTL, PNTC, Tyndale) y modernos de sección 3/4 (Carson, Moo, Wright…): solo
+  © vigente vía Logos/Accordance/Olive Tree; vías sin licencia (scans de
+  Internet Archive, "premium modules" de bible-support) descartadas — app GPL
+  con plan comercial Hotmart, riesgo takedown real.
+- CCEL (~1.000 libros clásicos PD): fase futura vía exportador `.refi` (la
+  app lee pero NO escribe módulos e-Sword todavía) — estimación 1-2 días de
+  exporter + importación masiva.

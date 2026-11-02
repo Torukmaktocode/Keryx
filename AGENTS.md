@@ -123,6 +123,12 @@ Síntesis en una línea por hito:
    extraResources, CI obligatorio push/PR, backup de `keryx-store.json`,
    handlers `uncaughtException`, CSP/sandbox/openExternal + 3 canales IPC
    sin validar, daemon empaquetado con PyInstaller.
+4. **Cambio A — clásicos EN al dosier** (día 32, bitácora): los 10 módulos
+   EN en `biblioteca/` + TDavid ya leen, pero el dosier filtra es. Abrir
+   filtro de idioma en `buildDossier` (Sub A) + par en→es en el daemon
+   (Sub B) + nota "traducción automática" en las citas; evals (eval +
+   eval:trad) en 0 fallos. Salvaguarda: traducción fallida ⇒ sin cita.
+   Con 2 sub-agentes + integración serial: ~4-5 h.
 
 ## 5. Principios no negociables (romper uno = regresión)
 
@@ -162,8 +168,13 @@ npm run build:win      # instalador Windows
 
 ## 8. Datos y tamaños medidos
 
-- `biblioteca/` = 4,8 GB / 717 módulos (96 Biblias, 79 comentarios,
-  120 diccionarios, 422 libros) · escaneo completo ~270 ms.
-- `sword/` = 0,73 GB (opcional) · código de la app ~11 MB · repo total ~8,2 GB.
+- `biblioteca/` = ~5,3 GB / 727 módulos (96 Biblias, 89 comentarios — incluye
+  10 clásicos EN de dominio público añadidos el día 32: Clarke, Barnes, Gill,
+  Wesley, Pulpit, Spurgeon, Lange, Nicoll, ECF, ANF —, 120 diccionarios,
+  422 libros) · escaneo completo ~270 ms.
+- `sword/` = ~0,74 GB (opcional; incluye `TDavid`/) · código de la app ~11 MB ·
+  repo total ~8,7 GB.
+- Lector zCom4: fix día 32 — índices de verso de 12 bytes (`readers.ts`
+  `entrySize`); sin él los comentarios zCom4 listan pero no leen.
 - Dosier por pasaje: 15–21 secciones, 25–43 citas, ~400–1000 ms, 0 tokens IA.
 - Latencia de cobertura ℹ: ~20 ms (comentarios), ~135 ms (diccionarios).
