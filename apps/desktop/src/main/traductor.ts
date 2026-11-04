@@ -1,5 +1,5 @@
-/**
- * Sub-agente de traducción en el main process: mantiene vivo un daemon
+﻿/**
+ * Sub-agente de traducciÃ³n en el main process: mantiene vivo un daemon
  * Python (scripts/traductor_daemon.py) con Argos Translate (redes neuronales
  * offline, 0 tokens). Habla JSON-lines por stdin/stdout y expone canales IPC
  * tipados. Los paquetes de idioma se descargan UNA vez a userData; luego
@@ -8,6 +8,7 @@
 import { app } from 'electron'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { spawn, execFileSync, type ChildProcess } from 'node:child_process'
+import { pythonBin } from './python-bin'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { analizarCorpus } from './analizar_lengua'
@@ -44,54 +45,15 @@ function daemonPath(): string {
     : join(app.getAppPath(), '..', '..', 'scripts', 'traductor_daemon.py')
 }
 
-let pythonCache: string | null = null
-
-/** Python REAL de la maquina: en Windows el PATH suele traer primero el stub
- * del Python install manager (WindowsApps/pymanager), que en vez de ejecutar
- * cuelga o abre el updater — rompe el daemon de forma intermitente. */
-function pythonBin(): string {
-  if (pythonCache) return pythonCache
-  pythonCache = 'python'
-  if (process.platform === 'win32') {
-    try {
-      const salida = execFileSync('where.exe', ['python'], { encoding: 'utf8', timeout: 15_000 })
-      const reales = salida
-        .split(/\r?\n/)
-        .map((linea) => linea.trim())
-        .filter(Boolean)
-        .filter((ruta) => !/WindowsApps|pymanager/i.test(ruta))
-      if (reales.length) pythonCache = reales[0]
-    } catch {
-      // sin where.exe: cae al PATH
-    }
-  } else {
-    // macOS/Linux: el binario es python3 (mac no trae 'python'); el stub
-    // /usr/bin/python3 exige Xcode CLT: si no está instalado sale con error
-    // sin colgar — se recorre la escalera habitual.
-    const candatos = ['python3', '/usr/bin/python3', '/opt/homebrew/bin/python3', '/usr/local/bin/python3', 'python']
-    for (const bin of candatos) {
-      try {
-        execFileSync(bin, ['--version'], { timeout: 10_000, stdio: 'ignore' })
-        pythonCache = bin
-        break
-      } catch {
-        continue
-      }
-    }
-    if (pythonCache === 'python') pythonCache = 'python3'
-  }
-  return pythonCache
-}
-
 function userDataDir(): string {
   return join(app.getPath('userData'), 'traduccion')
 }
 
 let instalandoPaquetes = false
 
-/** pip instalador con escalera: sin flag → --break-system-packages (pip de
+/** pip instalador con escalera: sin flag â†’ --break-system-packages (pip de
  * Homebrew, PEP 668), si "--user" se niega cae a "--break-system-packages"
- * solo. Devuelve true si pip terminó bien (o ya estaba instalado). */
+ * solo. Devuelve true si pip terminÃ³ bien (o ya estaba instalado). */
 async function pipInstalar(): Promise<boolean> {
   const escalera: string[][] = [
     ['-m', 'pip', 'install', '--user', 'argostranslate'],
@@ -117,7 +79,7 @@ async function pipInstalar(): Promise<boolean> {
 }
 
 /** Instala argostranslate UNA vez (marca en userData). Sin red o sin pip
- * queda en log y se reintenta al proximo arranque — el daemon sigue vivo. */
+ * queda en log y se reintenta al proximo arranque â€” el daemon sigue vivo. */
 function prepararPaquetes(): void {
   const dir = userDataDir()
   if (instalandoPaquetes || existsSync(join(dir, '.paquetes-ok'))) return
@@ -180,16 +142,16 @@ function launchDaemon(): Promise<void> {
         console.log('[traductor-daemon] ', chunk.trimEnd().slice(0, 300))
       })
       proc.on('exit', (code) => {
-        console.log('[traductor] daemon salió con código', code)
+        console.log('[traductor] daemon saliÃ³ con cÃ³digo', code)
         child = null
         launching = null
         for (const [, entry] of pending) {
           clearTimeout(entry.timer)
-          entry.reject(new Error('El motor de traducción se detuvo'))
+          entry.reject(new Error('El motor de traducciÃ³n se detuvo'))
         }
         pending.clear()
         /* Watchdog: si el daemon muere en vuelo (OOM, crash de python) la
-         * traduccion no queda muerta hasta reiniciar la app — se relanza en
+         * traduccion no queda muerta hasta reiniciar la app â€” se relanza en
          * 2 s mientras la ventana siga abierta. */
         if (!quitting) {
           setTimeout(() => {
@@ -203,7 +165,7 @@ function launchDaemon(): Promise<void> {
         launching = null
         reject(error)
       })
-      // El daemon arranca en vivo aunque no haya paquetes aún.
+      // El daemon arranca en vivo aunque no haya paquetes aÃºn.
       setTimeout(() => resolve(), 300)
     } catch (error) {
       launching = null
@@ -226,7 +188,7 @@ function handleLine(line: string): void {
   clearTimeout(entry.timer)
   pending.delete(id)
   if (message.ok === false) {
-    entry.reject(new Error(String(message.error ?? 'Error de traducción')))
+    entry.reject(new Error(String(message.error ?? 'Error de traducciÃ³n')))
     return
   }
   entry.resolve(message)
@@ -234,14 +196,14 @@ function handleLine(line: string): void {
 
 async function request<T>(payload: Record<string, unknown>, timeoutMs = 60_000): Promise<T> {
   await launchDaemon()
-  if (!child || !child.stdin?.writable) throw new Error('El motor de traducción no está disponible')
+  if (!child || !child.stdin?.writable) throw new Error('El motor de traducciÃ³n no estÃ¡ disponible')
   const id = nextId++
   console.log(`[traductor] -> ${JSON.stringify(payload).slice(0, 160)}`)
   const message = JSON.stringify({ id, ...payload })
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => {
       pending.delete(id)
-      reject(new Error('Tiempo agotado en la traducción'))
+      reject(new Error('Tiempo agotado en la traducciÃ³n'))
     }, timeoutMs)
     pending.set(id, { resolve: resolve as (value: unknown) => void, reject, timer })
     child?.stdin?.write(`${message}\n`)
@@ -327,43 +289,43 @@ const REGISTRO_LENGUAS: LenguaRegistro[] = [
     code: 'arn',
     nombre: 'Mapudungun',
     familia: 'lengua aislada (Chile, Argentina)',
-    alfabeto: 'a ch d e f g i k l m n ñ ng p r s t tr u w y ü z',
+    alfabeto: 'a ch d e f g i k l m n Ã± ng p r s t tr u w y Ã¼ z',
     corpusDb: 'arn'
   },
   {
     code: 'gn',
-    nombre: 'Guaraní',
-    familia: 'Tupí-Guaraní (Paraguay, Bolivia, Argentina)',
-    alfabeto: "a ã e ẽ g g̃ i ĩ j k l mb n nd ng nt ñ o õ p r rr s t u ũ y ỹ '",
+    nombre: 'GuaranÃ­',
+    familia: 'TupÃ­-GuaranÃ­ (Paraguay, Bolivia, Argentina)',
+    alfabeto: "a Ã£ e áº½ g gÌƒ i Ä© j k l mb n nd ng nt Ã± o Ãµ p r rr s t u Å© y á»¹ '",
     corpusDb: 'gn'
   },
   {
     code: 'qu',
     nombre: 'Quechua',
-    familia: 'Quechua (Perú, Bolivia, Ecuador)',
-    alfabeto: "a ch chh ch' i j k kh k' l ll m n ñ p ph p' q qh q' r s t th t' u w y",
+    familia: 'Quechua (PerÃº, Bolivia, Ecuador)',
+    alfabeto: "a ch chh ch' i j k kh k' l ll m n Ã± p ph p' q qh q' r s t th t' u w y",
     corpusDb: 'quy'
   },
   {
     code: 'ay',
     nombre: 'Aymara',
-    familia: 'Aymara (Bolivia, Perú, Chile)',
-    alfabeto: "a ch chh ch' i ij j k kh k' l ll m n ñ p ph p' q qh q' r s t th t' u w x y",
+    familia: 'Aymara (Bolivia, PerÃº, Chile)',
+    alfabeto: "a ch chh ch' i ij j k kh k' l ll m n Ã± p ph p' q qh q' r s t th t' u w x y",
     corpusDb: 'ayr'
   },
   {
     code: 'bn',
-    nombre: 'Bengalí',
+    nombre: 'BengalÃ­',
     familia: 'Indoaria (Bangladesh, India)',
     alfabeto:
-      'অ আ ই ঈ উ ঊ ঋ এ ঐ ও ঔ ক খ গ ঘ ঙ চ ছ জ ঝ ঞ ট ঠ ড ঢ ণ ত থ দ ধ ন প ফ ব ভ ম য র ল শ ষ স হ',
+      'à¦… à¦† à¦‡ à¦ˆ à¦‰ à¦Š à¦‹ à¦ à¦ à¦“ à¦” à¦• à¦– à¦— à¦˜ à¦™ à¦š à¦› à¦œ à¦ à¦ž à¦Ÿ à¦  à¦¡ à¦¢ à¦£ à¦¤ à¦¥ à¦¦ à¦§ à¦¨ à¦ª à¦« à¦¬ à¦­ à¦® à¦¯ à¦° à¦² à¦¶ à¦· à¦¸ à¦¹',
     corpusDb: 'bn'
   }
-  /* Nota: Náhuatl y Maya yucateco salieron del registro (25 oct 2026, decisión
+  /* Nota: NÃ¡huatl y Maya yucateco salieron del registro (25 oct 2026, decisiÃ³n
    * del pastor): el NLLB instalado no los cubre (token <unk> verificado) y sin
-   * corpus no hay texto para traducir — mejor que verlos grises para siempre.
+   * corpus no hay texto para traducir â€” mejor que verlos grises para siempre.
    * Si una Biblia traducida se suelta como corpus/nah.db o corpus/yua.db,
-   * descubrirLenguas() los re-activa solos (código no se toca). */
+   * descubrirLenguas() los re-activa solos (cÃ³digo no se toca). */
 ]
 
 export interface LenguaEstado {
@@ -491,7 +453,7 @@ export function descubrirLenguas(): LenguaEstado[] {
       const registro: LenguaDescubierta = {
         code: db,
         nombre: previa?.nombre || meta.nombre || analisis.nombre,
-        familia: previa?.familia || meta.fuente || 'lengua indígena',
+        familia: previa?.familia || meta.fuente || 'lengua indÃ­gena',
         alfabeto: previa?.alfabeto || analisis.alfabeto
       }
       if (JSON.stringify(previa) !== JSON.stringify(registro)) {
@@ -546,11 +508,11 @@ async function instalarDialecto(target: string): Promise<boolean> {
       })
       proc.stdout?.on('data', (chunk) => console.log('[dialectos]', chunk.toString().trim().slice(0, 200)))
       proc.stderr?.on('data', (chunk) => console.log('[dialectos] ', chunk.toString().trim().slice(0, 300)))
-      const timer = setTimeout(() => reject(new Error('Instalación de dialecto excedió 30 min')), 1_800_000)
+      const timer = setTimeout(() => reject(new Error('InstalaciÃ³n de dialecto excediÃ³ 30 min')), 1_800_000)
       proc.on('exit', (code) => {
         clearTimeout(timer)
         if (code === 0) resolve()
-        else reject(new Error(`instalar_dialectos salió con código ${code}`))
+        else reject(new Error(`instalar_dialectos saliÃ³ con cÃ³digo ${code}`))
       })
       proc.on('error', (error) => {
         clearTimeout(timer)
@@ -559,7 +521,7 @@ async function instalarDialecto(target: string): Promise<boolean> {
     })
     return true
   } catch (error) {
-    console.log('[dialectos] fallo de instalación:', error instanceof Error ? error.message : String(error))
+    console.log('[dialectos] fallo de instalaciÃ³n:', error instanceof Error ? error.message : String(error))
     return false
   }
 }
@@ -604,7 +566,7 @@ const corpusConns = new Map<string, DatabaseSync>()
 
 function corpusConn(lang: string): DatabaseSync | null {
   /* ESTANDAR de adopcion: db registrada por tabla; cualquier otra lengua se
-   * resuelve por su propio nombre — un corpus nuevo en corpus/<code>.db se
+   * resuelve por su propio nombre â€” un corpus nuevo en corpus/<code>.db se
    * activa solo, sin tocar codigo. */
   const db = CORPUS_LANG_DB[lang] ?? lang
   if (!db) return null
@@ -682,8 +644,8 @@ export async function translateLote(source: string, target: string, items: strin
       for (const [pos, pendiente] of chunk.entries()) {
         const traducido = textos[pos] ?? pendiente.text
         salida[pendiente.index] = traducido
-        /* Identidad = degradación del motor (respuestas originales): jamás
-         * en cache — si se guardara, el idioma quedaría "pegado" al original
+        /* Identidad = degradaciÃ³n del motor (respuestas originales): jamÃ¡s
+         * en cache â€” si se guardara, el idioma quedarÃ­a "pegado" al original
          * para siempre sin reintentar el motor. */
         if (traducido !== pendiente.text) cacheGuarda(source, target, pendiente.text, traducido)
       }
@@ -692,7 +654,7 @@ export async function translateLote(source: string, target: string, items: strin
   return salida
 }
 
-/* ── Cache persistente de traducciones (userData; instantaneo entre sesiones) ── */
+/* â”€â”€ Cache persistente de traducciones (userData; instantaneo entre sesiones) â”€â”€ */
 
 const CACHE_FILE = (): string => join(app.getPath('userData'), 'traduccion', 'cache-traducciones.json')
 const CACHE_MAX = 12_000
@@ -789,3 +751,4 @@ export function registerTraductorIpc(
     return { lang: req.lang, pares: glosarioDe(req.lang) }
   })
 }
+

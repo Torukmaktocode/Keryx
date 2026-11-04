@@ -98,6 +98,12 @@ jobs:
           rm -rf apps/desktop/biblioteca apps/desktop/coalicion "$GITHUB_WORKSPACE/datos" || true
           ls apps/desktop/dist/*.dmg || true
 
+      - name: Humo del paquete (escaneo + Python + corpus + daemon Argos E2E)
+        run: |
+          APP=$(ls -d apps/desktop/dist/mac/Keryx.app apps/desktop/dist/mac-arm64/Keryx.app 2>/dev/null | head -1)
+          [ -d "$APP" ] || { echo "sin .app en dist"; exit 1; }
+          npx tsx scripts/smoke-mac.mts "$APP"
+
       - uses: actions/upload-artifact@v4
         with:
           name: keryx-dmg
