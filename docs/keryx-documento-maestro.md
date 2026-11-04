@@ -1,0 +1,273 @@
+# Keryx — Documento maestro (v0.4.0)
+
+> El documento único de Keryx: qué es, módulos, funciones, roles,
+> casas de fe, la dimensión del trabajo pastoral (10 años), mejoras
+> medibles, comunidad de sermones y objeciones con respuestas.
+> Día 34 · 2026-11-04 · Windows (NSIS) y macOS Big Sur 11+ (DMG).
+
+---
+
+## 1. Qué es Keryx en una frase
+
+**Keryx** (κῆρυξ, "heraldo") es un software de escritorio (Windows y macOS)
+de **estudio bíblico y predicación en español**, con una biblioteca de
+726 módulos e-Sword reales (96 Biblias, 89 comentarios, 119 diccionarios,
+422 libros), **7.947 artículos** de Coalición por el Evangelio con texto
+completo, un motor que mina esa biblioteca **por código (0 tokens IA)** para
+fabricar un dosier de estudio de 25-43 citas **verificadas y citadas**, y un
+asistente que redacta sermones completos, estudios bíblicos y devocionales
+con la voz del predicador — sin inventar nada: si el módulo no da el dato,
+la sección no existe.
+
+Todo corre **offline** en el dispositivo (biblioteca local, traducción
+neuronal instalada, verso verificado por SQLite); la única pieza opcional
+en la nube es la redacción final si el usuario activa IA.
+
+---
+
+---
+
+## 2. Qué trae Keryx — módulo por módulo
+
+| Módulo (vista) | Qué hace |
+|---|---|
+| **Lector** | Biblia de estudio en pantalla: lectura simple, columna doble y comparación experta 2/4/6 (RV60 ↔ NVI ↔ NTV ↔ Amplificada, y en 6 columnas + LBLA + original/interlineal), modo apilado por verso estilo Logos, chips de perfil de traducción (formal · dinámica · paráfrasis · ampliada · original) y comparación con lenguas nativas (guaraní, aymara, mapudungún, bengalí, quechua) con verso verificado por SQLite local. |
+| **Guía del Pasaje** (en el Lector) | Fichas de estudio por pasaje: texto, contexto histórico y social (Walton-Keener), cristológico, filológico, teológico, comentarios por cobertura, palabras originales, casos bíblicos, paralelos Lambert. 25-43 citas ancladas en 400-1000 ms, minadas por código (0 tokens IA). |
+| **Estudio** | Estudio con paneles sincronizados (Biblia + Comentario + Diccionario + Libro), acordeón de comentarios verso a verso con rangos e-Sword, diccionario por clic de palabra y chips ℹ de cobertura, claves Strong clicables, plantillas de layout (Estudio completo, Lectura, Investigación, Personalizado) y splitters persistentes. |
+| **Búsqueda** | Búsqueda en toda la biblioteca con filtros (AT/NT, módulos), conteo, sugerencias y corrección ortográfica — contra 726 módulos reales en ~270 ms de escaneo. |
+| **Escritura** | Editor minimalista tipo iA Writer (CodeMirror 6) con enfoque, modo typewriter, markdown, documentos locales con historial y exportación a .doc/.md/Copiar. |
+| **Asistente** | El corazón: tres generadores — **Sermón completo**, **Estudio bíblico** y **Devocional**. Sub-agentes deterministas minan 717 módulos reales + 7.947 artículos de Coalición por el Evangelio (0 tokens), arman un dosier de 15-21 secciones con 25-43 citas `[Módulo · entrada]`, y la IA solo redacta la voz encima. AST del sermón inmutable por código; crítico anti-alucinación (Strong y referencias sin ancla se reparan o eliminan); 12 oradores con perfil de voz; modo economía (1 llamada) y modo calidad deepSermon (borrador → crítico → final). |
+| **Inspiración** | Escena del púlpito: texto del sermón con señales oratorias, meditación de cierre, frase final, y traducción a las lenguas instaladas de la congregación. |
+| **Biblioteca** | Explorador de los 726 módulos e-Sword reales (Biblias/Comentarios/Diccionarios/Libros) + Corpus Coalición (7.947 artículos con texto completo, 180 temas); apertura directa en Estudio o Lector. |
+| **Plantillas** | Presets del Estudio y creador de plantillas propias del usuario (secciones de sermón/estudio/devocional/en blanco, persistidas). |
+| **Presentaciones** | Exporta el sermón a PowerPoint (pptx) y modo púlpito para proyectar mientras predicas. |
+| **Módulos** | Instalador de recursos compatibles (e-Sword y SWORD/CrossWire): escaneo de carpetas sin copiar ni convertir; el usuario aporta su propia biblioteca legal. |
+| **Ajustes** | Idioma de interfaz y de traducción (es/en/pt + nativas), ruta de biblioteca, claves de IA, marcadores Strong#, deepSermon y temas visuales. |
+
+---
+
+---
+
+## 3. Funciones una a una
+
+### Lectura y comparación
+1. **Lectura simple con pestañas de módulo** — cualquier Biblia instalada; preferencia bien-font (RV60 limpia primero, "con Strong" al final).
+2. **Comparación experta 2/4/6** — abre del lado opuesto del perfil de tu Biblia: RV60 ↔ NVI; en modo 4 suma NTV (o LBLA) y Amplificada; en modo 6 suma LBLA y la original (BHS en AT; interlineal/textual en NT).
+3. **Modo apilado por verso** — bloques RV60/NVI/NTV/LBLA por verso, con nombre y perfil de traducción en cada trama.
+4. **Chips de perfil de traducción** (formal · dinámica · paráfrasis · ampliada · original) en todos los modos.
+5. **Lenguas nativas en la comparación** — la columna base usa texto verificado local (guaraní GDC2006, aymara AYBOL, mapudungún, bengalí, quechua neural); las demás columnas traduc SU texto con el daemon Argos del dispositivo.
+
+### Estudio
+6. **Estudio con paneles sincronizados** — Biblia + Comentario + Diccionario + Libro; sincronía por versículo único "una sola fuente de verdad"; plantillas (Estudio completo/Lectura/Libros/Investigación/Personalizado) y splitters persistentes.
+7. **Comentario versículo a versículo con rangos** — acordeón como e-Sword; chips ℹ de "comentarios que cubren este capítulo" con conteo de versos.
+8. **Diccionario por clic** — clic (o doble clic) en cualquier palabra del texto bíblico abre la entrada; chips ℹ "diccionarios con este término" para saltar entre recursos.
+9. **Strong# clicables** — las marcas del módulo abren la palabra griega/hebrea; claves sin entrada caen a los módulos Strong de la biblioteca; Morfología Robinson y análisis interlineal en la secciones de exégesis.
+10. **Búsqueda y ortografía** — todo en la biblioteca (AT/NT, por módulos, con sugerencias) en ~270 ms de escaneo total.
+
+### Asistente (motor de minado + redacción)
+11. **Dosier automático por pasaje** — 15-21 secciones con 25-43 `[Módulo · entrada]` en 400-1000 ms, minadas por sub-agentes de código (0 tokens y verificado en contra del texto real de tu biblioteca).
+12. **Sermón completo con AST inmutable** — gancho, gran idea, puntos con evidencia anclada, transiciones decididas por código; la IA solo redacta la voz (gancho/intro/puentes/meditación/oración) en "modo economía" (1 llamada) o **deepSermon** (borrador → crítico → final).
+13. **12 oradores** con perfil de voz (estilo, frases típicas, forma oratoria) — o tu propia voz sin imitación.
+14. **Crítico anti-alucinación** — detecta Strong y referencias sin ancla en la salida, y repara o elimina con el dosier como única fuente; los huecos se marcan [PUNTO POR COMPLETAR] en vez de inventarse.
+15. **Estudio bíblico completo y Devocional** — con la misma anclar: Observación/Interpretación/Aplicación y 5 preguntas con referencia; devocional con versículo clave, reflexión de 2-3 párrafos, oración y frase para llevar.
+16. **Corpus Coalición en el dosier** — citas de artículos con **autor, fecha y URL**, rankeadas por tema del pasaje o de la consulta.
+17. **Claves i18n en 7 lenguas** de interfaz (es/en/pt/it/fr/de/zh) + traducción del contenido a lenguas nativas.
+
+### Escritura y púlpito
+18. **Escritura minimalista (iA Writer style)** — editor CodeMirror 6 con enfoque, typewriter, markdown, documentos locales con historial.
+19. **Exportaciones** — .doc/.md/Copiar del sermón/estudio/devocional; **PowerPoint** (pptx) para el proyector.
+20. **Modo presentación** — proyectar el sermón en pantalla mientras predicas.
+21. **Plantillas propias** — presets de secciones ajustables por el usuario (sermón/estudio/devocional/en blanco).
+
+### Sistema
+22. **Biblioteca sin copiar ni convertir** — escanea carpetas e-Sword (y SWORD/CrossWire) del usuario; cero migraciones; 726 módulos listos de fábrica.
+23. **Instalación silenciosa en mac Big Sur** — DMG con biblioteca y corpus dentro, compilado en macOS real con prueba automática (727 módulos, lectura real de Jn 3:16, Argos traduciendo E2E).
+24. **Traducción neuronal offline** — Argos/CTranslate2 en el dispositivo, sin tokens de pago; auto-instalación de paquetes la primera vez.
+
+---
+
+---
+
+## 4. Usabilidad por rol de usuario
+
+### Pastor (predica semanalmente)
+- **Qué usará a diario**: Asistente → Sermón completo → exportar a pptx; Estudio como preparación; Lector para la lectura diaria.
+- **Ritmo que habilitar**: 156 sermones x año. Con el dosier ya anclado (400-1000 ms) el tiempo de localizar y comparar se reduce de horas a minutos — la redacción, la oración y la meditación siguen siendo suyas.
+- **Los textos salen listos para predicar en voz alta**: tiempo por seccion, señales oratorias y frase final en modo púulto.
+- **Beneficio**: 1.248 h/año de preparación, ahora con acceso a 150.000 páginas de conocimiento en segundos.
+
+### Líder (maestro de escuela dominical / de célula / jóvenes)
+- **Qué usará**: Guía del Pasaje (fichas listas para dar clase), Estudio Bíblico completo del Asistente para preparar la clase, Búsqueda para armar series de tema.
+- **No necesita IA activa si no quiere**: el dosier + estudio local bastan para una clase profundidad con citas que siempre pueden abrirse en el Estudio.
+- **Beneficio**: pasa de "buscar en 5 libros" a una clase en minutos, con la evidencia citada en su mano.
+
+### Presbítero / anciano (gobierno doctrinal)
+- **Qué usará**: Estudio con Teología Sistemática + Historia + Consenso doctrinal (Hodge, Grudem, MacArthur, confesiones incluidas en el dosier) para deliberar decisiones de gobernanza.
+- **Guía del Pasaje como minuta doctrinal** — fichas ancladas que se pegan en las actas del consejo con su cita.
+- **Beneficio**: discier con las mismas fuentes históricas que consultarían en un seminario, sin depender de memoria ni de opiniones sueltas.
+
+### Diácono (servicio, consejería básica, prácticas)
+- **Qué usará**: Devocional para grupos pequeños (con la oración lista y frase para llevar), Casos bíblicos reales del dosier para consejería bíblica básica, Diccionario de clic para responder dudas concretas.
+- **Beneficio**: material sólido sin entrenamiento formal — cada cosa que dice puede mostrar de qué módulo hace.
+
+### Misionero / iglesia originaria
+- **Qué usará**: Lector en lenguas nativas (guaraní/aymara/mapudungún/bengalí/quechua), traducción es→nativa offline del sermón/estudio/devocional en Inspiración y Guía; chips de carga y verso verificado para la confiabilidad del texto.
+- **Beneficio**: enseñar en la lengua del pueblo, sin internet y sin pagar servicio.
+
+---
+
+---
+
+## 5. Y para cada casa de fe (bautistas, anglicanas, evangélicas, luteranas)
+
+Las herramientas de Keryx son transversales (biblioteca, dosier, asistente), pero cada tradición encuentra lo suyo ya instalado:
+
+### Iglesias bautistas
+- **De fábrica**: comentarios expositivos (Wiersbe, MacArthur, Guzik, Henry), bosquejos homiléticos, diccionario y concordancia; temas de Coalición sobre "Iglesias sanas", "Centralidad del evangelio", "Bautismo", "Cena del Señor", "Membresía de la iglesia", "Evangelismo", "Discipulado" y "Complementarianismo".
+- **Cómo la usan**: sermón expositivo versículo a versículo del Asistente (el AST garantiza la trama por el pasaje) + estudio de células con las 5 preguntas de la Guía.
+- **Beneficio distintivo**: la predicación expositiva semanal sin sacrificar profundidad — cada punto lleva su comentario citado por módulo.
+
+### Iglesias anglicanas / episcopales evangélicas
+- **De fábrica**: confesiones y catecismos en el dosier (temas "Confesiones y Catecismos", "Historia de la Iglesia", "Reforma Protestante", "Eclesiología"), biografías cristianas, alabanza y adoración; Semana Santa y Navidad para el calendario litúrgico; comparación formal ↔ dinámica (RV60 ↔ NVI) para el estudio del texto del día.
+- **Cómo la usan**: la Guía del Pasaje como base del sermón dominical; el léxico y el interlineal (modo 6) para el griego del evangelio del día.
+- **Nota honesta**: liturgias y leccionarios propios siguen siendo del usuario — se añaden como módulos o documentos sin problema.
+- **Beneficio distintivo**: predicar el texto del leccionario con la misma profundidad exegética de un sermón expositivo.
+
+### Iglesias evangélicas generales (independientes y de proclamación)
+- **De fábrica**: el corpus completo de Coalición (7.947 artículos, 180 temas) para coyuntura y cultura (ideología de género, bioética, redes sociales, falsas enseñanzas, evangelio de la prosperidad); Nave/Thompson para "¿Qué dice la Biblia de...?"; casos bíblicos reales para la aplicación.
+- **Cómo la usan**: series temáticas con el Asistente (tema + pasajes); estudio completo para grupos pequeños.
+- **Beneficio distintivo**: contenido contemporáneo hecho por pastores hispanos, citable con autor, fecha y URL — una fuente que un solo diccionario no da.
+
+### Iglesias luteranas
+- **De fábrica**: los clásicos de la reforma (Calvino, Barnes, Gill, Wesley) para el diálogo teológico; temas "Justificación", "Sola Scriptura", "Gracia", "Legalismo"; teología sistemática (Hodge, Bavinck) e historia de la Iglesia (los mártires, Eusebio, Josefo).
+- **Cómo la usan**: el dosier por pasaje acompaña la homilética de ley y evangelio — contexto histórico y texto original minados por código; el predicador separa ley y gracia con las palabras originales delante.
+- **Beneficio distintivo**: las solas (sola scriptura, sola fide, sola gratia) documentadas entrada por entrada, con los clásicos al alcance del clic.
+
+### Todas las casas de fe
+- **Lenguas nativas** para congregaciones originarias (guaraní, aymara, mapudungún, bengalí, quechua) — sin internet y sin costo de servicio.
+- **La misma biblioteca de 726 módulos + 7.947 artículos** para todas: cada iglesia añade además sus módulos con licencia propia mediante el instalador.
+- **Mac y Windows en una sola instalación**, sin trámites técnicos.
+
+---
+
+## 6. La dimensión del trabajo pastoral (el texto de referencia)
+
+Un predicador fiel predica ~3 veces por semana con ~8 horas de
+preparación por sermón:
+
+| Por año | 10 años |
+|---|---|
+| Sermones: **156** | Predicaciones: **1.560** |
+| Horas de preparación: **1.248** (24 h/semana) | Horas de investigación: **12.480** |
+| | Días completos: **520** — **6,5 años laborales** |
+
+Y eso sin contar lectura bíblica, oración, consejería, visitas,
+administración y formación teológica. En una década, ese pastor
+acumula **una biblioteca intelectual de 1.560 investigaciones
+homiléticas**.
+
+### La biblioteca equivalente
+
+| Recurso | Volumenes | Páginas (×300) |
+|---|---|---|
+| Libros teológicos | 200 | 60.000 |
+| Diccionarios y léxicos bíblicos | 100 | 30.000 |
+| Comentarios bíblicos | 200 | 60.000 |
+| **Total** | **500** | **150.000** |
+
+| Actividad | Método tradicional | Con Keryx |
+|---|---|---|
+| Buscar significados originales | Léxicos físicos | Clic de palabra + Strong |
+| Comparar interpretaciones | Varios libros abiertos | Acordeón de comentarios |
+| Contexto histórico/geográfico | Varias fuentes | Ficha anclada de la Guía |
+| Estudiar un pasaje | Volúmenes dispersos | Investigación integrada |
+| Preparar el sermón | Investigación manual | Investigación asistida + tu voz |
+
+La conclusión para Keryx: **no reemplaza el estudio del predicador** —
+le entrega en segundos la profundidad de consulta que física sería
+imposible de comprar, transportar o indexar, y deja la oración, la
+redacción y la voz en el púlpito exactamente donde pertenecen:
+en el predicador.
+
+---
+
+
+
+---
+
+---
+
+## 7. Beneficios en una lista
+
+- **Tiempo**: de horas de localización y comparación a minutos anclados.
+- **Firmeza doctrinal**: cada declaración citaba `[Módulo · entrada]` — auditatorio con un clic.
+- **Anti-alucinación por diseño**: crítico de código + evals medibles 9.0/9.
+- **Costo cero de minado**: 0 tokens para todo el estudio; IA opcional solo para la voz.
+- **Offline total**: biblioteca, dosier, traducción neuronal y verso verificado en el dispositivo.
+- **Alcance**: interfaces en ES/EN/PT (+4 lenguas de interfa), contenido traducible a lenguas nativas.
+- **Instalable en una sola pieza** (Windows NSIS y mac Big Sur DMG con biblioteca y corpus dentro).
+- **Cada rol sale servido**: pastor, líder, presbítero, diácono y misionero.
+
+---
+
+
+---
+
+---
+
+## 8. Mejoras lanzadas en la 0.4
+
+1. Dosier anti-alucinación verificable: 25-43 citas reales por pasaje, crítico de código que detecta Strong/referencias inventadas y las repara o elimina.
+2. Corpus Coalición por el Evangelio (7.947 artículos) en el dosier y el Asistente, con autor, fecha y URL.
+3. Comparación del Lector experta (RV60↔NVI; 4/6 columnas; interlineal en NT; BHS en AT) con perfiles de traducción.
+4. Traducción neuronal OFFLINE a 5+ lenguas con verso verificado local (SQLite) — la iglesia hispana sirviendo a pueblos originarios.
+5. Sermón con AST inmutable + 12 oradores + modo economía/calidad + export PowerPoint.
+6. Instalación mac Big Sur silenciosa: biblioteca completa dentro del DMG, compilada en macOS real con humo automático (727 módulos, lectura real, daemon Argos E2E).
+7. Evalu defends medida: `npm run eval` 9.0/9 en 5 pasajes dorados, 152 tests, evals de traducción 4/4 lenguas nativas.
+
+---
+
+---
+
+## 9. Keryx Comunidad — "Cárgalo como lo viví"
+
+Feature próxima (Fase 3, junto al backend de licencias):
+**Comunidad de Sermones** para que los predicadores compartan su trabajo.
+
+- **"Mi sermón, como lo viví"**: al compartir, el predicador agrega al
+  sermón su testimonio — cómo se preparó, qué pasó en el púlpito ese
+  día, cómo respondió la congregación. El sermón llega con historia,
+  no solo con bosquejo.
+- Flujo en la app: al terminar el sermón → botón **Compartir** →
+  formulario de meta (pasaje, tema, iglesia, duración real, testigo
+  del momento) → subida al backend (Cloudflare Workers + Supabase,
+  infraestructura ya definida para la Fase 2 de licencias).
+- Licencia de uso comunitario (CC BY-SA style): otros predicadores
+  pueden leerlo, cargarlo en Keryx y predicarlo con atribución.
+- Moderación simple (una cola de aprobación editorial en los primeros
+  meses) para mantener la calidad y la doctrina de la casa.
+- El archivo completo se convierte en una **nueva fuente minada por
+  código**: los sermones de la comunidad se indexan por pasaje/tema y
+  el Asistente puede citarlos otra predicadores reales — la sabiduría
+  de quiénes ya lo predicaron.
+
+---
+
+---
+
+## 10. Objeciones que lanzarán los pastores (con respuestas)
+
+| Objeción | Respuesta |
+|---|---|
+| "La IA va a reemplazar la obra del Espíritu" | La IA no genera un solo dato: mina TU biblioteca por código y te entrega las citas; tú escoges, ordenas y predicas. Es el asistente, no el autor. ¿Se objeta poner un automatizado de Strong y un estudio? No — se objeta content fingir que fueron reveladas las citas. |
+| "No confío en las alucinaciones de los modelos" | Nuestra arquitectura existe PRECISAMENTE contra eso: cualquier dato recomendado al prompt lleva `[Módulo · entrada]` verificable; el crítico de código detecta Strong y referencias sin ancla y los repara o elimina antes de entregarte el texto. Evals medibles 9.0/9. |
+| "El estudio del púlpito es personal, no se puede atajar" | Keryx no atajará el estudio: reduce el tiempo de LOCALIZAR y COMPARAR (las 24 h/semana no son todas meditación: gran parte es buscar). El estudio de la palabra, la oración y la redacción te las dejamos contigo. |
+| "¿Y si la IA inventa?" | No puede: si el módulo no provee el dato, capítulo no existe — se marca [PUNTO POR COMPLETAR] en lugar de rellenarlo. |
+| "Mi computadora de la iglesia es vieja / no quiero pagar bibliotecas" | Keryx corre offline en Windows y mac ( Big Sur incluido) con biblioteca local; los módulos clásicos son de dominio público y el corpus Coalición es freely re-producible de su plataforma. Sin suscripción obligatoria a la core. |
+| "¿Funciona sin internet?" | Sí: motor, biblioteca, dosier y traducción neuronal corren en el dispositivo. La IA (voz del sermón) es opcional y configurable. |
+| "Es solo para pastores jóvenes; soy de papel" | La vista Estudio no es diferente de libros+diccionarios abiertos; abristro un módulo y lees. El Asistente es opcional — muchos usan Keryx solo como lector con comparación y Strong. |
+| "No tengo los derechos de esos módulos" | Los clásicos dominio público y Coalición sí se pueden compartir; para módulos con autor vigente el instalador soporta la biblioteca propia del usuario (cada quien aporta la suya, como e-Sword siempre funcionó). |
+| "¿Qué pasa con mis sermones? Son privados" | Nada se sube a ningún lado por defecto: documentos vivos en tu disco, no en ningún servidor. La opción de compartir de la comunidad es opt-in, con licencia y moderación. |
+| "La app es complicada" | Layout de pestañas simples; el Agente tiene 3 modos (Sermón/Estudio/Devocional) y una barra de progreso visible; los usuarios que solo leen y escriben no tocan la IA nunca. |
+| "¿Por qué 0 tokens importa?" | Por costo y por control: minar la biblioteca no gasta créditos ni envía tu contenido a la nube; solo la redacción final llama al modelo elegido — que puede ser local. |
+| "No me fío de mac" | Compilamos en macOS real con prueba automática dentro del runner (módulos, lectura, corpus y traducción daemon verificados); el DMG va firmado por hashes y disponible para Windows igual. |

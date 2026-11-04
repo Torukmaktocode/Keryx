@@ -13,7 +13,7 @@
 de **estudio bíblico y predicación en español**, con una biblioteca de
 726 módulos e-Sword reales (96 Biblias, 89 comentarios, 119 diccionarios,
 422 libros), **7.947 artículos** de Coalición por el Evangelio con texto
-completo, un motor que mina esa biblioteca **por código (0 señores IA)** para
+completo, un motor que mina esa biblioteca **por código (0 tokens IA)** para
 fabricar un dosier de estudio de 25-43 citas **verificadas y citadas**, y un
 asistente que redacta sermones completos, estudios bíblicos y devocionales
 con la voz del predicador — sin inventar nada: si el módulo no da el dato,
