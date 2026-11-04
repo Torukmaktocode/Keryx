@@ -60,13 +60,48 @@ export interface AssistantContext {
 
 export const ASSISTANT_MODES: AssistantMode[] = ['crearsermon', 'crearestudio', 'creardevocional']
 
+const ENTIDADES: Record<string, string> = {
+  nbsp: ' ', laquo: '\u00ab', raquo: '\u00bb', ldquo: '\u201c', rdquo: '\u201d',
+  lsquo: '\u2018', rsquo: '\u2019', hellip: '\u2026', mdash: '\u2014', ndash: '\u2013',
+  bull: '\u2022', middot: '\u00b7', deg: '\u00b0', sect: '\u00a7', para: '\u00b6',
+  iexcl: '\u00a1', iquest: '\u00bf', apos: "'", quot: '"'
+}
+for (const [nombre, code] of [
+  ['aacute', 225], ['eacute', 233], ['iacute', 237], ['oacute', 243], ['uacute', 250],
+  ['ntilde', 241], ['agrave', 224], ['egrave', 232], ['igrave', 236], ['ograve', 242],
+  ['ugrave', 249], ['acirc', 226], ['ecirc', 234], ['icirc', 238], ['ocirc', 244],
+  ['ucirc', 251], ['atilde', 227], ['otilde', 245], ['auml', 228], ['euml', 235],
+  ['iuml', 239], ['ouml', 246], ['uuml', 252], ['szlig', 223]
+] as Array<[string, number]>) {
+  const letra = String.fromCharCode(code)
+  const mayus = String.fromCharCode(code - 32)
+  const nombreMayus = nombre.replace(/^\w/, (inicial: string) => inicial.toUpperCase())
+  ENTIDADES[nombre] = letra
+  ENTIDADES[nombreMayus] = mayus
+}
+
+const EXTRAER_ENTIDAD = /&#x([0-9a-fA-F]+);|&#(\d+);|&([a-zA-Z]+);/g
+
+function decodificarEntidades(texto: string): string {
+  return texto.replace(EXTRAER_ENTIDAD, (match, hex, dec, nombre) => {
+    if (hex) {
+      const code = parseInt(hex, 16)
+      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : match
+    }
+    if (dec) {
+      const code = Number(dec)
+      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : match
+    }
+    if (nombre === 'amp') return '&'
+    const letra = ENTIDADES[nombre] ?? ENTIDADES[nombre.toLowerCase()]
+    return letra ?? match
+  })
+}
+
 export const stripTags = (value: string): string =>
-  value
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/\s+/g, ' ')
-    .trim()
+  decodificarEntidades(
+    value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+  ).trim()
 
 export function refLabel(ctx: AssistantContext, code: string, chapter: number, verse?: number): string {
   const book = findBook(code)

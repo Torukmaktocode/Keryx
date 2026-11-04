@@ -10,6 +10,7 @@ import {
 import { api } from '../lib/api'
 import { annotateProfiles } from '../lib/modules'
 import type { SermonDocument } from '../lib/sermonEngine'
+import type { StudyTarget } from '../components/CitationPanel'
 
 export type View =
   | 'reader'
@@ -42,6 +43,10 @@ interface AppState {
   navVerse: number | null
   /** AST del sermón listo para presentación (vía «Enviar a presentación»). */
   presentationDoc: SermonDocument | null
+  /** Cita anclada pendiente de abrir en Estudio (módulo + entrada). */
+  studyTarget: StudyTarget | null
+  openStudyTarget: (target: StudyTarget) => void
+  clearStudyTarget: () => void
   setView: (view: View) => void
   setSelectedModule: (name: string) => void
   setActiveDocumentId: (id: string | null) => void
@@ -80,6 +85,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   navChapter: 3,
   navVerse: null,
   presentationDoc: null,
+  studyTarget: null,
+
+  openStudyTarget: (target) => {
+    set({ studyTarget: target, view: 'study' })
+  },
+
+  clearStudyTarget: () => set({ studyTarget: null }),
 
   setView: (view) => set({ view }),
   setSelectedModule: (selectedModule) => set({ selectedModule }),

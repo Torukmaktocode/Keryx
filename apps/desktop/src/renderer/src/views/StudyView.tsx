@@ -253,6 +253,8 @@ export function StudyView() {
   const navChapter = useAppStore((s) => s.navChapter)
   const navVerse = useAppStore((s) => s.navVerse)
   const setNav = useAppStore((s) => s.setNav)
+  const studyTarget = useAppStore((s) => s.studyTarget)
+  const clearStudyTarget = useAppStore((s) => s.clearStudyTarget)
   const book = navBook
   const chapter = navChapter
   const currentBook = useMemo(
@@ -480,6 +482,26 @@ export function StudyView() {
   useEffect(() => {
     if (dictModule && lastDictKey.current) void lookup(lastDictKey.current)
   }, [dictModule])
+
+  // cita anclada desde Asistente/Presentaciones: módulo + entrada
+  useEffect(() => {
+    if (!studyTarget) return
+    const target = studyTarget
+    clearStudyTarget()
+    const mods: Partial<typeof study.modules> = {}
+    if (target.commentary && modulesByName.has(target.commentary)) mods.commentary = target.commentary
+    if (target.dictionary && modulesByName.has(target.dictionary)) mods.dictionary = target.dictionary
+    if (Object.keys(mods).length) updateStudy({ modules: { ...study.modules, ...mods } })
+    if (target.book) setNav(target.book, target.chapter ?? 1, target.verse ?? 1)
+    if (target.dictKey) {
+      lastDictKey.current = target.dictKey
+      setDictKey(target.dictKey)
+      setDictResult(null)
+      if (target.dictionary && modulesByName.has(target.dictionary)) {
+        void lookup(target.dictKey)
+      }
+    }
+  }, [studyTarget])
 
   const lookupSelection = (): void => {
     const selected = window.getSelection()?.toString().trim()

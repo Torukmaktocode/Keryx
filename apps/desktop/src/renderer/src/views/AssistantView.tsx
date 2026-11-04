@@ -15,6 +15,9 @@ import {
 import { PERSONAS } from '../lib/creator'
 import type { MineGroup } from '../lib/agents'
 import { renderMarkdown } from '../lib/markdown'
+import { citasUnicas, mdSinFuentes, type CitaAnclada } from '../lib/citations'
+import { CitationPanel } from '../components/CitationPanel'
+import { PaneSplitter } from '../components/PaneSplitter'
 import { documentDesdeTexto } from '../lib/presentation'
 import { translateMarkdownLote, markdownTraducidoToHtml } from '../lib/traductor'
 import { useAppStore } from '../store/appStore'
@@ -102,7 +105,28 @@ export function AssistantView() {
   const [workPhrase, setWorkPhrase] = useState(0)
   const [traducido, setTraducido] = useState<string | null>(null)
   const [traduciendo, setTraduciendo] = useState(false)
+  const [citationAbierta, setCitationAbierta] = useState<CitaAnclada | null>(null)
+  const [panelWidth, setPanelWidth] = useState(() =>
+    Math.min(680, Math.max(380, Math.round(window.innerWidth * 0.45)))
+  )
   const translateLocale = useAppStore((s) => s.settings.translateLocale)
+  const openStudyTarget = useAppStore((s) => s.openStudyTarget)
+
+  const citationsList = useMemo(
+    () => (result?.citations?.length ? citasUnicas(result.citations) : []),
+    [result]
+  )
+  const fuentesSplit = useMemo(
+    () => (result?.markdown ? mdSinFuentes(result.markdown) : { body: '', hayFuentes: false }),
+    [result]
+  )
+
+  useEffect(() => {
+    if (!citationsList.length || !citationAbierta) return
+    if (!citationsList.some((c) => c.module === citationAbierta.module && c.entry === citationAbierta.entry)) {
+      setCitationAbierta(null)
+    }
+  }, [citationsList, citationAbierta])
 
   useEffect(() => {
     if (!result?.markdown || translateLocale === 'off' || translateLocale === 'es') {
@@ -112,7 +136,7 @@ export function AssistantView() {
     }
     let alive = true
     setTraduciendo(true)
-    void translateMarkdownLote(result.markdown, translateLocale)
+    void translateMarkdownLote(fuentesSplit.body, translateLocale)
       .then((md) => {
         if (alive) {
           setTraducido(md)
@@ -128,7 +152,7 @@ export function AssistantView() {
     return () => {
       alive = false
     }
-  }, [result, translateLocale])
+  }, [fuentesSplit, translateLocale])
 
   useEffect(() => {
     if (!loading) return
@@ -381,29 +405,76 @@ export function AssistantView() {
                   Copiar
                 </button>
               </div>
-              {result.citations && result.citations.length > 0 && (
-                <div className="coverage-row" style={{ margin: '4px 0 10px' }}>
-                  <span className="coverage-label">
-                    {t('assistant.sources', { count: result.citations.length })}
-                  </span>
-                  <div className="coverage-chips">
-                    {[...new Set(result.citations.map((c) => c.module))].map((module) => (
-                      <span key={module} className="coverage-chip" title={module}>
-                        <TituloTraducido
-                          text={module.length > 30 ? `${module.slice(0, 28)}…` : module}
-                          lang={modulesByName.get(module)?.lang}
-                        />
-                      </span>
-                    ))}
-                  </div>
+              <div className="assistant-cols">
+                <div className="assistant-col-main">
+                  <div
+                    className="scripture assistant-content"
+                    dangerouslySetInnerHTML={{
+                      __html: traducido ? markdownTraducidoToHtml(traducido) : renderMarkdown(fuentesSplit.body)
+                    }}
+                  />
+                  {citationsList.length > 0 && (
+                    <div className="fuentes-ancladas">
+                      <h4>{t('assistant.sources', { count: citationsList.length })}</h4>
+                      <div className="fuentes-chips">
+                        {citationsList.map((citation) => {
+                          const activo =
+                            !!citationAbierta &&
+                            citationAbierta.module === citation.module &&
+                            citationAbierta.entry === citation.entry
+                          return (
+                            <button
+                              key={`${citation.module}\u0000${citation.entry}`}
+                              className={`chip ghost citation-chip ${activo ? 'active' : ''}`}
+                              onClick={() => setCitationAbierta(activo ? null : citation)}
+                              title={`${citation.module} · ${citation.entry}`}
+                            >
+                              <span className="citation-chip-module">
+                                <TituloTraducido
+                                  text={citation.module.length > 26 ? `${citation.module.slice(0, 24)}…` : citation.module}
+                                  lang={modulesByName.get(citation.module)?.lang}
+                                />
+                              </span>
+                              <span className="citation-chip-entry">{citation.entry}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-              <div
-                className="scripture assistant-content"
-                dangerouslySetInnerHTML={{
-                  __html: traducido ? markdownTraducidoToHtml(traducido) : renderMarkdown(result.markdown)
-                }}
-              />
+                {citationAbierta && (
+                  <div className="citation-overlay">
+                    <div className="citation-splitter" style={{ right: panelWidth - 8 }}>
+                      <PaneSplitter
+                        onResize={(dx) =>
+                          setPanelWidth((w) =>
+                            Math.max(
+                              380,
+                              Math.min(Math.round(window.innerWidth * 0.62), w - dx)
+                            )
+                          )
+                        }
+                        onReset={() =>
+                          setPanelWidth(
+                            Math.min(680, Math.max(380, Math.round(window.innerWidth * 0.45)))
+                          )
+                        }
+                      />
+                    </div>
+                    <CitationPanel
+                      citation={citationAbierta}
+                      moduleInfo={modulesByName.get(citationAbierta.module)}
+                      width={panelWidth}
+                      onClose={() => setCitationAbierta(null)}
+                      onOpenStudy={(target) => {
+                        setCitationAbierta(null)
+                        openStudyTarget(target)
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
               {traduciendo && (
                 <small className="muted" style={{ display: 'block', marginTop: 6 }}>
                   ⟳ {t('traduccion.traduciendo')}
