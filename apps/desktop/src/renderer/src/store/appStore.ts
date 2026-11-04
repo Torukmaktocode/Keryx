@@ -14,9 +14,12 @@ import type { StudyTarget } from '../components/CitationPanel'
 
 function preferirBibliaBase(modulos: SwordModule[]): SwordModule | undefined {
   const biblias = modulos.filter((m) => m.category === 'Bible')
+  // Lectura humana: español limpia > español con Strong > inglesas.
+  // (El dosier mantiene su propia jerarquía — Strong primero — para extraer
+  // claves G/H del verso; el Lector sirve para leer sin ruido de markup.)
   const puntaje = (m: SwordModule): number =>
-    (/strong/i.test(m.name) ? 0 : 1) * 2 +
-    ((m.lang || '').toLowerCase().startsWith('es') ? 0 : 1)
+    ((m.lang || '').toLowerCase().startsWith('es') ? 0 : 4) +
+    (/strong/i.test(m.name) ? 2 : 0)
   return [...biblias].sort((a, b) => puntaje(a) - puntaje(b) || a.name.localeCompare(b.name))[0]
 }
 
