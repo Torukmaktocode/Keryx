@@ -24,17 +24,12 @@ permissions:
 jobs:
   build:
     runs-on: macos-14
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [x64, arm64]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
 
       - name: Espacio en disco antes
         run: df -h /
@@ -46,7 +41,6 @@ jobs:
         run: npm test
 
       - name: Restaura biblioteca desde el release `datos`
-        id: datos_biblioteca
         if: ${{ inputs.incluir_biblioteca }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -59,7 +53,6 @@ jobs:
           Listado=$(ls "$GITHUB_WORKSPACE/datos"/biblioteca.tar.gz.* 2>/dev/null || true)
           if [ -z "$Listado" ]; then
             echo "AVISO: no hay biblioteca en el release datos; DMG sin biblioteca."
-            echo "presente=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "presente=true" >> "$GITHUB_OUTPUT"
@@ -93,8 +86,8 @@ jobs:
           rm -f "$GITHUB_WORKSPACE/datos"/coalicion.tar.gz*
           du -sh apps/desktop/coalicion || true
 
-      - name: Generar DMG (${arch})
-        run: npm run build:mac -- --${{ matrix.arch }}
+      - name: Generar DMG (arm64 + x64)
+        run: npm run build:mac
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
@@ -103,10 +96,11 @@ jobs:
         run: |
           chmod -R u+rwX apps/desktop/biblioteca apps/desktop/coalicion 2>/dev/null || true
           rm -rf apps/desktop/biblioteca apps/desktop/coalicion "$GITHUB_WORKSPACE/datos" || true
+          ls apps/desktop/dist/*.dmg || true
 
       - uses: actions/upload-artifact@v4
         with:
-          name: keryx-dmg-${{ matrix.arch }}
+          name: keryx-dmg
           path: apps/desktop/dist/*.dmg
           if-no-files-found: error
           retention-days: 1
@@ -117,8 +111,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: keryx-dmg-*
-          merge-multiple: true
+          name: keryx-dmg
           path: dist
 
       - name: Publica DMG en Release ${{ inputs.etiqueta_release }}
@@ -128,4 +121,3 @@ jobs:
           name: Keryx para macOS
           files: dist/*.dmg
           overwrite_files: true
-          allow_updates: true
