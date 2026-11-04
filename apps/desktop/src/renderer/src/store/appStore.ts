@@ -12,6 +12,14 @@ import { annotateProfiles } from '../lib/modules'
 import type { SermonDocument } from '../lib/sermonEngine'
 import type { StudyTarget } from '../components/CitationPanel'
 
+function preferirBibliaBase(modulos: SwordModule[]): SwordModule | undefined {
+  const biblias = modulos.filter((m) => m.category === 'Bible')
+  const puntaje = (m: SwordModule): number =>
+    (/strong/i.test(m.name) ? 0 : 1) * 2 +
+    ((m.lang || '').toLowerCase().startsWith('es') ? 0 : 1)
+  return [...biblias].sort((a, b) => puntaje(a) - puntaje(b) || a.name.localeCompare(b.name))[0]
+}
+
 export type View =
   | 'reader'
   | 'study'
@@ -132,12 +140,12 @@ export const useAppStore = create<AppState>((set, get) => ({
         api.version().catch(() => '0.1.0')
       ])
       const annotated = annotateProfiles(modules)
-      const bibleModules = annotated.filter((m) => m.category === 'Bible')
+      const bibliaBase = preferirBibliaBase(annotated)
       set({
         engine,
         settings,
         modules: annotated,
-        selectedModule: get().selectedModule || bibleModules[0]?.name || modules[0]?.name || '',
+        selectedModule: get().selectedModule || bibliaBase?.name || modules[0]?.name || '',
         sidebarHidden: settings.sidebarHidden ?? false,
         version,
         ready: true
