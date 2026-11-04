@@ -75,10 +75,19 @@ export function slot(fallback: string, text?: string): Slot {
   return { fallback, text: text?.trim() || undefined }
 }
 
-function firstSentence(text: string): string {
-  const plain = text.replace(/\[\[?[^\]]+\]\]?/g, '').trim()
-  const cut = plain.split(/(?<=[.!?])\s/)[0] ?? plain
-  return cut.slice(0, 220)
+function firstSentence(text: string, max = 260): string {
+  const plain = text
+    .replace(/^\[[^\]\n]+\]\s*/, '')
+    .replace(/\[\[?[^\]]+\]\]?/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (plain.length <= max) return plain
+  const recorte = plain.slice(0, max)
+  // primera frase COMPLETA que respete el maximo; nunca a media palabra.
+  const frase = recorte.match(/^[\s\S]*?[.!?](?=\s|$)/)
+  if (frase && frase[0].length >= max * 0.3) return frase[0].trim()
+  const lastSpace = recorte.lastIndexOf(' ')
+  return `${recorte.slice(0, lastSpace > max * 0.6 ? lastSpace : max)}…`
 }
 
 function shortEntry(text: string, max = 320): string {
@@ -139,12 +148,24 @@ export function buildSermonDocument(
     ? `Lleva contigo esta semana: «${shortEntry(textoPlano.replace(/^\s*\d+\s*/, ''), 110)}» — ${ref}`
     : `Lleva contigo esta semana el nucleo de ${ref}.`
 
-  const puntos = pointTitles(outlineLines, commentLines).map((title, index) => ({
-    signal: SEÑALES[index] ?? `Para el punto ${index + 1}…`,
-    title,
-    evidence: shortEntry(commentLines[index] ?? '', 340),
-    bridge: slot('', undefined)
-  }))
+  const puntos = pointTitles(outlineLines, commentLines).map((title, index) => {
+    const line = commentLines[index] ?? ''
+    let evidence = shortEntry(line, 340)
+    if (title.length >= 40 && !title.endsWith('…')) {
+      const inicio = evidence.indexOf(title)
+      if (inicio !== -1) {
+        const restante = evidence.slice(inicio + title.length).replace(/^[\s.—–:;,]+/, '')
+        if (restante.length > 30) evidence = shortEntry(restante, 340)
+        else evidence = ''
+      }
+    }
+    return {
+      signal: SEÑALES[index] ?? `Para el punto ${index + 1}…`,
+      title,
+      evidence,
+      bridge: slot('', undefined)
+    }
+  })
   const temaVoz = peticion?.tema ?? ''
   const aperturas = patronLineas(temaVoz)
   const ecoPeticion = peticion
@@ -288,7 +309,9 @@ export function renderSermon(doc: SermonDocument): string {
     push(`> *Señal para predicar:* «${punto.signal}»`, '')
     push(`### ${index + 1}. ${punto.title}`)
     if (punto.evidence) push('', punto.evidence)
-    push('', `*Puente:* ⇒ ${slotText(punto.bridge)}`, '')
+    const puente = slotText(punto.bridge)
+    if (puente) push('', `*Puente:* ⇒ ${puente}`, '')
+    else push('')
   })
 
   if (doc.citas.length) {
@@ -320,7 +343,9 @@ export function renderSermon(doc: SermonDocument): string {
   push('')
 
   push('## Frase para meditar', '', slotText(doc.meditacion), '')
-  push('> **Señal para predicar:** «Y para concluir…»', '')
+  if (doc.puntos.at(-1)?.signal !== 'Y para concluir…') {
+    push('> **Señal para predicar:** «Y para concluir…»', '')
+  }
   push('## Cierre del sermón', '')
   push(`- Recapitulación: ${doc.cierre.recap}`)
   if (doc.cierre.llamado) push(`- Llamado: ${doc.cierre.llamado}`)
