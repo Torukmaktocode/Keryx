@@ -2,13 +2,32 @@ name: build-mac
 
 on:
   workflow_dispatch:
+    inputs:
+      incluir_biblioteca:
+        description: 'Incluir biblioteca/ (726 modulos e-Sword) en el DMG'
+        required: false
+        default: 'true'
+        type: boolean
+      incluir_coalicion:
+        description: 'Incluir corpus Coalición (7947 articulos JSONL) en el DMG'
+        required: false
+        default: 'true'
+        type: boolean
+      etiqueta_release:
+        description: 'Tag del release donde publicar los DMG'
+        required: false
+        default: 'mac-dmg'
 
 permissions:
   contents: write
 
 jobs:
-  build-mac:
-    runs-on: macos-latest
+  build:
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, arm64]
     steps:
       - uses: actions/checkout@v4
 
@@ -17,22 +36,92 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Espacio en disco antes
+        run: df -h /
+
       - name: Instalar dependencias
         run: npm ci
 
       - name: Tests del motor
         run: npm test
 
-      - name: Generar DMG (arm64 + x64, solo la aplicacion)
-        run: npm run build:mac
+      - name: Restaura biblioteca desde el release `datos`
+        id: datos_biblioteca
+        if: ${{ inputs.incluir_biblioteca }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          mkdir -p "$GITHUB_WORKSPACE/datos"
+          if gh release view datos --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release download datos --repo "$GITHUB_REPOSITORY" --pattern 'biblioteca.tar.gz.*' --dir "$GITHUB_WORKSPACE/datos" --clobber || true
+          fi
+          Listado=$(ls "$GITHUB_WORKSPACE/datos"/biblioteca.tar.gz.* 2>/dev/null || true)
+          if [ -z "$Listado" ]; then
+            echo "AVISO: no hay biblioteca en el release datos; DMG sin biblioteca."
+            echo "presente=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "presente=true" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_WORKSPACE/datos"/biblioteca.tar.gz.* > "$GITHUB_WORKSPACE/datos/biblioteca.tar.gz"
+          mkdir -p apps/desktop
+          tar -xzf "$GITHUB_WORKSPACE/datos/biblioteca.tar.gz" -C apps/desktop
+          rm -f "$GITHUB_WORKSPACE/datos"/biblioteca.tar.gz*
+          du -sh apps/desktop/biblioteca || true
+          df -h /
+
+      - name: Restaura corpus Coalición desde el release `datos`
+        if: ${{ inputs.incluir_coalicion }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          mkdir -p "$GITHUB_WORKSPACE/datos"
+          if gh release view datos --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release download datos --repo "$GITHUB_REPOSITORY" --pattern 'coalicion.tar.gz.*' --dir "$GITHUB_WORKSPACE/datos" --clobber || true
+          fi
+          Listado=$(ls "$GITHUB_WORKSPACE/datos"/coalicion.tar.gz.* 2>/dev/null || true)
+          if [ -z "$Listado" ]; then
+            echo "AVISO: no hay corpus coalicion en el release datos; el Asistente queda sin articulos, se instala descargando aparte."
+            exit 0
+          fi
+          cat "$GITHUB_WORKSPACE/datos"/coalicion.tar.gz.* > "$GITHUB_WORKSPACE/datos/coalicion.tar.gz"
+          mkdir -p apps/desktop/coalicion
+          tar -xzf "$GITHUB_WORKSPACE/datos/coalicion.tar.gz" -C apps/desktop/coalicion
+          rm -f "$GITHUB_WORKSPACE/datos"/coalicion.tar.gz*
+          du -sh apps/desktop/coalicion || true
+
+      - name: Generar DMG (${arch})
+        run: npx electron-vite build && npx electron-builder --mac --${{ matrix.arch }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      - name: Publicar DMG en Release mac-dmg
+      - name: Limpieza de datos (libera disco)
+        if: ${{ always() }}
+        run: rm -rf apps/desktop/biblioteca apps/desktop/coalicion "$GITHUB_WORKSPACE/datos"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: keryx-dmg-${{ matrix.arch }}
+          path: apps/desktop/dist/*.dmg
+          if-no-files-found: error
+          retention-days: 1
+
+  publicar:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: keryx-dmg-*
+          merge-multiple: true
+          path: dist
+
+      - name: Publica DMG en Release ${{ inputs.etiqueta_release }}
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: mac-dmg
+          tag_name: ${{ inputs.etiqueta_release }}
           name: Keryx para macOS
-          files: apps/desktop/dist/*.dmg
+          files: dist/*.dmg
           overwrite_files: true
           allow_updates: true

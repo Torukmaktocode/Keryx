@@ -16,8 +16,10 @@ interface Articulo {
 let cache: Promise<Articulo[] | null> | null = null
 
 function archivo(): string | null {
+  const recursos = (process as unknown as { resourcesPath?: string }).resourcesPath
   const pruebas: Array<() => string | null> = [
     () => (process.env.KERYX_COALICION_PATH ? join(process.env.KERYX_COALICION_PATH, 'articulos.jsonl') : null),
+    () => (recursos ? join(recursos, 'coalicion', 'articulos.jsonl') : null),
     () => join(process.cwd(), 'coalicion', 'articulos.jsonl'),
     () => join(app.getAppPath(), '..', 'coalicion', 'articulos.jsonl'),
     () => join(app.getAppPath(), '..', '..', 'coalicion', 'articulos.jsonl'),
