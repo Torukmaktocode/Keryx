@@ -7,7 +7,7 @@
  */
 import { app } from 'electron'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { spawn, execFileSync, type ChildProcess } from 'node:child_process'
+import { spawn, type ChildProcess } from 'node:child_process'
 import { pythonBin } from './python-bin'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
