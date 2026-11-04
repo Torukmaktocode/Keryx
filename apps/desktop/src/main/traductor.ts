@@ -6,7 +6,7 @@
  * todo corre offline en el dispositivo.
  */
 import { app } from 'electron'
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { spawn, execFileSync, type ChildProcess } from 'node:child_process'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
@@ -64,12 +64,76 @@ function pythonBin(): string {
     } catch {
       // sin where.exe: cae al PATH
     }
+  } else {
+    // macOS/Linux: el binario es python3 (mac no trae 'python'); el stub
+    // /usr/bin/python3 exige Xcode CLT: si no está instalado sale con error
+    // sin colgar — se recorre la escalera habitual.
+    const candatos = ['python3', '/usr/bin/python3', '/opt/homebrew/bin/python3', '/usr/local/bin/python3', 'python']
+    for (const bin of candatos) {
+      try {
+        execFileSync(bin, ['--version'], { timeout: 10_000, stdio: 'ignore' })
+        pythonCache = bin
+        break
+      } catch {
+        continue
+      }
+    }
+    if (pythonCache === 'python') pythonCache = 'python3'
   }
   return pythonCache
 }
 
 function userDataDir(): string {
   return join(app.getPath('userData'), 'traduccion')
+}
+
+let instalandoPaquetes = false
+
+/** pip instalador con escalera: sin flag → --break-system-packages (pip de
+ * Homebrew, PEP 668), si "--user" se niega cae a "--break-system-packages"
+ * solo. Devuelve true si pip terminó bien (o ya estaba instalado). */
+async function pipInstalar(): Promise<boolean> {
+  const escalera: string[][] = [
+    ['-m', 'pip', 'install', '--user', 'argostranslate'],
+    ['-m', 'pip', 'install', '--user', '--break-system-packages', 'argostranslate'],
+    ['-m', 'pip', 'install', '--break-system-packages', 'argostranslate']
+  ]
+  for (const args of escalera) {
+    const r = await new Promise<{ code: number; salida: string }>((ok) => {
+      const proc = spawn(pythonBin(), args, { windowsHide: true })
+      let salida = ''
+      proc.stdout?.on('data', (c: Buffer) => { salida += c.toString() })
+      proc.stderr?.on('data', (c: Buffer) => { salida += c.toString() })
+      proc.on('exit', (code) => ok({ code: code ?? 1, salida }))
+      proc.on('error', () => ok({ code: 127, salida: 'python inaccesible' }))
+    })
+    if (r.code === 0) return true
+    if (r.salida.includes('already satisfied') || r.salida.includes('Requirement already')) {
+      return true
+    }
+    if (!r.salida.includes('externally-managed-environment') && !r.salida.includes('break-system-packages')) return false
+  }
+  return false
+}
+
+/** Instala argostranslate UNA vez (marca en userData). Sin red o sin pip
+ * queda en log y se reintenta al proximo arranque — el daemon sigue vivo. */
+function prepararPaquetes(): void {
+  const dir = userDataDir()
+  if (instalandoPaquetes || existsSync(join(dir, '.paquetes-ok'))) return
+  instalandoPaquetes = true
+  console.log('[traductor] primera instalacion de paquetes pip (una vez, ~1-10 min)...')
+  void pipInstalar().then((bien) => {
+    instalandoPaquetes = false
+    if (bien) {
+      mkdirSync(dir, { recursive: true })
+      writeFileSync(join(dir, '.paquetes-ok'), 'ok')
+      console.log('[traductor] paquetes instalados; reiniciando daemon con Argos listo')
+      child?.kill()
+    } else {
+      console.log('[traductor] pip no pudo instalar (sin red, CLT de Xcode o pip ausente); se reintentara en el proximo arranque')
+    }
+  })
 }
 
 function launchDaemon(): Promise<void> {
@@ -95,6 +159,7 @@ function launchDaemon(): Promise<void> {
       child = proc
       buffer = ''
       console.log('[traductor] daemon lanzado:', proc.spawnargs.join(' '))
+      prepararPaquetes()
       proc.stdout?.setEncoding('utf8')
       proc.stdout?.on('data', (chunk: string) => {
         buffer += chunk
