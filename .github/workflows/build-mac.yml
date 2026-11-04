@@ -66,6 +66,7 @@ jobs:
           cat "$GITHUB_WORKSPACE/datos"/biblioteca.tar.gz.* > "$GITHUB_WORKSPACE/datos/biblioteca.tar.gz"
           mkdir -p apps/desktop
           tar -xzf "$GITHUB_WORKSPACE/datos/biblioteca.tar.gz" -C apps/desktop
+          chmod -R u+rwX apps/desktop/biblioteca || true
           rm -f "$GITHUB_WORKSPACE/datos"/biblioteca.tar.gz*
           du -sh apps/desktop/biblioteca || true
           df -h /
@@ -88,17 +89,20 @@ jobs:
           cat "$GITHUB_WORKSPACE/datos"/coalicion.tar.gz.* > "$GITHUB_WORKSPACE/datos/coalicion.tar.gz"
           mkdir -p apps/desktop/coalicion
           tar -xzf "$GITHUB_WORKSPACE/datos/coalicion.tar.gz" -C apps/desktop/coalicion
+          chmod -R u+rwX apps/desktop/coalicion || true
           rm -f "$GITHUB_WORKSPACE/datos"/coalicion.tar.gz*
           du -sh apps/desktop/coalicion || true
 
       - name: Generar DMG (${arch})
-        run: npx electron-vite build && npx electron-builder --mac --${{ matrix.arch }}
+        run: npm run build:mac -- --${{ matrix.arch }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
       - name: Limpieza de datos (libera disco)
         if: ${{ always() }}
-        run: rm -rf apps/desktop/biblioteca apps/desktop/coalicion "$GITHUB_WORKSPACE/datos"
+        run: |
+          chmod -R u+rwX apps/desktop/biblioteca apps/desktop/coalicion 2>/dev/null || true
+          rm -rf apps/desktop/biblioteca apps/desktop/coalicion "$GITHUB_WORKSPACE/datos" || true
 
       - uses: actions/upload-artifact@v4
         with:
