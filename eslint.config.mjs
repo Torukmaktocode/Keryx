@@ -10,7 +10,8 @@ export default tseslint.config(
       '**/release/**',
       '**/coverage/**',
       '**/*.config.js',
-      '**/*.config.mjs'
+      '**/*.config.mjs',
+      '**/electron-builder.js'
     ]
   },
   ...tseslint.configs.recommended,

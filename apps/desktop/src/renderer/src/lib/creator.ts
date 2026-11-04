@@ -297,7 +297,7 @@ export function getPersona(id: string): Persona {
 
 export const MASTER_PROMPT = [
   'Eres un homiletico y teologo del nivel de los grandes predicadores y escritores de la historia cristiana.',
-  'Produce un documento COMPLETO, PROFUNDO y profesional (1400-2400 palabras), listo para predicar, en el idioma del usuario.',
+  'Produce un documento COMPLETO, PROFUNDO y profesional (1600-2800 palabras), listo para predicar, en el idioma del usuario.',
   '',
   'REGLA DE ORO: usa EXCLUSIVAMENTE la evidencia del DOSSIER anclado. Cada afirmacion expositiva debe poder rastrearse a una cita [Modulo · entrada].',
   'No inventes citas biblicas, datos historicos, numeros Strong ni hechos; si algo no consta en el dosier, dilo con honestidad o dejalo como [PUNTO POR COMPLETAR].',
@@ -386,11 +386,11 @@ function personaPrompt(persona: Persona): string {  if (persona.id === 'none') {
 }
 
 const SERMON_ADDENDUM =
-  'Tipo: SERMON completo para predicar en voz alta, con tiempo estimado por seccion.'
+  'Tipo: SERMON completo para predicar en voz alta, con tiempo estimado por seccion y CADA punto desarrollado en 2-3 parrafos con sus citas ancladas entretejidas (nada telegrafico).'
 const STUDY_ADDENDUM =
-  'Tipo: ESTUDIO BIBLICO con secciones Observacion, Interpretacion, Aplicacion y 5 preguntas para profundizar.'
+  'Tipo: ESTUDIO BIBLICO COMPLETO: Observacion (con el texto anclado y su trama), Interpretacion (por unidades del pasaje, citando los comentarios del DOSIER dentro del desarrollo, no como lista aparte; 2-3 parrafos por unidad), Aplicación (tres esferas con pasos concretos y verificables) y 5 preguntas para profundizar, cada una con su referencia biblica. Cada seccion en parrafos enteros y desarrollados.'
 const DEVOTIONAL_ADDENDUM =
-  'Tipo: DEVOCIONAL con Versiculo clave, Reflexion calorosa y personal, Oracion y Frase para llevar del dia.'
+  'Tipo: DEVOCIONAL completo y caluroso: Versiculo clave (el anclado, con su referencia), Reflexion de 2-3 parrafos de tu a tu que teje al menos DOS de las citas ancladas y termina en un hoy concreto (que hacer hoy con esto, en casa y trabajo), Oracion en primera persona plural (6-10 lineas) y Frase para llevar del dia (una frase memorable inspirada en el pasaje). Nada de titulares secos ni resumenes de dos lineas.'
 
 function addendum(kind: CreatorKind): string {
   if (kind === 'crearestudio') return STUDY_ADDENDUM
@@ -1044,6 +1044,8 @@ export async function runCreator(
         'ESQUELETO (estructura y evidencia ya garantizadas; no las reescribas):',
         skeletonForAi.length > 7000 ? `${skeletonForAi.slice(0, 7000)}…[truncado]` : skeletonForAi,
         '',
+        'EXTENSION OBLIGATORIA: desarrolla cada pieza hasta su tamano indicado (gancho 70-100 palabras; introduccion 6-9 frases; CADA puente 3-5 frases entrelazando la cita anclada del punto con la vida real; meditacion 120-170 palabras; oracion 7-10 lineas). Nunca dos frases sueltas: si el esqueleto trae material, tejelo en tus puentes. Responde completo; si te acercas al limite, redacta denso y sin adornos, no acortes secciones.',
+        '',
         'Devuelve EXACTAMENTE el formato de marcadores del sistema.'
       ].join('\n')
       onStep?.('voice')
@@ -1054,7 +1056,7 @@ export async function runCreator(
           { role: 'user', content: ask }
         ],
         temperature: 0.6,
-        maxTokens: 1400
+        maxTokens: 2600
       })
       aiMs += performance.now() - t0
       const pieces = parseSnippets(result.text)
@@ -1129,7 +1131,7 @@ export async function runCreator(
         { role: 'user', content: user }
       ],
       temperature: 0.55,
-      maxTokens: 6000
+      maxTokens: 8000
     })
     aiMs += performance.now() - t0
 
@@ -1160,7 +1162,7 @@ export async function runCreator(
             }
           ],
           temperature: 0.4,
-          maxTokens: 3000
+          maxTokens: 5000
         })
         aiMs += performance.now() - t1
         if (repair.text && repair.text.length > 200) markdown = repair.text
@@ -1196,7 +1198,7 @@ export async function runCreator(
           { role: 'user', content: finalParts.join('\n\n') }
         ],
         temperature: 0.5,
-        maxTokens: 6000
+        maxTokens: 8000
       })
       aiMs += performance.now() - t2
       markdown = final.text
