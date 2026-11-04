@@ -21,6 +21,7 @@ _*.txt
 /sword/
 /esword/
 /biblioteca/
+/coalicion/
 /Enciclopeia Champlin/
 .cache-probe/
 dev.log

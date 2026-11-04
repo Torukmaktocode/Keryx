@@ -79,6 +79,22 @@ export const dictCoverageSchema = z.object({
   term: z.string().min(1)
 })
 
+export const coalicionRequestSchema = z.object({
+  consulta: z.string().min(1).max(400),
+  limite: z.number().int().positive().max(6).optional()
+})
+
+export type CoalicionRequest = z.infer<typeof coalicionRequestSchema>
+
+export type CoalicionItem = {
+  titulo: string
+  autores: string[]
+  fecha: string
+  temas: string[]
+  url: string
+  extracto: string
+}
+
 export const fullscreenSchema = z.object({
   value: z.boolean().optional()
 })

@@ -32,6 +32,7 @@ export const IPC = {
   dictStrongs: 'dict:strongs',
   dictCoverage: 'dict:coverage',
   dictLemma: 'dict:lemma',
+  coalicionBuscar: 'coalicion:buscar',
   bibleStrongsOccurrences: 'bible:strongs-occurrences',
 
   documentsList: 'documents:list',

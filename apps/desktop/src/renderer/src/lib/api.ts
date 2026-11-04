@@ -3,6 +3,7 @@ import type {
   AiChatResult,
   AiStatus,
   AppSettings,
+  CoalicionItem,
   Document,
   ModuleCoverage,
   Result,
@@ -91,6 +92,10 @@ export const api = {
     coverage: (req: { term: string }): Promise<ModuleCoverage[]> => unwrap(raw.dict.coverage(req)),
     lookupLemma: (req: { module: string; lemma: string }) =>
       unwrap<{ topic: string; definition: string } | null>(raw.dict.lookupLemma(req))
+  },
+  coalicion: {
+    buscar: (req: { consulta: string; limite?: number }): Promise<CoalicionItem[]> =>
+      raw.coalicion ? unwrap(raw.coalicion.buscar(req)) : Promise.resolve([])
   },
   documents: {
     list: (): Promise<DocumentMeta[]> => unwrap(raw.documents.list()),

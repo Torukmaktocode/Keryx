@@ -34,7 +34,8 @@ const KIND_TITLE_KEY: Record<DossierSection['kind'], string> = {
   geografia: 'guide.geografia',
   consenso: 'guide.consenso',
   sintaxis: 'guide.sintaxis',
-  nombres: 'guide.nombres'
+  nombres: 'guide.nombres',
+  coalicion: 'guide.coalicion'
 }
 
 interface Props {

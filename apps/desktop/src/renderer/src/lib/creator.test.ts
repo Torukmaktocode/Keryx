@@ -23,6 +23,9 @@ vi.mock('./api', () => ({
       coverage: vi.fn(async () => []),
       lookupLemma: vi.fn(async () => null)
     },
+    coalicion: {
+      buscar: vi.fn(async () => [])
+    },
     ai: {
       chat: (req: unknown) => state.chat(req)
     }

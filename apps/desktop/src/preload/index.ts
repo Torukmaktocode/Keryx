@@ -46,6 +46,9 @@ const api: KeryxApi = {
     coverage: (req) => invoke(IPC.dictCoverage, req),
     lookupLemma: (req) => invoke(IPC.dictLemma, req)
   },
+  coalicion: {
+    buscar: (req) => invoke(IPC.coalicionBuscar, req)
+  },
   documents: {
     list: () => invoke(IPC.documentsList),
     get: (id) => invoke(IPC.documentsGet, { id }),

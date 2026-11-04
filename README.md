@@ -24,6 +24,11 @@ iA Writer.
   **Abrir en Estudio / Abrir en Lector** y coloca el recurso directo en el flujo.
 - Otras carpetas de módulos siguen soportadas: `esword/` (principal) y `sword/`
   (formato SWORD/CrossWire opcional).
+- **Catálogo Coalición por el Evangelio**: **7.947 artículos en español con texto
+  completo** extraídos con minería de código (`scripts/coalicion-minado.mjs`, 0
+  tokens IA) en `coalicion/` — indexados por **180 temas** de estudio
+  (`catalogo-temas-textos.md`, `indice-temas.json`) para el Asistente y la
+  Guía del Pasaje (uso citable según la página de permisos del sitio).
 
 ### Estudio (modo avanzado)
 - **Plantillas de layout**: `Estudio completo` (Biblia + Comentario + Diccionario),

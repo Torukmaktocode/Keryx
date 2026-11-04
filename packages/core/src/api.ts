@@ -16,6 +16,8 @@ import type {
   Verse
 } from './types'
 import type {
+  CoalicionItem,
+  CoalicionRequest,
   GlosarioPar,
   GlosarioRequest,
   LenguaEstado,
@@ -102,6 +104,9 @@ export interface KeryxApi {
     strongs(key: string): Promise<Result<StrongsEntry | null>>
     coverage(req: { term: string }): Promise<Result<ModuleCoverage[]>>
     lookupLemma(req: { module: string; lemma: string }): Promise<Result<{ topic: string; definition: string } | null>>
+  }
+  coalicion: {
+    buscar(req: CoalicionRequest): Promise<Result<CoalicionItem[]>>
   }
   documents: {
     list(): Promise<Result<DocumentMeta[]>>

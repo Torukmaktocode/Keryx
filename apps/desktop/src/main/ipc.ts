@@ -6,6 +6,7 @@ import {
   IPC,
   aiChatSchema,
   chapterRequestSchema,
+  coalicionRequestSchema,
   coverageRequestSchema,
   dictCoverageSchema,
   compareRequestSchema,
@@ -35,6 +36,7 @@ import { SwordService } from '@keryx/sword'
 import { JsonStore } from '@keryx/db'
 import { aiChat, aiStatus } from './ai'
 import { registerTraductorIpc, precalentarPar } from './traductor'
+import { buscarCoalicion } from './coalicion'
 
 type Handler = (args: unknown[]) => Promise<unknown> | unknown
 
@@ -181,6 +183,10 @@ export async function registerIpc(
   register(IPC.dictCoverage, (args) => {
     const req = dictCoverageSchema.parse(args[0])
     return sword.dictCoverage(req.term)
+  })
+  register(IPC.coalicionBuscar, (args) => {
+    const req = coalicionRequestSchema.parse(args[0])
+    return buscarCoalicion(req)
   })
 
   register(IPC.documentsList, () => store.listDocuments())

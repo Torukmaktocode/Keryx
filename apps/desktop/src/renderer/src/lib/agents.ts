@@ -6,7 +6,7 @@
  * con recorte de tamano y presupuesto global. El "cerebro" (IA o el composer
  * local) solo REDACTA por encima del dosier.
  */
-import { bookName, CANONICAL_BOOKS, type ModuleCoverage, type SwordModule } from '@keryx/core'
+import { bookName, CANONICAL_BOOKS, type CoalicionItem, type ModuleCoverage, type SwordModule } from '@keryx/core'
 import { api } from './api'
 import { parseReference } from './reference'
 import { moduleLabel } from './modules'
@@ -51,6 +51,7 @@ export interface AgentCitation {
     | 'consenso'
     | 'sintaxis'
     | 'nombres'
+    | 'coalicion'
 }
 
 export interface DossierSection {
@@ -83,6 +84,7 @@ export interface AgentHook {
   lookup: (module: string, key: string) => Promise<string | null>
   strongs: (key: string) => Promise<{ key: string; language: string; definition: string } | null>
   search: (query: string, modules: string[], limit: number) => Promise<Array<{ module: string; book: string; chapter: number; verse: number; text: string }>>
+  coalicion?: (consulta: string, limite?: number) => Promise<CoalicionItem[]>
 }
 
 /* ------------------------------------------------------------------ utils */
@@ -112,7 +114,8 @@ const SPECIAL_RE: Record<AgentCitation['kind'], RegExp | null> = {
   geografia: /geograf|martens|tidwel|usos y costumbre|arqueolog/i,
   consenso: /teologia sistematica|dogmatica|teologia biblica sistematica/i,
   sintaxis: /sintaxis exegetica|ayuda para el estudio|aprendamos griego/i,
-  nombres: /nombres biblicos|hitchcock|21 nombres|enlow/i
+  nombres: /nombres biblicos|hitchcock|21 nombres|enlow/i,
+  coalicion: null
 }
 
 /** Orden interna de especialistas: preferimos los de contenido mas extenso. */
@@ -142,6 +145,17 @@ function trimEntry(text: string, max = ENTRY_MAX_CHARS): string {
   const cut = plain.slice(0, max)
   const lastSpace = cut.lastIndexOf(' ')
   return `${cut.slice(0, lastSpace > max * 0.6 ? lastSpace : max)}…`
+}
+
+/** Texto de verso para el dosier: sin etiquetas HTML ni marcas Strong/Robinson. */
+function versePlano(html: string): string {
+  return stripTags(
+    html.replace(/<num\b[^>]*>[\s\S]*?<\/num>/gi, ' ')
+  )
+    .replace(/«\s+([^«»]*?)\s+»/g, '«$1»')
+    .replace(/\s*\*\s*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 function themeWords(query: string): string {
@@ -274,7 +288,7 @@ export async function buildDossier(
       )
       const lines: string[] = []
       for (const verse of scoped) {
-        lines.push(`${verse.verse} ${stripTags(verse.text).slice(0, 400)}`)
+        lines.push(`${verse.verse} ${trimEntry(versePlano(verse.text), 400)}`)
         if (!verseHtml) verseHtml = verse.text
       }
       addSection('texto', `${label} ${parsed.chapter}`, lines, label.length + 20)
@@ -315,7 +329,9 @@ export async function buildDossier(
         null
       )
       if (!comment?.text) continue
-      job.entries.push(`[${shortName(item.module)}] ${trimEntry(comment.text, 520)}`)
+      job.entries.push(
+        `[${shortName(item.module)} · ${refEntry(parsed.book, parsed.chapter, parsed.verse ?? 1)}] ${trimEntry(comment.text, 520)}`
+      )
       job.cites.push({ kind: 'comentario', module: item.module, entry: refEntry(parsed.book, parsed.chapter, parsed.verse ?? 1) })
     }
     return job
@@ -813,6 +829,29 @@ export async function buildDossier(
     return job
   }
 
+  // ---- 4c) Pastores contemporaneos: articulos de Coalicion por el Evangelio
+  //         (.JSONArray local minado por codigo; cita requiere tema coincidente).
+  const coalicionJob = async (): Promise<Job> => {
+    const job: Job = { kind: 'coalicion', title: 'Pastores de hoy (Coalición por el Evangelio)', entries: [], cites: [] }
+    if (!hook.coalicion) return job
+    const libro = parsed
+      ? bookName(CANONICAL_BOOKS.find((b) => b.code === parsed.book) ?? CANONICAL_BOOKS[0], hook.locale)
+      : ''
+    const consulta = [libro, query].filter(Boolean).join(' ').trim()
+    if (!consulta) return job
+    const items = await safe(hook.coalicion(consulta, SECTION_MAX_ENTRIES), [] as CoalicionItem[])
+    for (const item of items.slice(0, SECTION_MAX_ENTRIES)) {
+      if (!item.titulo || !item.extracto) continue
+      const entrada = item.titulo.length > 62 ? `${item.titulo.slice(0, 60)}…` : item.titulo
+      const quien = (item.autores ?? []).filter(Boolean).slice(0, 2).join(', ')
+      job.entries.push(
+        `[Coalición · ${entrada}] ${trimEntry(item.extracto, 520)}${quien ? ` — ${quien}` : ''} (coalicionporelevangelio.org, ${item.fecha || 's.f.'})`
+      )
+      job.cites.push({ kind: 'coalicion', module: 'Coalición por el Evangelio', entry: entrada })
+    }
+    return job
+  }
+
   // Tracking por grupo de fuente (para la UI de pasos en vivo).
   const mineJobs: Array<[MineGroup, () => Promise<Job>]> = [
     ['commentary', commentJob],
@@ -834,7 +873,8 @@ export async function buildDossier(
     ['original', sintaxisJob],
     ['dictionaries', nombresJob],
     ['dictionaries', refsJob],
-    ['homiletics', illusJob]
+    ['homiletics', illusJob],
+    ['homiletics', coalicionJob]
   ]
   const CONTEXT_BEFORE = 7
   const CONTEXT_GROUPS: MineGroup[] = ['theology', 'context', 'theology', 'context', 'homiletics']
@@ -969,6 +1009,8 @@ export function apiHook(ctx: {
     coverage: (book, ch) => api.bible.commentaryCoverage({ book, chapter: ch }).catch(() => []),
     lookup: (module, key) => api.dict.lookup({ module, key }).catch(() => null),
     strongs: async (key) => (await api.dict.strongs(key).catch(() => null)) ?? null,
-    search: (query, modules, limit) => api.bible.search({ query, modules, limit }).catch(() => [])
+    search: (query, modules, limit) => api.bible.search({ query, modules, limit }).catch(() => []),
+    coalicion: (consulta, limite) =>
+      (api.coalicion?.buscar({ consulta, limite }) ?? Promise.resolve([])).catch(() => [])
   }
 }
