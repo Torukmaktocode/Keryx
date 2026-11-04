@@ -132,6 +132,10 @@ en el predicador.
 
 ---
 
+
+
+---
+
 ## 5. Beneficios en una lista
 
 - **Tiempo**: de horas de localización y comparación a minutos anclados.
@@ -142,3 +146,38 @@ en el predicador.
 - **Alcance**: interfaces en ES/EN/PT (+4 lenguas de interfa), contenido traducible a lenguas nativas.
 - **Instalable en una sola pieza** (Windows NSIS y mac Big Sur DMG con biblioteca y corpus dentro).
 - **Cada rol sale servido**: pastor, líder, presbítero, diácono y misionero.
+
+---
+
+
+---
+
+## 6. Y para cada casa de fe
+
+Las herramientas de Keryx son transversales (biblioteca, dosier, asistente), pero cada tradición encuentra lo suyo ya instalado:
+
+### Iglesias bautistas
+- **De fábrica**: comentarios expositivos (Wiersbe, MacArthur, Guzik, Henry), bosquejos homiléticos, diccionario y concordancia; temas de Coalición sobre "Iglesias sanas", "Centralidad del evangelio", "Bautismo", "Cena del Señor", "Membresía de la iglesia", "Evangelismo", "Discipulado" y "Complementarianismo".
+- **Cómo la usan**: sermón expositivo versículo a versículo del Asistente (el AST garantiza la trama por el pasaje) + estudio de células con las 5 preguntas de la Guía.
+- **Beneficio distintivo**: la predicación expositiva semanal sin sacrificar profundidad — cada punto lleva su comentario citado por módulo.
+
+### Iglesias anglicanas / episcopales evangélicas
+- **De fábrica**: confesiones y catecismos en el dosier (temas "Confesiones y Catecismos", "Historia de la Iglesia", "Reforma Protestante", "Eclesiología"), biografías cristianas, alabanza y adoración; Semana Santa y Navidad para el calendario litúrgico; comparación formal ↔ dinámica (RV60 ↔ NVI) para el estudio del texto del día.
+- **Cómo la usan**: la Guía del Pasaje como base del sermón dominical; el léxico y el interlineal (modo 6) para el griego del evangelio del día.
+- **Nota honesta**: liturgias y leccionarios propios siguen siendo del usuario — se añaden como módulos o documentos sin problema.
+- **Beneficio distintivo**: predicar el texto del leccionario con la misma profundidad exegética de un sermón expositivo.
+
+### Iglesias evangélicas generales (independientes y de proclamación)
+- **De fábrica**: el corpus completo de Coalición (7.947 artículos, 180 temas) para coyuntura y cultura (ideología de género, bioética, redes sociales, falsas enseñanzas, evangelio de la prosperidad); Nave/Thompson para "¿Qué dice la Biblia de...?"; casos bíblicos reales para la aplicación.
+- **Cómo la usan**: series temáticas con el Asistente (tema + pasajes); estudio completo para grupos pequeños.
+- **Beneficio distintivo**: contenido contemporáneo hecho por pastores hispanos, citable con autor, fecha y URL — una fuente que un solo diccionario no da.
+
+### Iglesias luteranas
+- **De fábrica**: los clásicos de la reforma (Calvino, Barnes, Gill, Wesley) para el diálogo teológico; temas "Justificación", "Sola Scriptura", "Gracia", "Legalismo"; teología sistemática (Hodge, Bavinck) e historia de la Iglesia (los mártires, Eusebio, Josefo).
+- **Cómo la usan**: el dosier por pasaje acompaña la homilética de ley y evangelio — contexto histórico y texto original minados por código; el predicador separa ley y gracia con las palabras originales delante.
+- **Beneficio distintivo**: las solas (sola scriptura, sola fide, sola gratia) documentadas entrada por entrada, con los clásicos al alcance del clic.
+
+### Todas las casas de fe
+- **Lenguas nativas** para congregaciones originarias (guaraní, aymara, mapudungún, bengalí, quechua) — sin internet y sin costo de servicio.
+- **La misma biblioteca de 726 módulos + 7.947 artículos** para todas: cada iglesia añade además sus módulos con licencia propia mediante el instalador.
+- **Mac y Windows en una sola instalación**, sin trámites técnicos.
