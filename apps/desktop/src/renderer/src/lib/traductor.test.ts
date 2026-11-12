@@ -36,6 +36,28 @@ describe('plainText (los módulos viajan como HTML)', () => {
       'Porque de tal manera amó'
     )
   })
+
+  it('decodifica entidades acentuadas nombradas (causa de "Jes & Uacute")', () => {
+    expect(plainText('<p>Jes&uacute;s, Jerusal&eacute;n y secci&oacute;n</p>')).toBe(
+      'Jesús, Jerusalén y sección'
+    )
+    expect(plainText('<i>bauti&acute;s</i>')).toBe('bauti´s')
+    expect(plainText('San Ju&aacute;n')).toBe('San Juán')
+  })
+
+  it('decodifica entidades numéricas y hexadecimales', () => {
+    expect(plainText('&#225;ngel y &#xE1;rbol')).toBe('ángel y árbol')
+  })
+
+  it('limpia el marcado doblemente escapado (&lt;i&gt;texto&lt;/i&gt;)', () => {
+    expect(plainText('Este es &lt;i&gt;negrita&lt;/i&gt; del módulo')).toBe(
+      'Este es negrita del módulo'
+    )
+  })
+
+  it('preserva un ampersand suelto sin corromper', () => {
+    expect(plainText('R&amp;B y Rock & Roll')).toBe('R&B y Rock & Roll')
+  })
 })
 
 describe('translateMarkdownCon (estructura y citas intactas)', () => {

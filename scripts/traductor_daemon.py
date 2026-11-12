@@ -32,13 +32,28 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from html import unescape as _html_unescape
 from typing import Any, Dict, Optional, Tuple
 
 STDOUT_LOCK = threading.Lock()
 CANDADO_INIT = threading.RLock()
+
+ETIQUETA = re.compile(r"<[^>]+>")
+ESPACIOS = re.compile(r"\s+")
+
+
+def limpiar_texto(texto: str) -> str:
+    """Sanea la entrada de los módulos e-Sword: entidades HTML nombradas
+    y numéricas decodificadas (un "Jes&uacute;s" crudo salía como
+    "Jes & Uacute" tras el sentencizador) y etiquetas residuales fuera."""
+    if "&" not in texto and "<" not in texto:
+        return texto
+    texto = _html_unescape(texto)
+    return ESPACIOS.sub(" ", ETIQUETA.sub(" ", texto)).strip()
 
 
 def respond(payload: Dict[str, Any]) -> None:
@@ -299,7 +314,7 @@ class Motor:
         """Lote rapido: TODAS las frases de TODOS los items en UNA llamada
         a CTranslate2 (paraleliza workers); con pivote por 'en' si no hay
         par directo; cae al camino lento/identidad si todo falla."""
-        textos = [str(item) for item in items]
+        textos = [limpiar_texto(str(item)) for item in items]
         par = self.dialectos.par(source, target)
         if par is not None:
             try:
@@ -399,6 +414,7 @@ class Motor:
             raise
 
     def traducir(self, source: str, target: str, text: str) -> str:
+        text = limpiar_texto(text)
         if not text.strip():
             return text
         par = self.dialectos.par(source, target)

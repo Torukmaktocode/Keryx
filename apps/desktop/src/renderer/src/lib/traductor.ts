@@ -29,12 +29,102 @@ export function normalizarIdioma(code?: string | null): string {
   return value.slice(0, 2)
 }
 
-/** Texto plano de un HTML de módulo (los <w data-strong>, <i>, <b> viajan como texto). */
-export function plainText(value: string): string {
+/** Entidades HTML nombradas frecuentes en módulos e-Sword (ISO-8859-1 y
+ * puntuación): los acentos castellanos y europeos son los críticos. */
+const ENTIDADES: Record<string, string> = {
+  nbsp: ' ',
+  iexcl: '¡',
+  iquest: '¿',
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  aacute: 'á',
+  eacute: 'é',
+  iacute: 'í',
+  oacute: 'ó',
+  uacute: 'ú',
+  ntilde: 'ñ',
+  uuml: 'ü',
+  acute: '\u00b4',
+  Agrave: 'À',
+  Egrave: 'È',
+  Igrave: 'Ì',
+  Ograve: 'Ò',
+  Ugrave: 'Ù',
+  agrave: 'à',
+  egrave: 'è',
+  igrave: 'ì',
+  ograve: 'ò',
+  ugrave: 'ù',
+  Acirc: 'Â',
+  Ecirc: 'Ê',
+  Icirc: 'Î',
+  Ocirc: 'Ô',
+  Ucirc: 'Û',
+  acirc: 'â',
+  ecirc: 'ê',
+  icirc: 'î',
+  ocirc: 'ô',
+  ucirc: 'û',
+  Aacute: 'Á',
+  Eacute: 'É',
+  Iacute: 'Í',
+  Oacute: 'Ó',
+  Uacute: 'Ú',
+  Ntilde: 'Ñ',
+  auml: 'ä',
+  euml: 'ë',
+  iuml: 'ï',
+  ouml: 'ö',
+  Auml: 'Ä',
+  Euml: 'Ë',
+  Iuml: 'Ï',
+  Ouml: 'Ö',
+  ccedil: 'ç',
+  Ccedil: 'Ç',
+  laquo: '«',
+  raquo: '»',
+  ldquo: '\u201c',
+  rdquo: '\u201d',
+  lsquo: '\u2018',
+  rsquo: '\u2019',
+  mdash: '—',
+  ndash: '–',
+  hellip: '…',
+  bull: '•',
+  middot: '·',
+  deg: '°'
+}
+
+const NAMED = /&([a-zA-Z][a-zA-Z0-9]*);/g
+const NUMERICO = /&#(\d+);/g
+const HEXA = /&#x([0-9a-fA-F]+);/g
+
+/** Decodifica entidades HTML nombradas y numéricas: los módulos e-Sword
+ * guardan "Jes&uacute;s" y una entidad cruda rompe el motor de traducción
+ * (salía "Jes & Uacute" en el lector traducido). */
+export function decodificarEntidades(value: string): string {
   return value
+    .replace(HEXA, (_, hex: string) => {
+      const punto = Number.parseInt(hex, 16)
+      return Number.isFinite(punto) && punto > 0 && punto <= 0x10ffff ? String.fromCodePoint(punto) : ''
+    })
+    .replace(NUMERICO, (_, dec: string) => {
+      const punto = Number.parseInt(dec, 10)
+      return Number.isFinite(punto) && punto > 0 && punto <= 0x10ffff ? String.fromCodePoint(punto) : ''
+    })
+    .replace(NAMED, (full, nombre: string) => ENTIDADES[nombre] ?? full)
+}
+
+/** Texto plano de un HTML de módulo (los <w data-strong>, <i>, <b> viajan como texto).
+ * Segunda pasada de etiquetas: algunos módulos guardan el marcado doblemente
+ * escapado (&lt;i&gt;) y la entidad decodificada revela una etiqueta nueva. */
+export function plainText(value: string): string {
+  const decodificado = decodificarEntidades(value.replace(/<[^>]+>/g, ' '))
+  return decodificado
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim()
 }
