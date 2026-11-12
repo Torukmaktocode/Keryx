@@ -237,6 +237,123 @@ export const AUTHORS: InspirationAuthor[] = [
     bio: 'Pastor hondureño radicado en Houston, fundador y maestro de Casa Internacional del Padre (Kingdom City); su ministerio se centra en lo sobrenatural.',
     style:
       'Sobre lo sobrenatural: fe acción, proclamación del poder de Dios y ministerio según intención de la Palabra escrita.'
+  },
+  {
+    id: 'latimer',
+    name: 'Hugh Latimer',
+    era: '1487-1555',
+    tradition: 'Reforma inglesa / obispo de Worcester',
+    bio: 'Obispo reformador inglés, predicador de la corte de Eduardo VI y voz llana del campo inglés; quemado junto a Ridley en Oxford en 1555.',
+    style:
+      'Llanura campesina y fuego: imágenes del arado y del campo, humor cortante, la predicación vernácula como tesoro nacional.'
+  },
+  {
+    id: 'baxter',
+    name: 'Richard Baxter',
+    era: '1615-1691',
+    tradition: 'Puritano anglicano',
+    bio: 'Pastor de Kidderminster y autor de El pastor reformado y El descanso perpetuo de los santos; el médico del ministerio pastoral puritano.',
+    style:
+      'Precisión pastoral y urgencia médica: cura de almas con inventario honesto, la eternidad pesando en cada decisión.'
+  },
+  {
+    id: 'finney',
+    name: 'Charles G. Finney',
+    era: '1792-1875',
+    tradition: 'Presbiteriano evangélico / avivamiento',
+    bio: 'Abogado convertido y arquitecto del avivamiento de segunda generación en EE. UU.; sus lecturas sobre el avivamiento fundaron la homilética revivalista.',
+    style:
+      'Razonamiento forense y apelación directa: el avivamiento como ley moral, la decisión del oyente al centro.'
+  },
+  {
+    id: 'mcheyne',
+    name: 'Robert Murray M\u2019Cheyne',
+    era: '1813-1843',
+    tradition: 'Presbiteriano escocés',
+    bio: 'Pastor de St. Peter\u2019s, Dundee, muerto a los 29 años; su canon de sermones y su plan de lectura bíblica alimentaron el avivamiento de Dundee de 1839.',
+    style:
+      'Tierno y grave: Cristo en cada texto, lirismo escocés, la mortalidad como amigo del evangelio.'
+  },
+  {
+    id: 'evans',
+    name: 'Christmas Evans',
+    era: '1766-1838',
+    tradition: 'Bautista calvinista galés',
+    bio: 'El predicador más célebre de Gales, llamado el Bunyan galés; escribió sus sermones de memoria y predicó una sola vez cada uno.',
+    style:
+      'Imaginación galesa y drama del pacto: imágenes monumentales, el evangelio como épica del campo.'
+  },
+  {
+    id: 'massillon',
+    name: 'Jean-Baptiste Massillon',
+    era: '1663-1742',
+    tradition: 'Oratoria sagrada francesa',
+    bio: 'Obispo de Clermont y predicador de la corte; su Petit Carême ante Luis XV y su oración fúnebre por Luis XIV son cumbres del género.',
+    style:
+      'Ternura moral bajo solemnidad: la corte desarmada con lentitud, la conciencia humana al desnudo.'
+  },
+  {
+    id: 'bourdaloue',
+    name: 'Louis Bourdaloue',
+    era: '1632-1704',
+    tradition: 'Oratoria sagrada jesuita',
+    bio: 'Jesuita de las Cuaresmas de la corte de Luis XIV; maestro de la lógica moral, tan claro que Voltaire lo estudió como modelo de razón.',
+    style:
+      'Lógica moral impecable: examen del vicio punto por punto, estilo que convence antes que conmueve.'
+  },
+  {
+    id: 'morgan',
+    name: 'G. Campbell Morgan',
+    era: '1863-1945',
+    tradition: 'Congregacionalista',
+    bio: 'Pastor de Westminster Chapel, Londres, y príncipe de los expositores; leía cada libro de la Biblia cuarenta veces antes de predicarlo.',
+    style:
+      'Exposición arquitectónica: el libro entero en la cabeza, el sermón como lectura de la estructura del texto.'
+  },
+  {
+    id: 'sunday',
+    name: 'Billy Sunday',
+    era: '1862-1935',
+    tradition: 'Bautista / evangelista de tabernáculos',
+    bio: 'Ex-jugador de béisbol profesional convertido en el evangelista más frenético de EE. UU.; predicó en tabernáculos a decenas de millones.',
+    style:
+      'Atletismo homilético: saltos, mímica, frases de una patada; el pecado nombrado sin anestesia.'
+  },
+  {
+    id: 'king',
+    name: 'Martin Luther King Jr.',
+    era: '1929-1968',
+    tradition: 'Bautista afroamericana',
+    bio: 'Pastor de Dexter Avenue y Ebenezer, conductor del movimiento por los derechos civiles; su homilética entrelaza profetas, evangelios y la lucha de su pueblo.',
+    style:
+      'Oratoria profética: anáfora creciente, imágenes del éxodo, la justicia de Dios cruzada con la esperanza americana.'
+  },
+  {
+    id: 'washer',
+    name: 'Paul Washer',
+    era: '1961-actualidad',
+    tradition: 'Bautista reformado / HeartCry',
+    bio: 'Misionero en Perú y fundador de HeartCry Missionary Society; su mensaje juvenil de 2002 despertó una generación al arrepentimiento radical.',
+    style:
+      'Diagnóstico sin anestesia: pregunta incisiva, gracia sola en Cristo, la conversión como realidad y no como folklore.'
+  },
+  {
+    id: 'sproul',
+    name: 'R. C. Sproul',
+    era: '1939-2017',
+    tradition: 'Presbiteriano reformado / Ligonier',
+    bio: 'Fundador de Ligonier Ministries y pastor de St. Andrew\u2019s Chapel; docente magistral de la santidad de Dios y de la teología clásica.',
+    style:
+      'Docencia que escala a predicación: definiciones exactas, analogías históricas, la santidad como categoría madre.'
+  },
+  {
+    id: 'piper',
+    name: 'John Piper',
+    era: '1946-actualidad',
+    tradition: 'Bautista reformada / Desiring God',
+    bio: 'Pastor de Bethlehem Baptist Church, Minneapolis, durante treinta y tres años y fundador de Desiring God; predicó siempre de manuscrito y publicó sus textos completos gratis.',
+    style:
+      'Placer cristocéntrico: Dios como felicidad suprema, argumento escalonado, frases que condensan gozo y sacrificio.'
   }
 ]
 
@@ -7737,6 +7854,489 @@ const EXTRA_SEEDS: ExtraSeed[] = [
       'El fruto: el que camina con fe, no vive en el límite del ambiente.'
     ],
     q: ['"Tu fe es la puerta del sobrenatural: si no la abres, la señal no entra."']
+  },
+  // --- Latimer ---
+  {
+    a: 'latimer',
+    t: 'El sermón del arado',
+    y: 1548,
+    p: 'St. Paul\u2019s Cross, Londres',
+    o: 'Primer sermón de la corte de Eduardo VI ante miles de oyentes: Latimer ataca el clero que predica en latín y dice que su arado está casi podrido mientras el reino se pierde.',
+    x: 'Romanos 15:4 — "...todo lo que está escrito antes, para nuestra enseñanza lo escribió, para que por la paciencia y consolación de las Escrituras tengamos esperanza."',
+    th: ['Crisis y prueba', 'Firma y certeza'],
+    ol: [
+      'El arado podrido: la predicación de la nación está descuidada y nadie lo confiesa.',
+      'La Escritura escrita para nuestra enseñanza: la Palabra en la lengua del pueblo, no en la del claustro.',
+      'La esperanza que sale del texto: un reino predicado se sostiene, un reño encerrado en latín se muere.'
+    ],
+    q: [
+      '"Mi arado está casi podrido: no lo afiló nadie en toda esta tierra."',
+      '"El predicar de la Palabra de Dios es el mejor oficio de todos: por eso el diablo no lo quiere."'
+    ],
+    i: 'Sermón fundacional de la homilética anglicana; fijó la predicación vernácula como deber del país. Latimer murió quemado en Oxford en 1555 y su llamamiento sobrevivió a la hoguera.'
+  },
+  {
+    a: 'latimer',
+    t: 'Los sermones de las cartas',
+    y: 1529,
+    p: 'Inglaterra (predicado en parroquia, editado por la Parker Society)',
+    o: 'El joven capellán convierte el juego de cartas en pedagogía del alma: cada baraja enseña lo que el jugador esconde; uno de los sermones más reeditados de la Reforma inglesa temprana.',
+    x: 'Mateo 13:52 — "...todo escriba instruido en el reino de los cielos es semejante a un padre de familia que saca de su tesoro cosas nuevas y viejas."',
+    th: ['Anhelos humanos', 'Penitencia'],
+    ol: [
+      'El tesoro del escriba: cosas nuevas y viejas sacadas para el mismo mesa.',
+      'Las cartas sobre la mesa: lo que el jugador mira con avidez revela el corazón que juega.',
+      'El libro de la conciencia: la baraja que no se baraja; lo que nadie revuelve delante de Dios.'
+    ],
+    q: [
+      '"Saca tu baraja y mírala bien: ahí está pintado tu corazón."'
+    ],
+    i: 'Pedagogía popular de la Reforma: predica con el vocabulario de la taberna para arrancar la conciencia de la mesa.'
+  },
+  // --- Baxter ---
+  {
+    a: 'baxter',
+    t: 'El pastor reformado',
+    y: 1656,
+    p: 'Asociación ministerial de Worcestershire, Kidderminster',
+    o: 'Sermón sinodal ante ministros que se volvió el libro clásico de la cura de almas: Baxter toma la cuenta que Pedro heredó del Señor y la pasa a la pastoral de su condado.',
+    x: 'Hechos 20:28 — "...tomad cuidado de toda la grey, en la cual el Espíritu Santo os ha puesto por obispos, para apacentar la iglesia del Señor."',
+    th: ['Santidad', 'Crisis y prueba'],
+    ol: [
+      'La grey es de Dios: ni parroquia ni clientela; el pastor la cuenta como quien responde por cada cabeza.',
+      'El cuidado que cansa: el pastor que conoce a su grey uno por uno, y por eso vive desvelado.',
+      'El ministerio que se predica a sí mismo: antes de reformar el rebaño, el pastor se reforma a sí.'
+    ],
+    q: [
+      '"Es mejor despertar a mil hombres con el sermón que entretener a uno con la elocuencia."',
+      '"Predica como un moribundo a moribundos: como si no volverías a predicar nunca más."'
+    ],
+    i: 'Se convirtió en el manual pastoral de tres siglos: el ministerio como consulta médica del alma, no como oficio retórico.'
+  },
+  {
+    a: 'baxter',
+    t: 'El descanso de los santos',
+    y: 1650,
+    p: 'Kidderminster (meditaciones nacidas de su enfermedad, editadas como libro en 1650)',
+    o: 'Escrito durante una tuberculosis que casi lo mata en 1647: confinado en cama, Baxter medita sobre el descanso que la gloria prepara y sale con el libro devocional más leído del puritanismo.',
+    x: 'Hebreos 4:9 — "Por tanto, queda un descanso para el pueblo de Dios."',
+    th: ['Muerte y eternidad', 'Anhelos humanos'],
+    ol: [
+      'El descanso que queda: no es pausa del cansancio, es fin de la guerra del alma.',
+      'El espejo de la enfermedad: el cuerpo que falla enseña lo que el mundo disimula.',
+      'La vida desde la puerta: quien sabe de dónde va, ordena lo que hoy pesa.'
+    ],
+    q: [
+      '"Un día en el cielo vale por mil años de gloria humana."'
+    ],
+    i: 'Nacida de la cama de enfermo, movió generaciones de pastores a vivir con la puerta de la eternidad abierta.'
+  },
+  // --- Finney ---
+  {
+    a: 'finney',
+    t: 'Lecturas sobre el avivamiento',
+    y: 1835,
+    p: 'Iglesias libres de Nueva York',
+    o: 'Ciclo de lecturas predicadas en las iglesias libres de Nueva York y publicadas ese mismo año: el ex-abogado argumenta que el avivamiento no es milagro incontrolable sino ley moral que Dios bendice.',
+    x: 'Romanos 13:11 — "...ya es hora de levantarnos del sueño; porque ahora está más cerca de nosotros nuestra salvación que cuando aceptamos."',
+    th: ['Evangelismo', 'Oración'],
+    ol: [
+      'El avivamiento no es milagro: es el resultado correcto del uso correcto de los medios que Dios ya dio.',
+      'La iglesia dormida: el texto dice la hora y la culpa; el sueño es decisión, no destino.',
+      'La oración que se atreve: pedir el avivamiento como quien reclama una deuda prometida.'
+    ],
+    q: [
+      '"Un avivamiento no es otra cosa que una nueva obediencia a Dios."'
+    ],
+    i: 'El libro de homilética revivalista más influyente del siglo XIX; formó a una generación de evangelistas y cambió la práctica del púlpito americano.'
+  },
+  {
+    a: 'finney',
+    t: 'La oración que prevalece',
+    y: 1859,
+    p: 'Glasgow, Escocia (gira británica)',
+    o: 'Durante su gira británica de avivamiento, Finney predica sobre la oración que agarra a Dios: el creyente que reclama la promesa y no suelta hasta verla; en estilo fiel a sus conferencias de la década.',
+    x: '1 Juan 5:14 — "Y esta es la confianza que tenemos para con él, que si pedimos alguna cosa conforme a su voluntad, él nos oye."',
+    th: ['Oración', 'Firma y certeza'],
+    ol: [
+      'La condición del oír: pedir conforme a la voluntad revelada, no al antojo del corazón.',
+      'La insistencia que honra: la oración que prevalece no importa, declara y repite la promesa.',
+      'El resultado visible: la iglesia que aprende a reclamar deja de mendigar y empieza a mover.'
+    ],
+    q: [
+      '"La oración prevaleciente no ruega al aire: cita la promesa delante del trono."'
+    ],
+    i: 'Marca el temperamento orante del movimiento de Oberlin: oración tratada como litigio ganado con la Palabra.'
+  },
+  // --- M'Cheyne ---
+  {
+    a: 'mcheyne',
+    t: 'El buen pastor',
+    y: 1839,
+    p: 'St. Peter\u2019s, Dundee',
+    o: 'Desde el púlpito de Dundee, el joven pastor expone al Pastor que da la vida: un sermón del estilo y canon de su colección póstuma de 1863, en los años del avivamiento que su enfermedad dejaba respirar.',
+    x: 'Juan 10:11 — "Yo soy el buen pastor; el buen pastor su vida da por las ovejas."',
+    th: ['Gracia', 'Crisis y prueba'],
+    ol: [
+      'El pastor que no alquila: el mercenario huye y el Dueño se queda.',
+      'La vida dada: no la convenience ni la fama, sino la sangre como precio del rebaño.',
+      'Las ovejas que conocen su voz: la seguridad del creyente no está en su agarre sino en el suyo.'
+    ],
+    q: [
+      '"Por cada oveja del rebaño, el Pastor pagó con su propia sangre; descansa tu alma en eso."'
+    ],
+    i: 'Ficha reconstruida del estilo de su colección: su pastoral fue tan joven como su muerte; a los 29 años la grey lloraba al pastor que la había contado casa por casa.'
+  },
+  {
+    a: 'mcheyne',
+    t: 'Preparen el camino del Señor',
+    y: 1839,
+    p: 'St. Peter\u2019s, Dundee (avivamiento con W. C. Burns)',
+    o: 'En los meses del avivamiento de Dundee de 1839 —con William Chalmers Burns predicando mientras M\u2019Cheyne viajaba a Israel—, la iglesia aprendió a pedir camino en el desierto.',
+    x: 'Isaías 40:3 — "Voz que clama en el desierto: Preparad camino a Jehová; enderezad vereda en la llanura a nuestro Dios."',
+    th: ['Arrepentimiento', 'Evangelismo'],
+    ol: [
+      'El desierto no es castigo: es lugar de camino; lo que parece vacío se ordena para el Rey.',
+      'La voz que clama: nadie clama lo que no ha oído; el predicador primero fue oyente.',
+      'La gloria revelada: el camino preparado no es esfuerzo humano, es el Señor que viene a quedarse.'
+    ],
+    q: [
+      '"No pidas explicación al desierto: pídelle camino."'
+    ],
+    i: 'Ficha reconstruida del clima de su iglesia: el avivamiento de Dundee llegó cuando el pastor estaba ausente, y volvió a una grey sedienta.'
+  },
+  // --- Christmas Evans ---
+  {
+    a: 'evans',
+    t: 'El grano de mostaza',
+    y: 1820,
+    p: 'Gales (predicado en sus giras por las capillas bautistas galesas)',
+    o: 'Su sermón más célebre, predicho repetidas veces en las giras galesas: la semilla que el enemigo siembra de noche y la iglesia que crece hasta dar sombra a las naciones.',
+    x: 'Mateo 13:31-32 — "...el reino de los cielos es semejante al grano de mostaza, que un hombre tomó y sembró en su campo."',
+    th: ['Firma y certeza', 'Evangelismo'],
+    ol: [
+      'La semilla mínima: el reino no llega por tamaño, llega por siembra.',
+      'El enemigo de noche y la planta de día: la historia de la iglesia en una sola imagen.',
+      'La sombra de las naciones: el pájaro que hoy se anida en sus ramas empezó bajo la tierra.'
+    ],
+    q: [
+      '"No desprecies la semilla pequeña: los pájaros del cielo ya están mirando su rama."'
+    ],
+    i: 'El sermón galés más traducido; la versión impresa fija el texto de un predicador que nunca predicó lo mismo dos veces.'
+  },
+  {
+    a: 'evans',
+    t: 'El muro derribado',
+    y: 1825,
+    p: 'Capillas de Gales (estilo fiel de su predicación del pacto)',
+    o: 'En el corazón del metodismo galés que él conocía por dentro, Evans expone el muro que Cristo derribó: el evangelio del pacto como épica que une lo que el pecado separó.',
+    x: 'Efesios 2:14 — "Porque él es nuestra paz, que de ambos pueblos hizo uno, derribando la pared intermedia de separación."',
+    th: ['Gracia', 'Muerte y eternidad'],
+    ol: [
+      'El muro que Dios puso y Cristo quitó: la ley como separación y la cruz como demolición.',
+      'Dos pueblos, un hombre nuevo: la paz no es acuerdo, es nueva humanidad.',
+      'El acceso al Padre: derribado el muro, el lejos y el cerca entran por la misma puerta.'
+    ],
+    q: [
+      '"Cristo no escaló el muro: lo tiró abajo piedras por piedras."'
+    ],
+    i: 'Ficha reconstruida del estilo de sus sermones del pacto: la épica galesa puesta al servicio de la reconciliación.'
+  },
+  // --- Massillon ---
+  {
+    a: 'massillon',
+    t: 'Oración fúnebre de Luis XIV',
+    y: 1715,
+    p: 'Basílica de Saint-Denis, París',
+    o: 'Muerto el Rey Sol después de setenta y dos años de reinado, Massillon predica ante el regente Felipe de Orleans: "Solo Dios es grande" como sentencia que desarma a la corte entera.',
+    x: '1 Pedro 1:24 — "Toda carne es como hierba, y toda la gloria del hombre como flor de la hierba... mas la palabra del Señor permanece para siempre."',
+    th: ['Muerte y eternidad', 'Idolatría del corazón'],
+    ol: [
+      'Solo Dios es grande: la frase que vacía el trono vacante de todo lo que lo llenó.',
+      'El inventario del reinado: conquistas, palacios y abismos morales de la gloria de un hombre.',
+      'La lección al regente: el poder que hereda es la misma hierba que ayer se admiraba.'
+    ],
+    q: [
+      '"Solo Dios es grande, señores; y en esa frase cabe todo lo que debemos humillarnos."'
+    ],
+    i: 'El sermón más citado del siglo XVIII francés: Voltaire lo estudió como derrota de la vanidad por la elocuencia; su texto bíblico exacto no se fijó en las ediciones al español y la ficha usa el pasaje representativo del género.'
+  },
+  {
+    a: 'massillon',
+    t: 'El pequeño número de los elegidos',
+    y: 1704,
+    p: 'Capilla del palacio de Versalles, Cuaresma ante Luis XIV',
+    o: 'Su obra maestra predicada ante el Rey Sol en Cuaresma: la estrechez del camino eterno predicada sin miedo a la corte, con tal maestría que el rey mandó reimprimirla para el pueblo.',
+    x: 'Mateo 22:14 — "Porque muchos son llamados, y pocos escogidos."',
+    th: ['Penitencia', 'Muerte y eternidad'],
+    ol: [
+      'Muchos llamados: la gracia no es escasa, la respuesta sí.',
+      'Pocos escogidos: la corte como espejo del reino; todos los grandes no llenan el camino estrecho.',
+      'La decisión del oyente: el llamado que hoy suena puede ser el último que escuche.'
+    ],
+    q: [
+      '"Muchos son llamados, señores: el número de los escogidos no se decide en el salón, se decide en el altar."'
+    ],
+    i: 'La pieza que lo consagró como primer predicador de Francia; su Petit Carême ante Luis XV nació de la misma vena y se convirtió en clásico devocional.'
+  },
+  // --- Bourdaloue ---
+  {
+    a: 'bourdaloue',
+    t: 'El pensamiento de la muerte',
+    y: 1670,
+    p: 'Cuaresma de la corte de Luis XIV, París',
+    o: 'En una de sus Cuaresmas de corte, el jesuita predica el pensamiento de la muerte no como terror sino como lógica: la cuenta que nadie puede aplazar; fecha puntual no conservada en las ediciones.',
+    x: 'Salmos 90:12 — "Enséñanos de tal modo a contar nuestros días, que nuestro corazón adquiera sabiduría."',
+    th: ['Muerte y eternidad', 'Penitencia'],
+    ol: [
+      'Contar los días: la aritmética que la vida evita y la muerte obliga.',
+      'El pensamiento que ordena: quien sabe el número deja de despilfarrar el resto.',
+      'La sabiduría del corazón: no es miedo, es administración sabia del tiempo prestado.'
+    ],
+    q: [
+      '"El hombre que no piensa en la muerte, piensa mal en todo lo demás."'
+    ],
+    i: 'Muestra el método que la corte temía: sin teatro, la lógica del examen moral desarmaba a los oyentes que venían a admirar.'
+  },
+  {
+    a: 'bourdaloue',
+    t: 'Sobre las riquezas',
+    y: 1668,
+    p: 'Cuaresma de la corte de Luis XIV, París',
+    o: 'Ante la corte más rica de Europa, el jesuita separa dos señores con lógica de cuchillo: el servicio que divide no admite compartidos; fecha aproximada de sus Cuaresmas parisienses.',
+    x: 'Mateo 6:24 — "Ninguno puede servir a dos señores; porque o aborrecerá al uno y amará al otro, o estimará al uno y menospreciará al otro. No podéis servir a Dios y a las riquezas."',
+    th: ['Idolatría del corazón', 'Santidad'],
+    ol: [
+      'Dos señores, un corazón: la división no es debilidad, es matemática moral.',
+      'El aborrecimiento que sorprende: el amo despreciado siempre es el invisible.',
+      'La riqueza desarmada: no es malo tener, es malo mandar; el que sirve al oro no ama a Dios.'
+    ],
+    q: [
+      '"El corazón que reparte, ya eligió: el invisible nunca gana el reparto."'
+    ],
+    i: 'Su sermón de moral más reeditado; contra el quietismo y contra el lujo con la misma lógica implacable.'
+  },
+  // --- G. Campbell Morgan ---
+  {
+    a: 'morgan',
+    t: 'Los propósitos de la Encarnación',
+    y: 1910,
+    p: 'Westminster Chapel, Londres (impreso en The Fundamentals, tomo I)',
+    o: 'Su ensayo-sermón para la serie fundacional que defendió la fe histórica ante el modernismo: la gran verdad piadosa de la música antigua como clave de la lectura del misterio.',
+    x: '1 Timoteo 3:16 — "E indiscutiblemente, grande es el misterio de la piedad: Dios fue manifestado en carne."',
+    th: ['Firma y certeza', 'Adoración'],
+    ol: [
+      'El misterio grande: la piedad no es sentimiento, es el hecho de Dios en carne.',
+      'Los propósitos cumplidos: revelación, redención y reunión leídas en una sola perícopa.',
+      'La fe que defiende: la Encarnación no se explica con menor fuerza de la que el texto reclama.'
+    ],
+    q: [
+      '"La Encarnación no es un episodio de la historia: es el propósito que ordena la historia."'
+    ],
+    i: 'Impreso en The Fundamentals, el documento que dio nombre al fundamentalismo; su firma expositiva enseñó a predicar la doctrina desde el texto y no desde la polémica.'
+  },
+  {
+    a: 'morgan',
+    t: 'La carta a Laodicea',
+    y: 1930,
+    p: 'Westminster Pulpit, Londres (estilo fiel de su ciclo de Apocalipsis)',
+    o: 'En su predicación del Apocalipsis en Westminster Chapel, Morgan toma el mensaje al rico que se cree rico: la carta a Laodicea como diagnóstico de la iglesia engreída.',
+    x: 'Apocalipsis 3:17 — "Dices: Yo soy rico, y me he enriquecido, y no tengo necesidad de ninguna cosa; y no sabes que eres un pobre, miserable, pobre, ciego y desnudo."',
+    th: ['Idolatría del corazón', 'Penitencia'],
+    ol: [
+      'El inventario falso: lo que la iglesia dice de sí y lo que el Dueño ve son dos listas distintas.',
+      'El tibio que vomita: ni frío ni calor, la indiferencia como sentencia final.',
+      'El que llama a la puerta: la carta que golpea desde fuera y cena con el que abre.'
+    ],
+    q: [
+      '"La iglesia no está en peligro por el mundo afuera: está en peligro por el tibio adentro."'
+    ],
+    i: 'Ficha reconstruida del ciclo expositivo de Westminster: su método del libro entero en la cabeza aplicado a las siete cartas.'
+  },
+  // --- Billy Sunday ---
+  {
+    a: 'sunday',
+    t: 'El licor',
+    y: 1908,
+    p: 'Tabernáculos de gira, Estados Unidos (Chicago, Detroit, Filadelfia)',
+    o: 'El sermón más famoso de sus campañas: el ex-beisbolista ataca la industria del alcohol con el cuerpo entero; sus ataques colaboraron con el clima que llevó a la Prohibición.',
+    x: 'Proverbios 20:1 — "El vino es escarnecedor, la sidra altercadora, y cualquiera que en ellos yerre no será sabio."',
+    th: ['Idolatría del corazón', 'Penitencia'],
+    ol: [
+      'El escarnecedor de casa: el licor entra risueño y sale rompiendo la mesa.',
+      'La aritmética del tabernáculo: salarios bebidos, viudas contadas, celdas llenas.',
+      'El firmar del corazón: la decisión en la línea del tabernáculo; el que cruza, no vuelve igual.'
+    ],
+    q: [
+      '"El infierno es lleno de barriles y cada barril tiene una familia detrás."'
+    ],
+    i: 'El sermón antialcohol más predicado de la historia de EE. UU.; texto conservado por la prensa y por la edición de 1914 del evangelista (dominio público).'
+  },
+  {
+    a: 'sunday',
+    t: 'El pecado imperdonable',
+    y: 1910,
+    p: 'Tabernáculos de gira, Estados Unidos',
+    o: 'Uno de sus sermones de campaña más reeditados: el pecado que nadie quiere cometer dos veces y que muchos temen sin haberlo cometido; fecha puntual no conservada, la ficha toma la versión de sus campañas.',
+    x: 'Mateo 12:31-32 — "...el pecado contra el Espíritu Santo no será perdonado, ni en este siglo ni en el venidero."',
+    th: ['Penitencia', 'Muerte y eternidad'],
+    ol: [
+      'Lo que no es: la culpa que atormenta no es el pecado imperdonable; el temor ya prueba sensibilidad.',
+      'Lo que sí es: el endurecimiento final contra la luz que ya se vio.',
+      'La puerta que se cierra: no por ira de Dios, sino por mano del que la cierra desde adentro.'
+    ],
+    q: [
+      '"Si te angustias por haberlo cometido, ya es prueba de que no lo cometiste: el que lo hizo no siente nada."'
+    ],
+    i: 'Ficha de la versión de campaña: Sunday desarmaba el pánico del pecado imperdonable con teología de calle y pastoral dura.'
+  },
+  // --- Martin Luther King Jr. ---
+  {
+    a: 'king',
+    t: 'El instinto del tambor mayor',
+    y: 1968,
+    p: 'Ebenezer Baptist Church, Atlanta',
+    o: 'Predicado dos meses antes de su asesinato: King disecciona el deseo humano de adelantarse a la fila —también dentro de la iglesia— y lo pasa por el lavatorio del Maestro; se leyó en su funeral.',
+    x: 'Marcos 10:43-44 — "Mas así no será entre vosotros, sino el que quiera hacerse grande entre vosotros será vuestro servidor, y el que de vosotros quiera ser el primero, será siervo de todos."',
+    th: ['Idolatría del corazón', 'Santidad'],
+    ol: [
+      'El instinto universal: ser el tambor mayor de la banda, primero en la fila, y no se escapa ni el púlpito.',
+      'El lavatorio que redefine: el Maestro no prohíbe la grandeza, cambia su dirección.',
+      'La grandeza posible: todos pueden servir; la fila que Dios mira se mide por toallas, no por banderines.'
+    ],
+    q: [
+      '"Todos pueden ser grandes, porque todos pueden servir."'
+    ],
+    i: 'Su última gran homilía en Ebenezer: dos meses después le escucharon en el funeral con la misma grabación; transcripción académica del King Papers de Stanford (solo con fines de estudio, © King Estate).'
+  },
+  {
+    a: 'king',
+    t: 'Amar a los enemigos',
+    y: 1957,
+    p: 'Dexter Avenue Baptist Church, Montgomery',
+    o: 'En el punto más duro del boicot de Montgomery, King predica lo más difícil del Sermón del Monte: el amor que no negocía con la injusticia pero tampoco se hunde en su odio.',
+    x: 'Mateo 5:44 — "Pero yo os digo: Amad a vuestros enemigos, bendecid a los que os maldicen, haced bien a los que os aborrecen, y orad por los que os ultrajan y os persiguen."',
+    th: ['Crisis y prueba', 'Santidad'],
+    ol: [
+      'El mandato que corta: amar al que te persigue no es debilidad, es obediencia incómoda.',
+      'El amor griego leído: agape como decisión, no simpatía; el bien actuado por el que te hace el mal.',
+      'El amor que salva al amante: el odio corroe la jeringa del odiador antes que al odiado.'
+    ],
+    q: [
+      '"El odio oscurece la vida y el amor la ilumina: eligiendo amar, me salvo a mí mismo."'
+    ],
+    i: 'Fue el punto más duro del boicot de Montgomery: la no violencia predicada desde el texto, semanas después de la bomba en su casa.'
+  },
+  // --- Paul Washer ---
+  {
+    a: 'washer',
+    t: 'El mensaje que escandalizó',
+    y: 2002,
+    p: 'Conferencia juvenil, Estados Unidos',
+    o: 'El sermón de 2002 que quedó grabado en la historia del avivamiento juvenil: a una sala de adolescentes acostumbrada a fiestas de gimnasio, Washer les predijo la puerta estrecha sin adornos.',
+    x: 'Mateo 7:13-14 — "...estrecha es la puerta, y angosto el camino que lleva a la vida, y pocos son los que la hallan."',
+    th: ['Arrepentimiento', 'Penitencia'],
+    ol: [
+      'El diagnostico incómodo: la puerta es estrecha y su cultura dice lo contrario.',
+      'La oración repetida no salva: la conversión no es un ticket del recuerdo, es una vida nueva.',
+      'La seguridad verdadera: no descansar en una decisión de la niñez, sino en Cristo vivo hoy.'
+    ],
+    q: [
+      '"Si tu conversión es solo un recuerdo de la niñez, quizá nunca naciste de nuevo: mira tu vida, no tu pasado."'
+    ],
+    i: 'Las grabaciones superaron las cuatrocientas mil reproducciones y abrieron el ministerio global de HeartCry; una generación de jóvenes volvió al examen de conciencia.'
+  },
+  {
+    a: 'washer',
+    t: 'Lo que el hombre no es',
+    y: 2011,
+    p: 'Conferencia de HeartCry Missionary Society',
+    o: 'De su predicación contra la psicología del ego: el hombre no es rico por fingirlo y no es feliz por proclamarlo; Washer desarma el evangelio del yo con el espejo de Proverbios.',
+    x: 'Proverbios 13:7 — "Hay algunos que simulan ser ricos, y sin embargo no tienen nada; y hay algunos que simulan ser pobres, y sin embargo tienen muchas riquezas."',
+    th: ['Idolatría del corazón', 'Anhelos humanos'],
+    ol: [
+      'El simulador de riqueza: la vida proyectada que esconde al hombre vacío.',
+      'El simulador de pobreza: la humildad falsa que negocia aplausos.',
+      'El hombre verdadero: no lo que proclama, sino lo que delante de Dios es.'
+    ],
+    q: [
+      '"El problema del hombre no es la autoestima baja: es la adoración alta de sí mismo."'
+    ],
+    i: 'Sermón icónico de su crítica al evangelio terapéutico: el diagnóstico bíblico contra la cultura del yo.'
+  },
+  // --- R. C. Sproul ---
+  {
+    a: 'sproul',
+    t: 'La santidad de Dios',
+    y: 1985,
+    p: 'St. Andrew\u2019s Chapel, Florida (serie fundacional de Ligonier)',
+    o: 'La predicación que abrió toda la obra de Ligonier: el trono de Isaías 6 como categoría madre de la teología; la fecha puntual de la serie no se conserva, la ficha sigue su versión canónica.',
+    x: 'Isaías 6:3 — "Santo, santo, santo, Jehová de los ejércitos; toda la tierra está llena de su gloria."',
+    th: ['Adoración', 'Firma y certeza'],
+    ol: [
+      'La repetición que pesa: la única perfección que Dios proclama tres veces de sí mismo.',
+      'El hombre que se deshace: la santidad no consuela primero, descompone; ay de mí antes de aquí estoy.',
+      'El carbón que limpia: el altar que toca la boca del profeta es gracia después del juicio.'
+    ],
+    q: [
+      '"Dios no es simplemente santo: es el Santo de los santos; la santidad no es un atributo más, es la forma de ser de todos sus atributos."'
+    ],
+    i: 'El sermón-libro que definió el ministerio de Sproul: la santidad como tema transversal de toda la teología reformada popular de las últimas décadas.'
+  },
+  {
+    a: 'sproul',
+    t: 'La justicia imputada',
+    y: 1995,
+    p: 'St. Andrew\u2019s Chapel, Florida (estilo fiel de su exposición de Romanos y 2 Corintios)',
+    o: 'En su docencia constante sobre la justificación, Sproul toma el intercambio del Calvario: la cuenta que se cruza sin abuso del juez, porque el juez paga él mismo la deuda.',
+    x: '2 Corintios 5:21 — "Al que no conoció pecado, lo hizo pecado por nosotros, para que nosotros seamos hechos justicia de Dios en él."',
+    th: ['Gracia', 'Firma y certeza'],
+    ol: [
+      'El intercambio imposible: Cristo hecho pecado sin serlo; nosotros hechos justicia sin merecerla.',
+      'El juez que no corrompe: la imputación no es ficción legal, es traslado real al sustituto.',
+      'La seguridad doble: mi cuenta en la cruz y su justicia en mi expensa, a la vez.'
+    ],
+    q: [
+      '"No soy justo porque lo soy: soy justo porque Él lo es; y eso, ni el infierno lo apela."'
+    ],
+    i: 'Ficha reconstruida de su doctrina central: la justificación por fe sola como la verdad que la iglesia siempre reconfirma o pierde.'
+  },
+  // --- John Piper ---
+  {
+    a: 'piper',
+    t: 'Jactarse solo en la cruz',
+    y: 2000,
+    p: 'Conferencia OneDay (Passion), Memphis, Tennessee',
+    o: 'Predicado de madrugada ante decenas de miles de estudiantes: el sermón que nació del manuscrito que Piper creía destinado a otra cosa y que se volvió el llamado del avivamiento juvenil del 2000.',
+    x: 'Gálatas 6:14 — "Pero lejos sea de mí jactarme de otra cosa que de la cruz de nuestro Señor Jesucristo, por quien el mundo me es crucificado a mí, y yo al mundo."',
+    th: ['Firma y certeza', 'Idolatría del corazón'],
+    ol: [
+      'El jactarse corregido: la cruz no es una doctrina entre otras, es el único pedestal del creyente.',
+      'La cruz que crucifica: el mundo muerto para mí y yo muerto para el mundo, las dos direcciones del mismo clavo.',
+      'El gozo mayor: renunciar a la gloria del mundo porque ya se gustó una gloria mejor.'
+    ],
+    q: [
+      '"No hay comparación: la cruz vale más que el mundo entero, y el que la gusta, suelta el resto sin pesar."'
+    ],
+    i: 'Miles de estudiantes lloraron y se comprometieron a misiones; el manuscrito completo está publicado gratis en DesiringGod y el audio es de los más descargados del ministerio.'
+  },
+  {
+    a: 'piper',
+    t: 'No malgastes tu vida',
+    y: 2004,
+    p: 'Bethlehem Baptist Church, Minneapolis (serie que fundó el libro homónimo)',
+    o: 'De la predicación que dio origen a su libro más citado por estudiantes y misioneros: una vida que se gasta en el confort es la que se pierde, y la que se vierte por Cristo es la que se halla.',
+    x: 'Filipenses 1:20-21 — "...con toda firmeza de ánimo, magnificando a Cristo en mi cuerpo, o viviendo o muriendo. Porque para mí el vivir es Cristo, y el morir es ganancia."',
+    th: ['Anhelos humanos', 'Crisis y prueba'],
+    ol: [
+      'La vida que se magnifica: el cuerpo como escena donde Cristo aparece grande.',
+      'El cálculo imposible: morir es ganancia; si la muerte ya es ganancia, el riesgo no arruina.',
+      'La apuesta del gozo: soltar el confort no es heroísmo, es la lógica del que ya probó algo mejor.'
+    ],
+    q: [
+      '"No malgastes tu vida: al final te darás cuenta de que la única vida que se conserva es la que se entrega."'
+    ],
+    i: 'El manuscrito completo está publicado gratis en DesiringGod (Piper predicó siempre de manuscrito); el libro derivado circula en decenas de lenguas y movió campamentos estudiantiles enteros a misiones.'
   }
 ]
 
