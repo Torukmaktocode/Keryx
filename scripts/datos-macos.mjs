@@ -16,7 +16,21 @@ const CARPETA = join(RAIZ, 'build', 'datos')
 const MAX_PARTE = 1_800_000_000
 const TAG = 'datos'
 
-const gh = (args) => execFileSync('gh', args, { stdio: 'inherit' })
+const ghBin = () => {
+  if (process.env.GH_CLI) return process.env.GH_CLI
+  for (const c of ['gh', join(process.env['ProgramFiles'] ?? '', 'GitHub CLI', 'gh.exe')]) {
+    try {
+      execFileSync(c, ['--version'], { stdio: 'ignore' })
+      return c
+    } catch {
+      continue
+    }
+  }
+  console.error('Instala GitHub CLI: winget install --id GitHub.cli')
+  process.exit(1)
+}
+
+const gh = (args) => execFileSync(ghBin(), args, { stdio: 'inherit' })
 
 async function tarGz(serie, salida) {
   execFileSync('tar', ['-czf', salida, ...serie], { cwd: RAIZ, stdio: 'inherit' })
@@ -51,7 +65,7 @@ function partir(origen, base) {
 
 function ghDisponible() {
   try {
-    execFileSync('gh', ['auth', 'status'], { stdio: 'ignore' })
+    execFileSync(ghBin(), ['auth', 'status'], { stdio: 'ignore' })
     return true
   } catch {
     return false
@@ -59,8 +73,8 @@ function ghDisponible() {
 }
 
 const modo = process.argv[2] ?? 'ayuda'
-if (!ghDisponible()) {
-  console.error('Se requiere la CLI gh instalada y autenticada (gh auth login).')
+if ((modo === 'subir') && !ghDisponible()) {
+  console.error('Se requiere autenticar GitHub CLI: gh auth login (o gh CLI instalación).')
   process.exit(1)
 }
 
@@ -85,7 +99,7 @@ if (modo === 'preparar') {
   }
   let datosExiste = true
   try {
-    execFileSync('gh', ['release', 'view', TAG], { stdio: 'ignore' })
+    execFileSync(ghBin(), ['release', 'view', TAG], { stdio: 'ignore' })
   } catch {
     datosExiste = false
   }
