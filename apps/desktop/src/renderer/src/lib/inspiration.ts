@@ -8337,7 +8337,2442 @@ const EXTRA_SEEDS: ExtraSeed[] = [
       '"No malgastes tu vida: al final te darás cuenta de que la única vida que se conserva es la que se entrega."'
     ],
     i: 'El manuscrito completo está publicado gratis en DesiringGod (Piper predicó siempre de manuscrito); el libro derivado circula en decenas de lenguas y movió campamentos estudiantiles enteros a misiones.'
-  }
+  },
+  {
+    a: 'piper',
+    t: 'Deléitate en Jehová',
+    y: 1983,
+    p: 'Bethlehem Baptist Church, Minneapolis (serie fundacional de Desiring God)',
+    o: 'La serie de sermones que fundó el cristianismo del gozo: el deleite en Dios no es recompensa aparte, es el mandato que ordena todo el cristiano; de aquí nació el libro Desiring God.',
+    x: 'Salmos 37:4 — "Deléitate asimismo en Jehová, y él te concederá las peticiones de tu corazón."',
+    th: ['Adoración', 'Anhelos humanos'],
+    ol: [
+      'El deleite mandado: no es sugerencia de temperamento, es orden del Señor.',
+      'El corazón que se concede: cuando el deleite está en Dios, sus deseos ya están reformados.',
+      'La certeza del gozo: no es hedonismo del mundo invertido, es hedonismo sometido al Rey.'
+    ],
+    q: [
+      '"Dios es más glorificado en nosotros cuando nosotros estamos más satisfechos en Él."'
+    ],
+    i: 'La semilla de toda una escuela homilética: el gozo como obligación y como motor; decenas de miles de pastores la adoptaron como eje de su predicación.'
+  },
+  {
+    a: 'piper',
+    t: 'El tesoro escondido en el campo',
+    y: 1986,
+    p: 'Bethlehem Baptist Church, Minneapolis',
+    o: 'De sus sermones tempranos sobre el reino: la parábola del tesoro como el hallazgo que reordena la economía del corazón; uno de los mensajes más citados de su primera década.',
+    x: 'Mateo 13:44 — "...el reino de los cielos es semejante a un tesoro escondido en un campo, el cual un hombre halla, y lo esconde de nuevo; y gozoso va y vende todo lo que tiene, y compra aquel campo."',
+    th: ['Firma y certeza', 'Anhelos humanos'],
+    ol: [
+      'El hallazgo que ordena: el gozo no viene después de la venta, lo produce el tesoro ya visto.',
+      'La venta gozosa: soltarlo todo no es sacrificio heroico, es aritmética del hallazgo.',
+      'El campo comprado: la vida entera remanejada porque algo más grande ocupa su centro.'
+    ],
+    q: [
+      '"El que vendió todo no lo hizo con lágrimas: el gozo del tesoro hizo barata la venta."'
+    ],
+    i: 'Imagen que Piper reutilizó tres décadas en sermones y libros: el gozo como lógica del sacrificio, no su sustituto.'
+  },
+  {
+    a: 'piper',
+    t: 'El centro llameante',
+    y: 2003,
+    p: 'Bethlehem Baptist Church, Minneapolis (serie The Blazing Center)',
+    o: 'La serie que fijó su proverbio central: la gloria de Dios es el centro que no se mueve, y el gozo del creyente es la órbita donde esa gloria brilla al máximo.',
+    x: 'Salmos 73:25-26 — "¿A quién tengo yo en los cielos sino a ti? Y fuera de ti nada deseo en la tierra. Mi carne y mi corazón desfallecen; Mas la fortaleza de mi corazón y mi porción es Dios para siempre."',
+    th: ['Adoración', 'Firma y certeza'],
+    ol: [
+      'El sol que no se mueve: toda la existencia gira alrededor de la gloria de Dios.',
+      'El corazón que desfallece y no cae: la porción eterna sostiene al que ya no tiene nada.',
+      'La satisfacción máxima: el creyente satisfecho es el que mejor muestra quién vale más.'
+    ],
+    q: [
+      '"Cuando Jesús desfallece en tu deseo, el universo entero pierde su sol."'
+    ],
+    i: 'El eslogan nacido de la serie —Dios es más glorificado cuando somos más satisfechos— se convirtió en la bisagra de su ministerio entero y de los congresos juveniles de Passion.'
+  },
+  {
+    a: 'piper',
+    t: 'Cómo beber jugo de naranja para la gloria de Dios',
+    y: 1995,
+    p: 'Bethlehem Baptist Church, Minneapolis (serie de la gracia futura)',
+    o: 'El sermón de la serie de la gracia futura que lo hizo famoso por su título: beber un vaso de jugo con gratitud es un acto de adoración; lo ordinario cultiva la fe que descansa en promesas futuras.',
+    x: '1 Corintios 10:31 — "...si coméis o bebéis o hacéis alguna otra cosa, hacedlo todo para la gloria de Dios."',
+    th: ['Adoración', 'Gracia'],
+    ol: [
+      'Lo común también glorifica: comer y beber se vuelven culto cuando brotan de la gratitud.',
+      'La fe contra el descontento: beber con gozo es confiar en las promesas que el vaso anticipa.',
+      'La vida sin zonas secularizadas: no hay rincurón del creyente donde Dios no reciba la gloria.'
+    ],
+    q: [
+      '"Bebe tu jugo con gratitud y ya predicaste: la mesa es púlpito de la fe."'
+    ],
+    i: 'El título lo hizo célebre en radio y libros; enseñó a una generación que la gloria de Dios no vive solo en lo extraordinario.'
+  },
+  {
+    a: 'piper',
+    t: 'La guerra contra la ansiedad',
+    y: 1994,
+    p: 'Bethlehem Baptist Church, Minneapolis (serie sobre la incredulidad a vencer)',
+    o: 'De su larga serie sobre batallas de fe: la ansiedad como incredulidad tratable, no como temperamento condenado; la oración y la promesa como armas del creyente desasosegado.',
+    x: 'Filipenses 4:6 — "Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios en toda oración y ruego, con acción de gracias."',
+    th: ['Crisis y prueba', 'Oración'],
+    ol: [
+      'La ansiedad nombrada: no es malfunction del temperamento, es pelea por la confianza.',
+      'La conversión de la preocupación: lo que inquieta se convierte en petición con gratitud.',
+      'La paz que guarda: el resultado no es control de la vida, es custodia del corazón.'
+    ],
+    q: [
+      '"La ansiedad se derrota con promesa y oración, no con fuerza de carácter."'
+    ],
+    i: 'Material que se volvió su libro sobre la incredulidad: el pastor como médico del alma que receta promesas concretas.'
+  },
+  {
+    a: 'piper',
+    t: 'Dios es el evangelio',
+    y: 2004,
+    p: 'Bethlehem Baptist Church, Minneapolis (de la predicación que fundó el libro homónimo)',
+    o: 'Su tesis más discutida: el evangelio no es buena noticia si solo perdona y no lleva a Dios; la perla del mensaje es Cristo mismo, no sus beneficios desanclados.',
+    x: 'Filipenses 3:8 — "...así que todas las cosas las tengo por pérdida por la excelencia del conocimiento de Cristo Jesús, mi Señor."',
+    th: ['Adoración', 'Gracia'],
+    ol: [
+      'El perdón no es la meta final: es la puerta; la sala es el gozo en Dios mismo.',
+      'La pérdida que gana: todo lo demás se considera pérdida frente al conocerlo.',
+      'El evangelio que brilla: cuando se predica Dios como regalo, la cruz brilla en su lugar.'
+    ],
+    q: [
+      '"El evangelio no es buena noticia si solo nos salva de algo y no nos lleva a Alguien."'
+    ],
+    i: 'Reconfiguró la conversación evangélica sobre el motivó central de la fe; libro y sermones formaron a una generación de pastores que predicaban el don antes que los regalos.'
+  },
+  {
+    a: 'piper',
+    t: 'Cuando no deseo a Dios',
+    y: 2004,
+    p: 'Bethlehem Baptist Church, Minneapolis (serie que fundó el libro de la pelea por el gozo)',
+    o: 'La continuación honesta de Desiring God: ¿qué hacer cuando el corazón está seco? Piper responde con la pelea por el gozo: el deseo perdido no se denuncia, se combate.',
+    x: 'Salmos 51:12 — "Devuélveme el gozo de tu salvación, y firme espíritu me sostenga."',
+    th: ['Penitencia', 'Crisis y prueba'],
+    ol: [
+      'El gozo perdido no es sinónimo de fe muerta: es señal de batalla abierta.',
+      'Las armas de la pelea: la Palabra dicha en voz alta, la oración, el cuerpo disciplinado.',
+      'El gozo devuelto: no es nostalgia de la conversión, es promesa que Dios reface.'
+    ],
+    q: [
+      '"El gozo en Dios no se presume: se pelea; y la pelea ya es gozo en germen."'
+    ],
+    i: 'Dio vocabulario pastoral a miles de creyentes secos: la espiritualidad como combate gozoso, no como performance emocional.'
+  },
+  {
+    a: 'piper',
+    t: 'Dios se complace en hacer',
+    y: 1988,
+    p: 'Bethlehem Baptist Church, Minneapolis (serie Los placeres de Dios)',
+    o: 'La serie que miró del otro lado del pacto: ¿qué complace a Dios? El texto afirma que hace lo que quiere y que se alegra en hacerlo; la soberanía como placer, no como máquina.',
+    x: 'Salmos 115:3 — "Nuestro Dios está en los cielos; todo lo que quiso, ha hecho."',
+    th: ['Firma y certeza', 'Adoración'],
+    ol: [
+      'La soberanía gozosa: Dios no hace por obligación; hace lo que se complace en hacer.',
+      'El placer revelado: la Biblia habla de deleites de Dios concretos, no de un capricho abstracto.',
+      'La confianza que libera: si Dios se complace en su plan, el creyente puede descansar en él.'
+    ],
+    q: [
+      '"Dios no es un rey atado: es un Padre que goza; y su gozo incluye tu rescate."'
+    ],
+    i: 'El libro derivado marcó su década: la soberanía presentada como placer gozoso y no como determinismo frío.'
+  },
+  {
+    a: 'piper',
+    t: 'Nacidos de nuevo para una esperanza viva',
+    y: 2009,
+    p: 'Bethlehem Baptist Church, Minneapolis (serie que fundó el libro sobre el nuevo nacimiento)',
+    o: 'De su exposición larga sobre el nuevo nacimiento: la regeneración como milagro de gracia que produce la esperanza viva; la serie se editó como libro para desarmar la conversión folclórica.',
+    x: '1 Pedro 1:3 — "...según su gran misericordia, nos ha hecho nacer de nuevo para una esperanza viva, por la resurrección de Jesucristo de los muertos."',
+    th: ['Gracia', 'Firma y certeza'],
+    ol: [
+      'El nacimiento que no se fabrica: nadie se hace nacer; se es nacido.',
+      'La esperanza viva: no es optimismo, es el fruto de la resurrección como hecho presente.',
+      'La herencia guardada: lo que nace de Dios guarda lo que Dios guarda.'
+    ],
+    q: [
+      '"El nuevo nacimiento no es una decisión recordada: es un milagro vivido."'
+    ],
+    i: 'Culminó su década de expositiva sobre la conversión: la regeneración como obra de Dios y no como folklore del recuerdo infantil.'
+  },
+  {
+    a: 'piper',
+    t: 'No malgastes tu cáncer',
+    y: 2011,
+    p: 'Bethlehem Baptist Church, Minneapolis (meditación predicada y escrita con David Powlison)',
+    o: 'Nacida de su propio diagnóstico de cáncer de próstata: Piper elige no desperdiciar la enfermedad; la meditación se volvió folleto pastoral de manos a pacientes en todo el mundo.',
+    x: 'Job 1:21 — "Desnudo salí del vientre de mi madre, y desnudo tornaré allá; Jehová lo dio, y Jehová lo quitó; sea el nombre de Jehová bendito."',
+    th: ['Crisis y prueba', 'Muerte y eternidad'],
+    ol: [
+      'Las dos preguntas prohibidas: ¿por qué? y ¿para qué?; la segunda salva, la primera paraliza.',
+      'El trabajo de la enfermedad: el cáncer puede despilfarrarse con rabia o gastarse en eternidad.',
+      'La fe que pronuncia bendición: el texto de Job como gramática del corazón herido.'
+    ],
+    q: [
+      '"No malgastes tu cáncer: puedes perderlo todo y ganar lo que no se pierde."'
+    ],
+    i: 'El folleto llegó a hospitales y capellanías de medio mundo; su doctorado personal fue leído por miles de pacientes como retrato de la fe ante la propia muerte.'
+  },
+  {
+    a: 'piper',
+    t: 'Descubre mis ojos',
+    y: 2013,
+    p: 'Bethlehem Baptist Church, Minneapolis (serie de la lectura sobrenatural de la Biblia)',
+    o: 'De su larga serie sobre cómo leer las Escrituras: la Biblia no se lee solo con método, se lee con milagro; la petición del salmista es la puerta de toda lectura fructífera.',
+    x: 'Salmos 119:18 — "Descubre mis ojos, para que contemple las maravillas de tu ley."',
+    th: ['Oración', 'Firma y certeza'],
+    ol: [
+      'La petición que presupone ceguera: nadie lee bien sin ser liberado para leer.',
+      'Las maravillas, no las letras: la meta no es información, es contemplación.',
+      'El método sometido al milagro: la buena hermenéutica pide, y la oración abre lo que el estudio afina.'
+    ],
+    q: [
+      '"El milagro no reemplaza el método: lo anima; ora mientras lees y lee mientras ora."'
+    ],
+    i: 'El marco de su enseñanza tardía sobre la Biblia: la lectura como acto dependiente del Espíritu, dada a decenas de miles en sus plataformas gratis.'
+  },
+  {
+    a: 'piper',
+    t: 'La gloria de Dios en el rostro de Cristo',
+    y: 2014,
+    p: 'Bethlehem Baptist Church, Minneapolis (de su exposición de 2 Corintios)',
+    o: 'De su serie sobre el ministerio de la gloria: el dios de este siglo ciega, y solo el Creador que dijo que brille la luz puede abrirla; la predicación como obra de luz, no de retórica.',
+    x: '2 Corintios 4:6 — "Porque Dios, que mandó que de las tinieblas resplandeciese la luz, es el que resplandeció en nuestros corazones, para iluminación del conocimiento de la gloria de Dios en la faz de Jesucristo."',
+    th: ['Adoración', 'Crisis y prueba'],
+    ol: [
+      'La ceguera que fabrica el dios de este siglo: no ve porque no quiere ver la gloria.',
+      'El mismo que hizo la luz: la conversión no es persuasión humana, es creación nueva.',
+      'La faz de Jesucristo: la gloria no es un concepto, es una persona mirada.'
+    ],
+    q: [
+      '"Nadie ve la gloria con ojos de ciencia: la ve el corazón que Dios ilumina."'
+    ],
+    i: 'Textículo central de su homilética: el predicador como portador de luz y no como artesano de efectos; sermón citado en su defensa de la predicación sobrenatural.'
+  },
+  {
+    a: 'piper',
+    t: 'Una ambición santa por las naciones',
+    y: 2001,
+    p: 'Bethlehem Baptist Church, Minneapolis (de su predicación misionera)',
+    o: 'Su sermón clásico de misiones: la ambición de predicar donde nadie lo hizo; Piper ordena su iglesia alrededor del gozo que las naciones todavía no han probado.',
+    x: 'Romanos 15:20-21 — "...nunca predicó donde Cristo fuese nombrado, para no edificar sobre cimiento ajeno, sino como está escrito: Aquellos a quienes no fue anunciado de él, verán; y los que no han oído de él, entenderán."',
+    th: ['Evangelismo', 'Firma y certeza'],
+    ol: [
+      'La ambición que no compite: no edifica sobre cimiento ajeno; va a donde falta el anuncio.',
+      'El plan de Pablo: la palabra del texto como estrategia de las naciones, no como anécdota.',
+      'El gozo que viaja: la misión es exportar satisfacción, no exportar cultura.'
+    ],
+    q: [
+      '"Hay gozo en las naciones que todavía nadie les ha contado: por eso existe la misión."'
+    ],
+    i: 'El marco de su visión misionera: Bethlehem se convirtió en iglesia que envía y sostiene obreros, con la ambición santa como brújula de la casa.'
+  },
+  {
+    a: 'piper',
+    t: 'Armonía étnica para el evangelio',
+    y: 1994,
+    p: 'Bethlehem Baptist Church, Minneapolis (de su serie sobre la hostilidad étnica)',
+    o: 'En el clima tenso de los años del conflicto racial en EE. UU., Piper predica que el evangelio no puede coexistir con la hostilidad étnica: el muro derribado es su argumento.',
+    x: 'Efesios 2:14-16 — "Porque él es nuestra paz... derribando la pared intermedia de separación... y mediante la cruz reconciliar con Dios a ambos en un solo cuerpo."',
+    th: ['Crisis y prueba', 'Gracia'],
+    ol: [
+      'El muro que la cruz derribó: la hostilidad étnica no es cultura, es calvario desobedecido.',
+      'El un solo cuerpo: la reconciliación con Dios produce reconciliación con el otro.',
+      'La iglesia como espectáculo: el mundo ve el evangelio cuando ve la mesa compartida.'
+    ],
+    q: [
+      '"Una iglesia que se divide por etnia predica con silencio lo contrario del evangelio."'
+    ],
+    i: 'Lo convirtió en línea de ministerio de su iglesia: la armonía étnica como cumplimiento visible del evangelio, no como agenda social aparte.'
+  },
+  {
+    a: 'piper',
+    t: 'El matrimonio como imitación del evangelio',
+    y: 2009,
+    p: 'Bethlehem Baptist Church, Minneapolis (de la serie que fundó su libro sobre el matrimonio)',
+    o: 'De su predicación sobre Efesios 5: el matrimonio no es un contrato de satisfacción, es una escenografía del amor que se entrega; el esposo que no muere por su esposa no ha entendido el texto.',
+    x: 'Efesios 5:25 — "Maridos, amad a vuestras mujeres, así como Cristo amó a la iglesia, y se entregó a sí mismo por ella."',
+    th: ['Santidad', 'Gracia'],
+    ol: [
+      'El comparador que asusta: así como Cristo amó; el patrón no es la felicidad, es el Calvario.',
+      'La entrega que santifica: el matrimonio existe para que dos se parezcan a Cristo.',
+      'La gracia que sostiene: ningún matrimonio sobrevive a la comparación sin la gracia del modelo.'
+    ],
+    q: [
+      '"El matrimonio no fue inventado para hacerte feliz, sino para hacerte santo: y esa santidad resulta gozosa."'
+    ],
+    i: 'Su libro derivado se volvió lectura estándar de preparación matrimonial en iglesias reformadas del mundo entero.'
+  },
+  {
+    a: 'piper',
+    t: 'El sufrimiento y la soberanía de Dios',
+    y: 2005,
+    p: 'Bethlehem Baptist Church, Minneapolis (de su serie sobre el dolor y la gloria)',
+    o: 'En la década que enterró amigos y padeció cáncer, Piper predica el sufrimiento bajo soberanía: no es explicación fría, es la casa donde el dolor deja de ser destino.',
+    x: 'Romanos 8:18 — "...los sufrimientos del tiempo presente no son dignos de ser comparados con la gloria que será manifestada en nosotros."',
+    th: ['Crisis y prueba', 'Muerte y eternidad'],
+    ol: [
+      'La aritmética de la gloria: el sufrimiento se pesa contra una gloria desproporcionada.',
+      'La soberanía que no escamotea: Dios no promete explicar el dolor, promete custodiarlo.',
+      'El gozo que atraviesa: el afán del texto no niega el llanto, lo orienta a la manifestación.'
+    ],
+    q: [
+      '"Dios no explica el dolor: lo pesa contra una gloria que el dolor no puede tocar."'
+    ],
+    i: 'Marco de su pastoral en años de tragedia: la soberanía presentada como consuelo del creyente y no como desafío del teólogo.'
+  },
+  {
+    a: 'piper',
+    t: 'La sed que Dios quiere calmar',
+    y: 2008,
+    p: 'Bethlehem Baptist Church, Minneapolis (estilo fiel de su ciclo sobre Juan 7)',
+    o: 'En su exposición del capítulo de las fiestas de Juan, Piper toma el grito de Jesús en la fiesta de los tabernáculos: el creyente que viene a Él es el que bebe y de donde salen ríos.',
+    x: 'Juan 7:37-38 — "Si alguno tiene sed, venga a mí y beba. El que cree en mí, como dice la Escritura, de su interior correrán ríos de agua viva."',
+    th: ['Anhelos humanos', 'Adoración'],
+    ol: [
+      'La sed reconocida: el creyente no disfraza su hambre, la lleva al lugar correcto.',
+      'Venir y beber: la fe como consumo de Cristo, no como gesto de cortesía.',
+      'Los ríos que corren: la satisfacción que desborda al prójimo no se guarda.'
+    ],
+    q: [
+      '"No vengas con corazón de observador: ven con sed, y bebe."'
+    ],
+    i: 'Ficha reconstruida del ciclo de Juan: su cristianismo del gozo aplicado a la sed como retórica central del evangelio de Juan.'
+  },
+  {
+    a: 'piper',
+    t: 'La adoración como banquete',
+    y: 2007,
+    p: 'Bethlehem Baptist Church, Minneapolis (estilo fiel de su enseñanza sobre la adoración)',
+    o: 'En sus enseñanzas sobre la adoración, Piper expone el salmista que prefiere la casa de Dios: el culto no es concierto ni ceremonia, es banquete del alma donde se saborea a Dios mismo.',
+    x: 'Salmos 63:5-6 — "Mi alma estará satisfecha como con tu manjar sustancioso; y con labores gozosas te alabaré, cuando me acuerde de ti en mi cama, y medite de ti en las velas de la noche."',
+    th: ['Adoración', 'Anhelos humanos'],
+    ol: [
+      'El manjar sustancioso: la adoración no admira el ambiente, saborea a Dios.',
+      'El recuerdo nocturno: la adoración que no cabe en el culto sigue en la cama y en la vela.',
+      'Las labores gozosas: la alabanza no es descanso del trabajo, es trabajo con sabor.'
+    ],
+    q: [
+      '"La adoración no es entretenimiento que calma: es banquete que alimenta y luego desborda en alabanza."'
+    ],
+    i: 'Ficha reconstruida de su doctrina de la adoración: el culto como satisfacción del alma en Dios, lección que formó el clima musical de su iglesia.'
+  },
+  {
+    a: 'piper',
+    t: 'La carrera y el gozo',
+    y: 2003,
+    p: 'Bethlehem Baptist Church, Minneapolis (del corpus que dio origen a No malgastes tu vida)',
+    o: 'Del discurso de despedida de Pablo a los ancianos de Éfeso, Piper toma la estima de la vida: el que no hace de su vida un ídolo puede gastarla por el evangelio sin miedo.',
+    x: 'Hechos 20:24 — "Pero de mi vida no hago caso en absoluto, como que para mí la vida es preciosa, con tal de que acabe mi carrera, y cumpla con alegría el ministerio que recibí del Señor Jesús, para dar testimonio del evangelio de la gracia de Dios."',
+    th: ['Evangelismo', 'Anhelos humanos'],
+    ol: [
+      'La vida que no se idolatra: el que la estima por lo que sirve, no por lo que guarda.',
+      'La carrera con alegría: el ministerio no se cumple con diente apretado, se cumple con gozo.',
+      'El testimonio de la gracia: la meta no es ser recordado, es dar testimonio.'
+    ],
+    q: [
+      '"El que no suelta su vida, la pierde; el que la gasta por el evangelio, la encuentra gozosa."'
+    ],
+    i: 'Texto central del capítulo que dio nombre a su libro más citado por misioneros: la vida como combustible del testimonio.'
+  },
+  {
+    a: 'piper',
+    t: 'Riesgo y gloria: la apuesta de la fe',
+    y: 2013,
+    p: 'Bethlehem Baptist Church, Minneapolis (de la predicación que fundó su libro sobre el riesgo)',
+    o: 'De su mensaje sobre el riesgo cristiano: la fe que ama al prójimo acepta el riesgo porque la seguridad definitiva ya está ganada; el amar sin riesgo es amar con recinto.',
+    x: 'Ester 4:14 — "...¿y quién sabe si para este tiempo has llegado al reino?"',
+    th: ['Crisis y prueba', 'Evangelismo'],
+    ol: [
+      'La seguridad que libera: el que está escondido en Dios puede arriesgar lo demás.',
+      'El amor que calcula: el cálculo no es del peligro, es del gozo del prójimo.',
+      'La hora del reino: la providencia pone al creyente en el lugar y el día; callar es perder.'
+    ],
+    q: [
+      '"El riesgo no es falta de fe: es fe que se niega a amar desde la cueva."'
+    ],
+    i: 'El marco que reorientó su predicación tardía sobre el llamado: el creyente como agente en la historia, no como espectador protegido.'
+  },
+  {
+    a: 'latimer',
+    t: 'Siete sermones sobre el Padrenuestro',
+    y: 1552,
+    p: 'Casa de Grimsthorpe, Lincolnshire (serie predicada en 1552 ante lady Katherine, duquesa de Suffolk, editada por la Parker Society)',
+    o: 'Serie completa predicada a petición de la duquesa de Suffolk para su casa y criados: el obispo anciano toma la plegaria que el reino reza sin entenderla y la convierte en espejo de toda la nación. No escribió para teólogos: escribió para que cada arador supiera qué pide su lengua cuando reza.',
+    x: 'Mateo 6:9 — "Padre nuestro que estás en los cielos, santificado sea tu nombre."',
+    th: ['Oración', 'Santidad'],
+    ol: [
+      'Abre la serie midiendo la distancia entre los labios y el corazón: toda Inglaterra recita el Padrenuestro, pero pocos entienden que al decir Padre nuestro se comprometen con sus hermanos y renuncian a orar solos.',
+      'Gasta la segunda mitad en la petición del perdón, y de ahí salta al perdón que debemos: quien reza con rencor en el pecho acusa su propia causa delante del juez que escucha.',
+      'Cierra con la tentación y el reino final, recordando al rey y a la corte que la corona misma vive bajo peticiones ajenas: el poder de Inglaterra reza cada día contra su propia soberbia.',
+    ],
+    q: [
+      '"Quien reza el Padrenuestro y no perdona a su hermano, reza contra sí mismo"',
+      '"La oración que todos saben de memoria es la escuela donde la nación entera aprende a hablar con Dios"',
+    ],
+    i: 'La serie consolidó la predicación doctrinal en lengua llana como tesoro nacional y pasó íntegra a la edición de la Parker Society de 1844.',
+  },
+  {
+    a: 'latimer',
+    t: 'La segunda ronda de las cartas',
+    y: 1530,
+    p: 'Londres (estilo fiel de su serie de sermones de las cartas, Parker Society)',
+    o: 'Tras el gran sermón de Pascua de 1529 ante la corte, la serie volvió al tablero de las cartas para otra ronda ante el pueblo de la ciudad, con el truco campesino de enseñar doctrina con el juego de mano que todos conocían. Es síntesis editorial de esa continuación: el método es suyo, la fecha aproximada.',
+    x: 'Juan 3:21 — "Mas el que hace la verdad, viene a la luz, para que sea manifiesto que sus obras son hechas en Dios."',
+    th: ['Gracia', 'Firma y certeza'],
+    ol: [
+      'Vuelve al tablero y baraja de nuevo: la carta del triunfo no la juega el jugador sino la mano, porque el corazón regenerado no gana por destreza propia sino por el reparto que la gracia le da.',
+      'Contrapone al pecador que tapa sus cartas de la luz al creyente que las tiende sobre la mesa: la fe verdadera no teme el examen, porque su juego entero depende de otro mejor jugador.',
+      'Cierra advirtiendo que no bastan las cartas bautizadas de la costumbre: hay que ver qué carta sostiene la mano cuando nadie mira, y ahí se decide si hay fe o solo juego.',
+    ],
+    q: [
+      '"La carta que gana no la juega el hombre: se la reparte la gracia"',
+      '"La fe que no se atreve a tender sus cartas a la luz juega con naipe falso"',
+    ],
+    i: 'Mantiene vivo el método didáctico que hizo célebre al primer sermón de las cartas y muestra cómo Latimer reutilizaba una misma figura para públicos sucesivos.',
+  },
+  {
+    a: 'latimer',
+    t: 'La semilla y los suelos',
+    y: 1550,
+    p: 'Cuaresma de corte (estilo fiel de la Parker Society)',
+    o: 'Predicación sobre la parábola del sembrador dentro de sus sermones de corte, donde el viejo obispo venido de la labranza halló en el campo la imagen completa de la predicación: el mismo grano cae en cuatro clases de tierra, y el predicador no controla el suelo. Es síntesis editorial de su serie, no pieza datada.',
+    x: 'Mateo 13:23 — "Pero el que fue sembrado en buena tierra, éste es el que oye y entiende la palabra, y da fruto a cien, a sesenta y a treinta por uno."',
+    th: ['Evangelismo', 'Crisis y prueba'],
+    ol: [
+      'Fija la responsabilidad donde el texto la pone: el sembrador es fiel si siembra, pero el fruto se decide en el suelo, y por eso cada oyente debe reconocer qué clase de campo es su corazón.',
+      'Desmenuza los suelos pedregosos y espinosos con humor cortante: la fe que nace del entusiasmo de un sermón y muere con la persecución, y la palabra ahogada por los negocios y las riquezas de esta era.',
+      'Termina consolando al predicador perseguido y al arador escuchado: no mida el hombre su ministerio por la cosecha del día, porque la semilla buena tarda, y el fruto del buen suelo es paciencia.',
+    ],
+    q: [
+      '"El mismo grano cae en cuatro suelos: la diferencia no está en el sembrador sino en el corazón"',
+      '"La paciencia es el fruto que delata que la tierra era buena"',
+    ],
+  },
+  {
+    a: 'latimer',
+    t: 'La fe que se demuestra en obras',
+    y: 1549,
+    p: 'Londres (estilo fiel de su predicación sobre la epístola de Santiago, Parker Society)',
+    o: 'Dentro de su predicación continua sobre la epístola de Santiago, Latimer se atrevió con el párrafo que separaba a luteranos y católicos, y lo leyó como campesino: la fe sola salva, pero la fe que se queda sola no existe. Es síntesis editorial de esa predicación, no sermón datado con precisión.',
+    x: 'Santiago 2:17 — "Así también la fe, si no tiene obras, es muerta en sí misma."',
+    th: ['Gracia', 'Santidad'],
+    ol: [
+      'Niega que el texto dé a las obras la llave del cielo, pero niega con más dureza la fe muerta que se contenta con la profesión: el árbol justificado por la raíz se conoce por el fruto.',
+      'Ejemplifica con la caridad cotidiana del pueblo: el que ve al pobre y le desea calor sin encender el fuego tiene una fe de palabras que ni el diablo discute.',
+      'Aplica el espejo a la corte reformada: la nueva doctrina no vino para cambiar de discursos sino de obras, y Inglaterra sería juzgada por sus limosnas y sus tribunales, no por sus artículos.',
+    ],
+    q: [
+      '"La fe sola salva, pero la fe que queda sola muere"',
+      '"El árbol no se justifica por el fruto, pero se conoce por él"',
+    ],
+    i: 'Ofrece la vía inglesa media entre Roma y Wittenberg sobre fe y obras, con la llaneza que hizo popular la doctrina en la gente común.',
+  },
+  {
+    a: 'latimer',
+    t: 'La homilía de la Navidad',
+    y: 1552,
+    p: 'Inglaterra (estilo fiel de su predicación festiva, Parker Society)',
+    o: 'Sermón de Nochebuena ante Eduardo VI, en el que el predicador de la corte sostiene la noche con la escena de los pastores: no hubo para el nacimiento ni palacio ni pluma, sino campo, rebaño y noticia dicha en llano. Es síntesis editorial de su predicación navideña en esas series.',
+    x: 'Lucas 2:10 — "No temáis; porque he aquí os anuncio buenas nuevas de gran gozo, que será para todo el pueblo."',
+    th: ['Adoración', 'Gracia'],
+    ol: [
+      'Señala el contraste del cielo con la corte: el ángel no eligió al rey ni a los sabios para la primera noticia, sino a pastores desvelados, porque el evangelio nació hablando en lengua de campo.',
+      'Desnuda la pobreza del pesebre contra toda pompa del clero: el Señor del cielo nació sin cuna, y así prueba que no vino a comprar nada sino a dar lo que ningún dinero alcanza.',
+      'Aplica el gozo a la nación: si la noticia es para todo el pueblo, también la corte ha de doblar la rodilla, y el rey niño de Inglaterra y el niño de Belén caben en la misma noche.',
+    ],
+    q: [
+      '"Dios eligió a pastores para la primera predicación del nacimiento: el evangelio habla en llano"',
+    ],
+    i: 'Modelo de homilía festiva reformada en inglés temprano, citada por la Parker Society como muestra de su llaneza ante la corte.',
+  },
+  {
+    a: 'latimer',
+    t: 'Contra la avaricia de los señores',
+    y: 1549,
+    p: 'Corte de Eduardo VI (estilo fiel de su predicación contra los cercamientos de tierras, Parker Society)',
+    o: 'Predicación ante el rey contra los señores que cercaban tierras comunes y expulsaban aradores para engordar rebaños: el obispo que había sido arador habló del campo con nombres propios y sin tapujos. Es síntesis editorial de esa línea de sus sermones públicos.',
+    x: 'Lucas 12:15 — "Mirad, y guardaos de toda codicia; porque la vida de cualquiera no consiste en la abundancia de los bienes que posee."',
+    th: ['Idolatría del corazón', 'Crisis y prueba'],
+    ol: [
+      'Nombra el pecado por su nombre de campo: el señor que cercó la tierra de los pobres hizo de la oveja su dios, y donde la bolsa gobierna el corazón no cabe corona ni obispado.',
+      'Acusa los cercamientos como heridas de la república: las aldeas vacías y los aradores despedidos son testigos mudos contra los dueños que convirtieron el pan del pueblo en lana para vender.',
+      'Advierte que Dios cuenta las cercas: la riqueza mal obtenida no se hereda a los hijos, sino el clamor de los despojados, que sube más deprisa que cualquier pleito de los tribunales.',
+    ],
+    q: [
+      '"El señor que cercó el campo del pobre hizo de su rebaño un ídolo"',
+      '"Dios oye el clamor de los despojados mejor que los tribunales de los señores"',
+    ],
+    i: 'Su denuncia de los cercamientos pasó al testimonio parlamentario y es una de las voces sociales más citadas de la Reforma inglesa.',
+  },
+  {
+    a: 'latimer',
+    t: 'Las heridas de Inglaterra',
+    y: 1535,
+    p: 'Londres, predicación ante la corte y el rey (estilo fiel de sus sermones públicos, Parker Society)',
+    o: 'De sus sermones de los años treinta ante la corte, cuando predicó la justicia de los tribunales y el sostén de los pobres como deuda del reino y no como limosna: era la línea que lo llevó a la Torre y a la hoguera sin desdecirse. Es síntesis editorial de esa década de predicación.',
+    x: 'Miqueas 6:8 — "Oh hombre, él te ha declarado lo que es bueno, y qué pide de ti Jehová: solamente hacer justicia, y amar misericordia, y humillarte ante tu Dios."',
+    th: ['Crisis y prueba', 'Santidad'],
+    ol: [
+      'Diagnostica la nación como un cuerpo llagado: los pobres a los que no se juzga con justicia son las llagas por donde entra la mortandad, y el rey que las ignora sangra por su cuenta.',
+      'Convierte el púlpito en tribunal: el oficio del predicador es decir verdad al príncipe sobre los jueces venales, porque la justicia mal vendida cuesta más que ninguna guerra exterior.',
+      'Pide reformas concretas y no retóricas: jueces pagados, leyes para el pobre y magistrados que conozcan el precio del pan, porque el evangelio se prueba en el reino por las sentencias.',
+    ],
+    q: [
+      '"Las llagas del pobre son las heridas del reino, y el rey que no las cura sangra por su cuenta"',
+      '"Predicar al príncipe la justicia es oficio del púlpito, no traición"',
+    ],
+  },
+  {
+    a: 'latimer',
+    t: 'La preparación de la muerte',
+    y: 1555,
+    p: 'Oxford (marco del testimonio ante la hoguera; enseñanza fiel a sus últimos sermones)',
+    o: 'Enseñanza sobre la muerte bien preparada tomada de sus últimos sermones y sellada por su propio fin: el 16 de octubre de 1555, en la hoguera junto a Ridley, dio a la frase su prueba final cuando la llama alcanzó su pecho. Es síntesis editorial, no pieza única datada.',
+    x: 'Filipenses 1:21 — "Porque para mí el vivir es Cristo, y el morir es ganancia."',
+    th: ['Muerte y eternidad', 'Firma y certeza'],
+    ol: [
+      'Ordena preparar la muerte de día y no de noche: quien ajusta sus cuentas con Dios cada semana no negocia el pánico en el lecho, porque la conciencia limpia es el mejor testamento.',
+      'Rechaza las muletas con que el mundo muere: reliquias, bulas y cuentas compradas no sostienen el último paso, y la gracia prestada de otro se cae justo cuando el peso es mayor.',
+      'Sella la doctrina con su ejemplo: en Oxford no invocó méritos ni disputas, sino la promesa, y así enseñó a Inglaterra cómo se muere la fe que se enseñó de día.',
+    ],
+    q: [
+      '"La muerte se prepara de día, no de noche, y con promesa y no con bulas"',
+      '"La gracia prestada de otro no sostiene el último paso"',
+    ],
+    i: 'Su muerte en la hoguera con Ridley es conmemorada en el Martyrs Memorial de Oxford y fijó su enseñanza sobre la muerte como testimonio nacional.',
+  },
+  {
+    a: 'latimer',
+    t: 'La ley que espanta y el evangelio que cura',
+    y: 1550,
+    p: 'Cuaresma de corte (estilo fiel de las series ante Eduardo VI, Parker Society)',
+    o: 'De sus series de corte, la lección que divide toda la Escritura en dos voces: la ley que descubre la llaga y el evangelio que la cura, y un orden invertido mata al paciente. Es síntesis editorial de esa enseñanza en sus sermones públicos.',
+    x: 'Gálatas 3:24 — "De manera que la ley ha sido nuestro tutor, para llevarnos a Cristo, a fin de que fuésemos justificados por la fe."',
+    th: ['Gracia', 'Arrepentimiento'],
+    ol: [
+      'Define los oficios: la ley es el espejo donde el hombre ve la suciedad de su rostro, pero ningún espejo lava, y usar el espejo para lavarse es la religión falsa más común.',
+      'Advierte el doble error del orden: predicar evangelio sin ley produce presunción, y predicar ley sin evangelio produce desesperación, y ambas matan al oyente por caminos distintos.',
+      'Ilustra con la casa campesina: primero el diagnóstico del médico que espanta, después el jarabe que cura, y el buen predicador debe saber cuál de las dos voces conviene a su parroquia esa semana.',
+    ],
+    q: [
+      '"La ley descubre la llaga y el evangelio la cura, y el orden invertido mata"',
+      '"Ningún espejo lava el rostro que muestra"',
+    ],
+    i: 'Articula la distinción entre ley y evangelio en la lengua del pueblo inglés, pieza central de su teología predicada según la Parker Society.',
+  },
+  {
+    a: 'latimer',
+    t: 'El Padrenuestro como escuela de la nación',
+    y: 1552,
+    p: 'Casa de Grimsthorpe, Lincolnshire (estilo fiel de las series sobre el Padrenuestro, Parker Society)',
+    o: 'De la misma serie de 1552, el sermón donde la oración deja de ser devoción privada para volverse programa de gobierno: pide que la corte, los tribunales y las parroquias oren y gobiernen conforme a lo que la lengua ya sabe decir. Es síntesis editorial de la serie.',
+    x: '1 Timoteo 2:1 — "Antes de todo, exhorto que se hagan rogativas, oraciones, peticiones y acciones de gracias por todos los hombres."',
+    th: ['Oración', 'Crisis y prueba'],
+    ol: [
+      'Sostiene que el reino ya sabe orar pero no gobierna orando: si las cortes dijeran en hechos lo que repiten los labios, ni los pobres pedirían pan a puertas cerradas.',
+      'Ordena la escalera de la petición pública: rogativas por el rey, por los jueces y por el pan de cada día, porque la política del cristiano empieza en la rodilla y termina en el consejo.',
+      'Cierra uniendo el altar y el tribunal: la nación que ora da gracias por la justicia que oye, y la que no la tiene no puede fingir la voz, así que reformar tribunales es parte del culto.',
+    ],
+    q: [
+      '"El reino que reza bien ha de gobernar conforme a lo que reza"',
+      '"La política del cristiano empieza en la rodilla y termina en el consejo"',
+    ],
+  },
+  {
+    a: 'baxter',
+    t: 'La conversión que se examina',
+    y: 1658,
+    p: 'Kidderminster (estilo fiel de A Call to the Unconverted, 1658)',
+    o: 'Nacida de su llamada a los no convertidos, obra que en Kidderminster se enfrentó casa por casa: si el ministerio era cura de almas, la conversión debía tomarse el pulso, y el pastor debía preguntar con datos y no con frases de púlpito. Es síntesis editorial de esa obra y su predicación.',
+    x: 'Ezequiel 33:11 — "Diles: Vivo yo, dice Jehová el Señor, que no quiero la muerte del impío, sino que se vuelva el impío de su camino, y viva."',
+    th: ['Evangelismo', 'Arrepentimiento'],
+    ol: [
+      'Pone al oyente ante el inventario: no pregunte si asistió al culto sino si nació de nuevo, porque el nombre en el registro de la parroquia no borra el nombre que falta en el libro de la vida.',
+      'Razona desde el juramento divino: Dios declara que no quiere la muerte del impío, de modo que la condena nunca la firma el cielo primero, sino el pecador que rehúsa volver.',
+      'Convierte la llamada en método pastoral: el ministro que no conoce el estado de cada oveja no puede llamar a ninguna, y por eso Baxter catequizó a ochocientas familias una por una.',
+    ],
+    q: [
+      '"Dios no firma primero la sentencia: la firma el pecador que rehúsa volver"',
+      '"El nombre en el registro de la parroquia no salva: lo que salva es nacer de nuevo"',
+    ],
+    i: 'A Call to the Unconverted marcó a generaciones de pastores evangélicos y la tradición lo cuenta entre los libros que más conversiones produjeron en su siglo.',
+  },
+  {
+    a: 'baxter',
+    t: 'Ahora o nunca',
+    y: 1658,
+    p: 'Kidderminster (estilo fiel de su llamada Now or Never, en A Call to the Unconverted)',
+    o: 'Segunda pieza de su llamada al no convertido, donde la urgencia reemplaza al argumento: si la eternidad pesa sobre cada decisión, el aplazamiento es la peor de las decisiones, y el pastor médico no receta remedios para mañana. Es síntesis editorial de esa parte de la obra.',
+    x: '2 Corintios 6:2 — "he aquí ahora el tiempo propicio; he aquí ahora el día de salvación."',
+    th: ['Arrepentimiento', 'Crisis y prueba'],
+    ol: [
+      'Mide el aplazamiento con la aritmética del alma: cada día de dilación entrena el corazón en el hábito del no, y nadie se arrepiente de golpe el día que decide no arrepentirse.',
+      'Descalifica las mañanas prometidas: la juventud presume huelga y la vejez presume plazo, pero la puerta del arrepentimiento no se agenda, se cruza cuando se abre.',
+      'Cierra con la lógica del médico: el que sabe que enferma y rehúsa la medicina en el único día en que surte efecto decide su muerte con plena conciencia.',
+    ],
+    q: [
+      '"El aplazamiento es la peor de las decisiones"',
+      '"Nadie se arrepiente de golpe el día que decide no arrepentirse"',
+    ],
+  },
+  {
+    a: 'baxter',
+    t: 'La puerta estrecha del cielo',
+    y: 1650,
+    p: 'Kidderminster (de The Saints Everlasting Rest, segunda parte)',
+    o: 'Parte de la meditación que escribió convaleciente, esperando su propia muerte cada semana, sobre la gloria que espera tras la puerta: pocos la hallan no porque sea difícil de describir, sino porque exige despojarse de lo que el corazón sostiene. Es síntesis editorial de esa parte de la obra.',
+    x: 'Mateo 7:14 — "porque estrecha es la puerta, y angosto el camino que lleva a la vida, y pocos son los que la hallan."',
+    th: ['Muerte y eternidad', 'Gracia'],
+    ol: [
+      'Mide la estrechez desde dentro: la puerta no excluye por su medida sino por lo que no cabe en ella, y el corazón que quiere entrar con el mundo abrazado no pasa por la jamba.',
+      'Describe la gloria de la otra parte sin números ni feudos: luz sin sombra, amor sin rival, descanso sin hastío, el gozo que ni la salud ni el tiempo pueden rebajar.',
+      'Vuelve del cielo a la parroquia con la pregunta pastoral: si tal gloria espera a los pocos, la tarea del pastor es hacer que su gente la piense cada domingo hasta que el camino angosto se vuelva costumbre.',
+    ],
+    q: [
+      '"La puerta no excluye por su medida sino por lo que no cabe en ella"',
+      '"El gozo de la otra parte no lo rebajan ni la salud ni el tiempo"',
+    ],
+  },
+  {
+    a: 'baxter',
+    t: 'La dirección de la familia',
+    y: 1656,
+    p: 'Kidderminster (del capítulo doméstico de The Reformed Pastor, estilo fiel)',
+    o: 'De su programa de pastoreo reformado: la parroquia se convierte cuando las casas se catequizan, y el padre que no instruye a los suyos delega en el ministro un oficio que Dios le dio a él. Es síntesis editorial de esa parte de la obra y de su práctica en Kidderminster.',
+    x: 'Deuteronomio 6:7 — "Y las repetirás a tus hijos, y hablarás de ellas estando en tu casa, y andando por el camino, y al acostarte, y cuando te levantes."',
+    th: ['Santidad', 'Evangelismo'],
+    ol: [
+      'Devuelve el oficio a su dueño: el ministro predica a la parroquia una vez por semana, pero el padre predica en casa todos los días, y ninguna evangelización pública suple esa agenda.',
+      'Ordena el método que practicó: catecismo por la tarde, examen de conciencia por la noche, oración en la mesa, de modo que la doctrina entre por los oídos de los niños antes que por las riñas del mundo.',
+      'Advierte la cuenta final: el padre comparecerá ante Dios con los hijos que descuidó, y no lo escudará el ministro fiel a quien pagó para hacer su trabajo doméstico.',
+    ],
+    q: [
+      '"El padre predica en casa todos los días, quiera o no"',
+      '"El padre comparecerá ante Dios con los hijos que descuidó"',
+    ],
+    i: 'Su catecismo doméstico alimentó siglos de instrucción familiar protestante y define el pastoreo como negocio de casas antes que de púlpitos.',
+  },
+  {
+    a: 'baxter',
+    t: 'Los pensamientos del que muere',
+    y: 1688,
+    p: 'Londres (estilo fiel de Dying Thoughts, sus meditaciones escritas cerca de la propia muerte)',
+    o: 'En la última década de su vida, con la salud quebrada y la expulsión de 1662 a cuestas, Baxter escribió sus pensamientos de moribundo sobre el deseo de partir y estar con Cristo: el pastor que enseñó a otros a preparar la muerte se la prepara a sí mismo por escrito. Es síntesis editorial de esa obra.',
+    x: 'Filipenses 1:23 — "Porque de ambas cosas estoy en conflicto, teniendo deseo de partir y estar con Cristo, lo cual es muchísimo mejor."',
+    th: ['Muerte y eternidad', 'Firma y certeza'],
+    ol: [
+      'Sopesa el conflicto del texto: el apostol que no sabe si elegir fruto o descanso enseña al moribundo que el deseo de partir no es deserción sino madurez de amor.',
+      'Examina el miedo que sobra: el que teme a la muerte más de lo que confía en Cristo suele haber confiado en el propio oficio, y el inventory del último año corrige esa cuenta.',
+      'Cierra con la herencia del ministerio: el moribundo que deja promesas, no testamentos de mérito, enseña a su grey que la última palabra del pastor se dice con la Escritura abierta.',
+    ],
+    q: [
+      '"El deseo de partir no es deserción: es madurez de amor"',
+      '"El último sermón del pastor se predica con la Escritura abierta y la respiración corta"',
+    ],
+    i: 'Sus meditaciones finales circularon como testamento espiritual del gran puritano y retratan al pastor que se aplicó a sí mismo la cura que había predicado tres décadas.',
+  },
+  {
+    a: 'baxter',
+    t: 'El inventario del corazón',
+    y: 1650,
+    p: 'Kidderminster (de la parte introductoria de The Saints Everlasting Rest, estilo fiel)',
+    o: 'De la introducción de su obra mayor, escrita cuando la enfermedad le dictó el registro de su propia muerte: antes de meditar la eternidad hay que tomar el inventario del corazón, y ese asiento contable se practica solo, con la Escritura abierta. Es síntesis editorial de esa parte.',
+    x: '2 Corintios 13:5 — "Examinaos a vosotros mismos si estáis en la fe; probaos a vosotros mismos."',
+    th: ['Santidad', 'Firma y certeza'],
+    ol: [
+      'Ordena el examen con criterios verificables: no pregunte qué sintió en el éxtasis sino qué ama, qué teme, qué espera y adónde van su bolsa y sus horas, porque esos asientos no mienten.',
+      'Descalifica los testimonios falsos del corazón: la costumbre religiosa, el afecto al partido y el temor a la muerte pasan por gracia, y solo la prueba de las obras separa el inventario real del deseado.',
+      'Conecta el asiento con la eternidad: quien conoce el estado de su alma puede esperar la muerte como el mercader espera el cierre del año, con las cuentas sabidas y el balance en la mano.',
+    ],
+    q: [
+      '"Pregunte qué ama y qué teme: esos asientos no mienten"',
+      '"La costumbre religiosa pasa por gracia hasta que llegan las cuentas"',
+    ],
+  },
+  {
+    a: 'baxter',
+    t: 'La enfermedad aprovechada',
+    y: 1660,
+    p: 'Kidderminster (estilo fiel de sus escritos sobre la enfermedad y la debilidad, Practical Works)',
+    o: 'Escrita desde su enfermedad crónica, que lo llevó al borde de la muerte en la década de 1650 y dejó su voz frágil para el resto del ministerio: el pastor que no podía andar el distrito convirtió el lecho en púlpito. Es síntesis editorial de esa línea de su obra.',
+    x: '2 Corintios 12:9 — "Bástate mi gracia; porque mi poder se perfecciona en la debilidad."',
+    th: ['Crisis y prueba', 'Gracia'],
+    ol: [
+      'Lee el padecimiento como seminario: la enfermedad desmonta la presunción del ministro sano, le enseña a morir por adelantado y le da la gramática con que consolará a los suyos.',
+      'Convierte el límite del cuerpo en agenda pastoral: quien no puede visitar a ochocientas familias escribe libros que visitan por él, y la debilidad multiplica el oficio en vez de cerrarlo.',
+      'Guarda el consuelo en su sitio: no predicó el sufrimiento por gusto ni la sanidad prometida por contrato, sino la gracia que basta, probada en la silla donde el médico no dio más plazo.',
+    ],
+    q: [
+      '"La debilidad multiplica el oficio del ministro en vez de cerrarlo"',
+      '"La enfermedad le enseña al pastor a morir por adelantado"',
+    ],
+  },
+  {
+    a: 'baxter',
+    t: 'Los pobres de la ciudad',
+    y: 1673,
+    p: 'Londres (del Christian Directory, estilo fiel de sus casos de conciencia)',
+    o: 'Del directorio cristiano, donde la misericordia aparece como caso de conciencia resuelto con reglas y no como sentimiento: al rico, la voluntad ciega lo convierte en despojador, y deberá responder por su bolsa ante el tribunal de su propia fe. Es síntesis editorial de esos casos.',
+    x: 'Mateo 25:40 — "De cierto os digo que en cuanto lo hicisteis a uno de estos mis hermanos más pequeños, a mí lo hicisteis."',
+    th: ['Anhelos humanos', 'Santidad'],
+    ol: [
+      'Convierte la limosna en contabilidad moral: el rico no es dueño sino mayordomo con cuentas que rendir, y lo que gasta en su lujo mientras el pobre muere lo gasta en su contra.',
+      'Desarma las excusas del rico con la lógica del inventario: si el exceso del mundo no lo hace más feliz, guardar el sobrante cuando el vecino no tiene pan es necedad duplicada.',
+      'Manda la obra ordenada y no el consuelo verbal: escuelas, trabajo y pan administrados con reglas, porque la misericordia sin método abandona al pobre al año siguiente.',
+    ],
+    q: [
+      '"El rico no es dueño sino mayordomo con cuentas que rendir"',
+      '"La misericordia sin método abandona al pobre al año siguiente"',
+    ],
+    i: 'Sus casos de conciencia sobre la limosna pasaron a la tradición cristiana como manual de caridad organizada antes de la era de las instituciones.',
+  },
+  {
+    a: 'baxter',
+    t: 'La gloria que pesa',
+    y: 1650,
+    p: 'Kidderminster (de la parte final de The Saints Everlasting Rest, estilo fiel)',
+    o: 'De la parte final de la obra nacida junto a su lecho de enfermo, donde la meditación de la eternidad se propone como ejercicio semanal y no como pirotecnia: un cuarto de hora al día pesando la gloria cambia el precio de todas las cosas de este lado. Es síntesis editorial de esa parte.',
+    x: '2 Corintios 4:17 — "Porque nuestra leve aflicción momentánea produce en nosotros un cada vez más excelente y eterno peso de gloria."',
+    th: ['Muerte y eternidad', 'Anhelos humanos'],
+    ol: [
+      'Define el método de la meditación: tomar la gloria descrita en la Escritura y sostenerla ante el corazón hasta que pese, porque la fe se mide por lo que el alma siente al calcular.',
+      'Contrapone las dos balanzas: la aflicción leve de un instante contra el peso eterno, y muestra que el ánimo humano erra cuando pesa los siglos con las escalas de un día.',
+      'Deriva la ética: el que ha pesado bien la eternidad no negocia ya con la concupiscencia, porque toda tentación se vuelve pequeña al lado de la esperanza que lo sostiene.',
+    ],
+    q: [
+      '"Pesa los siglos con escalas de eternidad y no con las de un día"',
+      '"La fe se mide por lo que el alma siente al calcular la gloria"',
+    ],
+  },
+  {
+    a: 'baxter',
+    t: 'El día del Señor bien guardado',
+    y: 1650,
+    p: 'Kidderminster (estilo fiel de su defensa del domingo, que originó The Saints Everlasting Rest)',
+    o: 'De la práctica que originó su obra mayor: la tarde de cada domingo destinada a catequizar a los enfermos y a meditar el descanso eterno, contra la costumbre inglesa de gastar el día en el vino y los pleitos. Es síntesis editorial de esa línea de su obra.',
+    x: 'Isaías 58:13 — "Si retrajeres del sábado tu pie, de hacer tu voluntad en mi día santo, y lo llamares delicia, santo, glorioso de Jehová."',
+    th: ['Adoración', 'Santidad'],
+    ol: [
+      'Defiende el día como antídoto del mundo: seis días el corazón corre tras el pan, y si el séptimo corre igual, el alma no vuelve a su dueño ni una vez por semana.',
+      'Ordena el uso doble que practicó: culto público por la mañana y visitas a los enfermos por la tarde, porque el descanso del Señor es obra y no ocio.',
+      'Muestra el fruto de su parroquia: fue guardando así el domingo como encontró a su gente catequizada y en paz, y de esas tardes nació el libro que definirá su memoria.',
+    ],
+    q: [
+      '"Si el séptimo día corre igual tras el pan, el alma nunca vuelve a su dueño"',
+      '"El descanso del Señor es obra y no ocio"',
+    ],
+    i: 'The Saints Everlasting Rest, nacida de esas tardes de domingo, fue uno de los libros devocionales más reimpresos de la lengua inglesa.',
+  },
+  {
+    a: 'finney',
+    t: 'Los estorbos del avivamiento',
+    y: 1835,
+    p: 'Lecturas sobre el avivamiento (Hindrances to Revivals, lección de su curso de Nueva York)',
+    o: 'Lección de su curso sobre avivamientos de 1835: si el avivamiento es obra del Espíritu según leyes moralmente conocidas, entonces su ausencia tiene causas nombrables, y la iglesia debe examinar las suyas antes de culpar al cielo. Documentado en el índice de sus lecturas.',
+    x: '1 Tesalonicenses 5:19 — "No apaguéis al Espíritu."',
+    th: ['Poder sobrenatural', 'Arrepentimiento'],
+    ol: [
+      'Nombra el estorbo principal en la portería: una iglesia que confiesa con la boca y vive en deuda con su propia conciencia cierra la puerta por dentro, y el Espíritu no fuerza moradas amuebladas contra él.',
+      'Revisa los estorbos con nombres propios: el rencor no confesado, la cuenta pagada a plazos, el escándalo del miembro prominente, porque el mundo juzga al evangelio por las deudas que la iglesia no honra.',
+      'Concluye con la lógica de la responsabilidad: si Dios ha dicho que derramará su Espíritu y no lo hace, la cerradura está del lado humano, y el avivamiento empieza con un registro de cerraduras.',
+    ],
+    q: [
+      '"La cerradura del avivamiento está del lado humano"',
+      '"El mundo juzga al evangelio por las deudas que la iglesia no honra"',
+    ],
+    i: 'La lección fijó el principio de responsabilidad moral de la iglesia que distinguió a Finney del calvinismo de su época y alimentó el movimiento de avivamiento posterior.',
+  },
+  {
+    a: 'finney',
+    t: '¿Pueden dos andar juntos?',
+    y: 1827,
+    p: 'Nueva York (sermón de 1827, documentado en el índice de sus obras)',
+    o: 'Sermón de su etapa de Nueva York de 1827, tomado de la pregunta del profeta y volcado al oyente: la comunión con Dios es acuerdo verificable de voluntades, no sentimiento de culto, y donde no hay acuerdo el andar es fingido. Documentado en el índice de sus sermones.',
+    x: 'Amós 3:3 — "¿Andarán dos juntos, si no estuvieren de acuerdo?"',
+    th: ['Firma y certeza', 'Arrepentimiento'],
+    ol: [
+      'Traduce la pregunta a su forma forense: dos voluntades andan juntas cuando quieren lo mismo para el mismo fin, y por eso la comunión con Dios se prueba comparando la agenda del hombre con la del cielo.',
+      'Desmonta la comunión nominal: la persona que ora por la voluntad de Dios y se enoja cuando la descubre no camina con Dios sino delante de él, con su propia brújula.',
+      'Cierra con el llamado: el desacuerdo no se resuelve con lágrimas ni servicios largos, sino con la entrega de la voluntad en el punto exacto donde el creyente sabe que resiste.',
+    ],
+    q: [
+      '"La comunión con Dios se prueba comparando agendas"',
+      '"Quien ora por la voluntad de Dios y se enoja al hallarla no camina con él"',
+    ],
+    i: 'Uno de sus sermones tempranos más difundidos, citado en el índice documentado de su obra completa y típico de su razonamiento forense de la etapa de Nueva York.',
+  },
+  {
+    a: 'finney',
+    t: 'El espíritu de oración',
+    y: 1849,
+    p: 'Oberlin (sermón de 1849, documentado)',
+    o: 'Sermón predicado en Oberlin en 1849, sobre el espíritu que produce la oración respondida: no es la técnica del verbo sino el estado del corazón que quiere lo que Dios quiere, con la intensidad necesaria para pedirlo hasta verlo. Documentado en sus sermones de Oberlin.',
+    x: 'Romanos 8:26 — "el Espíritu nos ayuda en nuestra debilidad; pues qué hemos de pedir como conviene, no lo sabemos, pero el Espíritu mismo intercede por nosotros con gemidos indecibles."',
+    th: ['Oración', 'Poder sobrenatural'],
+    ol: [
+      'Nombra el defecto de la oración estéril: muchos piden contra su propia vida, y Dios no financia con su Espíritu los deseos que el peticionario no compra con obediencia.',
+      'Define el espíritu de oración como aguante compasivo: el Espíritu carga al creyente con el peso de las almas hasta que la petición deja de ser palabras y se vuelve fardo que la voluntad lleva.',
+      'Enseña la prueba del círculo: la oración de fe persiste hasta la respuesta porque el que la reza ha recibido ya la certeza, y el silencio del cielo no apaga lo que el Espíritu encendió.',
+    ],
+    q: [
+      '"Dios no financia los deseos que el peticionario no compra con obediencia"',
+      '"La oración de fe persiste porque el que la reza ya recibió la certeza"',
+    ],
+    i: 'Sermón de Oberlin recogido en sus obras completas, es la articulación clásica de su doctrina de la oración prevaleciente de la década de 1840.',
+  },
+  {
+    a: 'finney',
+    t: 'Las escusas del pecador',
+    y: 1842,
+    p: 'Llamadas de avivamiento (estilo fiel de sus llamadas de altar, obras completas)',
+    o: 'Síntesis editorial de sus llamadas a los oyentes que se levantan del avivamiento con pretextos: Finney trataba cada escusa como una declaración forense, porque el que excusa confiesa que sabe lo que debe. Estilo fiel de sus llamadas, no sermón datado.',
+    x: 'Lucas 14:18 — "Y todos a una comenzaron a excusarse."',
+    th: ['Evangelismo', 'Arrepentimiento'],
+    ol: [
+      'Lee la escusa como confesión involuntaria: el que dice mañana reconoce hoy el deber, y el que cita el campo o la boda admite que el banquete está servido y él prefiere su negocio.',
+      'Clasifica las escusas en tres cajas: las de tiempo, las de dignidad y las de escrúpulo, y demuestra que las tres dicen lo mismo con distinto traje, que el corazón manda el no y la lengua lo justifica.',
+      'Aprieta el llamado en la puerta: el avivamiento no espera parejas de razones, y la única escusa que el evangelio no puede excusar es la del oyente que ya sabe y se queda sentado.',
+    ],
+    q: [
+      '"El que excusa confiesa que sabe lo que debe"',
+      '"Las escusas dicen lo mismo con distinto traje"',
+    ],
+    i: 'Típico de sus llamadas de altar en los avivamientos de las décadas de 1830 y 1840, recogidas en la tradición de sus obras publicadas.',
+  },
+  {
+    a: 'finney',
+    t: 'La gloria de Dios como fin',
+    y: 1840,
+    p: 'Oberlin (estilo fiel de su enseñanza sobre el fin moral del hombre, obras completas)',
+    o: 'Síntesis editorial de su enseñanza en Oberlin sobre el fin último: el yo no puede ser fin último de un ser moral, y toda vida que se ordena a sí misma es idolatría, aunque vaya vestida de devoción. Estilo fiel de esa enseñanza en sus años de Oberlin.',
+    x: '1 Corintios 10:31 — "si coméis o bebéis, o hacéis otra cosa, hacedlo todo para la gloria de Dios."',
+    th: ['Santidad', 'Idolatría del corazón'],
+    ol: [
+      'Razona el fundamento: un ser finito no puede ser su propio fin último sin mentir sobre su naturaleza, y por eso el egoísmo no es un vicio entre otros sino el pecado de fondo de toda elección.',
+      'Desmascara el altruismo religioso del yo: hay obras de caridad hechas por el placer de sentirse bueno, y ese fin corrompe el mérito de la obra desde la raíz del propósito.',
+      'Aplica la prueba del detalle: si Dios es el fin, hasta comer y beber son culto, y si el yo es el fin, hasta el altar es mercado, porque el fin colorea todo el camino.',
+    ],
+    q: [
+      '"El egoísmo no es un vicio entre otros: es el pecado de fondo de toda elección"',
+      '"Si el yo es el fin, hasta el altar es mercado"',
+    ],
+    i: 'Principio central de la teología de Oberlin que reorientó la ética del avivamiento americano hacia la benevolencia como fin moral del ser racional.',
+  },
+  {
+    a: 'finney',
+    t: 'La iglesia despierta',
+    y: 1835,
+    p: 'Lecturas sobre el avivamiento (estilo fiel de su enseñanza sobre la cooperación del creyente con el Espíritu)',
+    o: 'Síntesis editorial de su lección sobre la cooperación: el avivamiento no desciende sobre una iglesia dormida como una tormenta sobre una ciudad vallada, sino que exige el instrumento afilado, porque el Espíritu usa medios y agentes despiertos. Estilo fiel de sus lecturas.',
+    x: 'Efesios 5:14 — "Despiértate, tú que duermes, y levántate de los muertos, y te iluminará Cristo."',
+    th: ['Poder sobrenatural', 'Evangelismo'],
+    ol: [
+      'Denuncia el sueño de la iglesia como pecado nombrable: no es cansancio sino desacuerdo con lo que la iglesia dice pedir, y el culto de un cuerpo dormido es la imagen más fiel de su estado.',
+      'Ordena el despertar por oficios: el comerciante afila su verdad en la balanza, el maestro su ejemplo en el aula, cada miembro su oficio, porque el avivamiento entra por los roles que la sociedad ya conoce.',
+      'Cierra con la promesa condicional: Cristo ilumina al que se levanta, no al que pide luz para seguir en la cama, y por eso la primera obra del avivamiento es siempre la del propio umbral.',
+    ],
+    q: [
+      '"El culto de un cuerpo dormido es la imagen más fiel de su estado"',
+      '"Cristo ilumina al que se levanta, no al que pide luz para seguir en la cama"',
+    ],
+  },
+  {
+    a: 'finney',
+    t: 'El arrepentimiento verdadero',
+    y: 1836,
+    p: 'Conferencias sobre el arrepentimiento (estilo fiel de sus lecturas, obras completas)',
+    o: 'De sus conferencias sobre el arrepentimiento, donde la penitencia deja de ser sentimiento y se define como cambio de gobierno del alma: el corazón que cambia de fin no llora primero y obedece después, cambia y prueba a la vez. Síntesis editorial de esas conferencias.',
+    x: '2 Corintios 7:10 — "Porque la tristeza que es según Dios produce arrepentimiento para salvación, de que no hay que arrepentirse; pero la tristeza del mundo produce muerte."',
+    th: ['Arrepentimiento', 'Penitencia'],
+    ol: [
+      'Separa las dos tristezas con bisturí: la del mundo llora la consecuencia del pecado y vuelve al mismo mercado, la que es según Dios aborrece el pecado mismo y cambia de fin en el acto.',
+      'Define el arrepentimiento como acto de la voluntad y no como emoción: las lágrimas pueden acompañarlo, pero la prueba es si el apetito que mandaba el alma ha perdido el trono.',
+      'Advierte contra el arrepentimiento diferido: el corazón que aplaza la rendición entrena la rebeldía con cada culto, y la emoción acumulada sin rendición es deuda que crece con intereses.',
+    ],
+    q: [
+      '"La prueba del arrepentimiento es si el apetito que mandaba ha perdido el trono"',
+      '"La emoción acumulada sin rendición es deuda que crece con intereses"',
+    ],
+    i: 'Su doctrina del arrepentimiento como cambio de gobierno del alma pasó a ser estándar del avivamiento americano del siglo diecinueve.',
+  },
+  {
+    a: 'finney',
+    t: 'El joven que preguntó por la vida eterna',
+    y: 1840,
+    p: 'Llamadas de avivamiento (estilo fiel de sus llamadas sobre la riqueza espiritual, obras completas)',
+    o: 'Síntesis editorial de sus llamadas a jóvenes con talentos y bolsas llenas: el hombre rico del evangelio no era un escándalo distante sino el retrato del oyente que quiere la vida eterna sin renunciar al ídolo que gobierna su cálculo. Estilo fiel de esas llamadas.',
+    x: 'Marcos 10:21 — "Entonces Jesús, mirándole, amó, y le dijo: Una cosa te falta: ve, vende lo que tienes, y dalo a los pobres, y tendrás tesoro en el cielo; y ven, sígueme."',
+    th: ['Idolatría del corazón', 'Evangelismo'],
+    ol: [
+      'Señala lo que el joven no entendió: guardó los mandamientos como partitura, pero nunca pidió al Maestro la dirección de su bolsa, y ahí estaba la única puerta de su corazón cerrada con llave.',
+      'Explica la operación del bisturí: Jesús no pide la limosna por el dinero sino por el ídolo, porque mientras la bolsa gobierne la voluntad el discipulado vive como inquilino en el piso alto del corazón.',
+      'Vuelve la escena al auditorio: el dolor del joven al irse es la mejor prueba de que el llamado era amoroso, y la exigencia al auditorio es el mismo examen del tesoro antes del próximo culto.',
+    ],
+    q: [
+      '"Mientras la bolsa gobierne la voluntad, el discipulado es inquilino del piso alto"',
+      '"El ídolo no se confiesa con labios: se descubre por lo que la mano no suelta"',
+    ],
+    i: 'Ejemplo clásico de cómo las llamadas de Finney convierten una escena evangélica en examen directo del auditorio, en la línea de sus sermones publicados.',
+  },
+  {
+    a: 'finney',
+    t: 'El fuego del Espíritu',
+    y: 1840,
+    p: 'Predicación de avivamiento (estilo fiel de su enseñanza sobre el bautismo del Espíritu, obras completas)',
+    o: 'Síntesis editorial de su predicación sobre el bautismo del Espíritu: el fuego del sacrificio no era ceremonia sino investigación, y la promesa de la era es que el fuego desciende sobre carne consagrada y no sobre altares decorados. Estilo fiel de esa enseñanza.',
+    x: 'Levítico 9:24 — "Y salió fuego de delante de Jehová, y consumió el holocausto con la grosura; lo cual viendo todo el pueblo, dieron voces de júbilo, y se postraron sobre sus rostros."',
+    th: ['Poder sobrenatural', 'Adoración'],
+    ol: [
+      'Lee el fuego del Levítico como sentencia del altar: lo que el fuego consume demuestra lo que el cielo acepta, y la iglesia moderna huye del fuego porque no quiere saber qué de su culto es grosura.',
+      'Define el bautismo del Espíritu como unción para el oficio: no es un diploma de identidad espiritual sino el poder que prepara al testigo para la obra del día, y se recibe en consagración y no en exhibición.',
+      'Concluye con la alternativa forense: o la iglesia invoca el fuego sabiendo que consumirá lo suyo, o confiesa con su silencio que prefiere un altar sin prueba a un sacrificio aceptado.',
+    ],
+    q: [
+      '"Lo que el fuego consume demuestra lo que el cielo acepta"',
+      '"El bautismo del Espíritu se recibe en consagración y no en exhibición"',
+    ],
+  },
+  {
+    a: 'finney',
+    t: 'La deuda con los hombres',
+    y: 1840,
+    p: 'Llamadas al ministerio (estilo fiel de su sermón sobre la obligación de predicar, obras completas)',
+    o: 'Síntesis editorial de su llamado sobre la obligación de predicar: la palabra no se debe al oyente por caridad sino por justicia, porque el conocimiento del evangelio engendra deuda, y el silencio del sabio es desfalco. Estilo fiel de esa línea de sus llamadas.',
+    x: 'Romanos 1:14 — "A griegos y a no griegos, a sabios y a no sabios soy deudor."',
+    th: ['Evangelismo', 'Santidad'],
+    ol: [
+      'Define la deuda con rigor forense: el que ha recibido el conocimiento que salva debe la difusión a quien no lo ha recibido, y ninguna vocación particular cancela el adeudo universal del testigo.',
+      'Cuenta el desfalco: talentos gastados en el círculo propio, aprender para no predicar y púlpitos defendidos por conveniencia son formas respetables de quedarse con el bien ajeno.',
+      'Cierra con el pago inmediato: la deuda se paga con el esfuerzo de hoy y en el lugar donde uno está, porque el deudor que espera condiciones mejores está negociando la condena del prójimo.',
+    ],
+    q: [
+      '"El conocimiento del evangelio engendra deuda, y el silencio del sabio es desfalco"',
+      '"La deuda del testigo se paga hoy y donde uno está"',
+    ],
+    i: 'Su doctrina de la obligación moral de predicar sostuvo el envío de evangelistas del avivamiento americano y el ideal de Oberlin de formación para el servicio.',
+  },
+{
+    a: 'mcheyne',
+    t: 'El corazón quebrantado',
+    y: 1837,
+    p: 'Dundee, Escocia (St. Peter\u2019s, año aproximado)',
+    o: 'Predicado a su congregación obrera de Dundee durante los años de despertamiento, cuando M\u2019Cheyne volvía de sus viajes por la ciudad buscando a las ovejas perdidas casa por casa. El sermón nace de su convicción de que Dios no pide obras adornadas sino un espíritu roto que sólo la gracia produce.',
+    x: 'Salmo 51:17 — "Los sacrificios de Dios son el espíritu quebrantado; al corazón contrito y humillado no desprecias tú, oh Dios."',
+    th: ['Arrepentimiento', 'Gracia', 'Santidad'],
+    ol: [
+      'El salmista descubre que el cielo no hace inventario de incienso ni de toros, sino que se inclina ante la grieta interior, porque allí donde el hombre se quiebra entra el Médico sin que la carne le estorbe.',
+      'David había perdido el gozo de la salvación y la alegre presencia de Dios, y aprende que ni el templo ni el sacerdocio pueden recomprarlo: sólo el sacrificio espiritual de un corazón hecho polvo vuelve a abrir las cortinas.',
+      'El quebrantamiento no es mérito sino receptor, un vaso vacío levantado hacia la lluvia; por eso el más vil pecador de Dundee que llora sobre su pecado está más cerca del altar que el religioso pulcro que nunca sintió su podredumbre.',
+    ],
+    q: ['"Dios no desprecia el corazón roto, porque lo quebrantado es la puerta por donde Él mismo entra a morar."'],
+    i: 'Se convirtió en texto de cabecera del presbiterianismo escocés para enseñar la contrición real frente a la moralidad sin lágrimas.',
+  },
+  {
+    a: 'mcheyne',
+    t: 'Contar los días para saciarse de misericordia',
+    y: 1840,
+    p: 'Dundee, Escocia (St. Peter\u2019s, año aproximado)',
+    o: 'Sermón sobre el Salmo 90 en una época en que la fiebre y la tuberculosis arrebataban niños del barrio de Dundee cada invierno. M\u2019Cheyne, con su propia salud destrozada, enseñaba a una parroquia que enterraba hijos a aprender el arte de contar los días con sabiduría.',
+    x: 'Salmo 90:14 — "Oh, saciarnos ahora de tu misericordia cada mañana, para que cantemos y nos gocemos todos nuestros días."',
+    th: ['Oración', 'Muerte y eternidad', 'Anhelos humanos'],
+    ol: [
+      'Moisés, que vio morir a una generación entera en el desierto, pide dos cosas juntas: sabiduría para contar los días que pasan y misericordia que sacie cada amanecer, porque la mortalidad sola amarga y la misericordia sola adormece.',
+      'El creyente no pide días largos sino días llenos, una saciedad temprana que convierta cada mañana en bodega y cada noche en canción, de modo que hasta los años tristes pasen cantando entre las asperezas.',
+      'Quien aprende a pedir la misericordia de madrugada deja de temer al sepulcro, porque encuentra que el Dios que acorta los días es el mismo que los endulza, y su mortalidad se vuelve consejera y no verdugo.',
+    ],
+    q: ['"Cuenta tus días como pesos de oro y pide misericordia como quien pide pan: el que se sacia de mañana no teme la noche."'],
+    i: 'Está entre los textos más citados de su colección para el consuelo de los enfermos y la pedagogía cristiana del tiempo.',
+  },
+  {
+    a: 'mcheyne',
+    t: 'Cristo el único camino',
+    y: 1839,
+    p: 'Dundee, Escocia (St. Peter\u2019s, año aproximado)',
+    o: 'Explicación pastoral de la despedida del Señor a sus discípulos, predicada a una congregación donde abundaban los que buscaban a Dios por el camino del bautismo, la moral o el temperamento piadoso. M\u2019Cheyne desarma todos los caminos inventados y muestra al Cristo que habla a la vista de su cruz.',
+    x: 'Juan 14:6 — "Yo soy el camino, y la verdad, y la vida; nadie viene al Padre, sino por mí."',
+    th: ['Firma y certeza', 'Evangelismo', 'Anhelos humanos'],
+    ol: [
+      'El corazón humano levanta escaleras a mano hacia el cielo, unas de ceremonias y otras de moral, y Cristo no discute sus méritos: las llama caminos rotos y se ofrece a sí mismo como la única puerta abierta al Padre.',
+      'No dice enseñar el camino ni mostrarlo de lejos, sino serlo: un camino donde el andar del pecador es el propio Hijo avanzando, de modo que el débil no va al Padre por esfuerzo sino estando dentro de Cristo.',
+      'La afirmación no es orgullo de dogmático sino ternura de quien conoce la casa: en la misma noche en que Judas salió a venderlo, Jesús ocupó el atrio del corazón de sus discípulos para que nadie durmiera sin saber por dónde se entra a Dios.',
+    ],
+    q: ['"Todos los caminos del hombre a Dios terminan en un muro; el camino de Dios al hombre termina en un hermano que dice: yo soy."'],
+  },
+  {
+    a: 'mcheyne',
+    t: 'La oración sacerdotal',
+    y: 1838,
+    p: 'Dundee, Escocia (St. Peter\u2019s, año aproximado)',
+    o: 'Sermón sobre la última oración del Señor antes de la cruz, cuando M\u2019Cheyne promovía entre sus fieles las sociedades de oración y la unión por los judíos y las misiones. Presenta la unidad cristiana no como proyecto humano sino como petición puesta en labios de Cristo agonizante.',
+    x: 'Juan 17:21 — "para que todos sean uno; como tú, oh Padre, en mí, y yo en ti, que también ellos sean uno en nosotros; para que el mundo crea que tú me enviaste."',
+    th: ['Oración', 'Poder sobrenatural', 'Evangelismo'],
+    ol: [
+      'Antes de morir, Cristo no pide riquezas ni larga vida para los suyos sino que sean uno como el Padre y el Hijo, de modo que la unidad de la iglesia es algo más sagrado que cualquier pacto humano: es forma visible del cielo.',
+      'La unidad pedida no es uniformidad de rito ni frialdad de convenio, sino el calor de una familia que comparte la vida del Padre, y por eso el mundo no puede fabricarla ni el pecado tolerarla.',
+      'Cristo puso la conversión del mundo como fruto de esa unión: cuando Dundee vea a los creyentes amarse como el Padre ama al Hijo, será más fuerte que cualquier púlpito y preguntará quién es este Dios que así junta a los suyos.',
+    ],
+    q: ['"Cuando los hermanos sean uno, el mundo que no lee los Evangelios leerá la iglesia."'],
+    i: 'Alimentó el celo misionero y las sociedades de oración que M\u2019Cheyne impulsó en Escocia hacia los judíos y las naciones.',
+  },
+  {
+    a: 'mcheyne',
+    t: 'No me avergüenzo del evangelio',
+    y: 1836,
+    p: 'Dundee, Escocia (St. Peter\u2019s, año aproximado)',
+    o: 'Predicado en su primer período en Dundee, frente a una ciudad que admiraba la elocuencia escocesa y sospechaba de la predicación de la cruz como cosa vulgar de predicadores de campo. M\u2019Cheyne toma la confesión de Pablo como bandera para un púlpito joven y ceñido al mensaje simple.',
+    x: 'Romanos 1:16 — "Porque no me avergüenzo del evangelio, porque es poder de Dios para salvación de todo aquel que cree; al judío primeramente y también al griego."',
+    th: ['Evangelismo', 'Poder sobrenatural', 'Firma y certeza'],
+    ol: [
+      'El mundo escoge sus vergüenzas con calculadora: vergüenza del pobre, del fallido, del predicador entusiasmado; Pablo confiesa la suya y la arranca de raíz, porque ha probado que el mensaje despreciado es la dinamita de Dios para los muertos.',
+      'El evangelio no necesita ayuda del orador ni del público: es poder de Dios, una fuerza que actúa sola sobre el corazón de piedra, y por eso el predicador puede ser débil mientras el mensaje sostiene la tierra.',
+      'Cree todo aquel, dice el texto: el poder no es para los nobles de razón ni los límpidos de conciencia, sino para el creyente, y así el último bankero de la calle de Dundee tiene el mismo cielo que el apóstol.',
+    ],
+    q: ['"El evangelio no es un consejo para el sabio sino un poder para el muerto: no instruye al vivo, resucita al sepulcro."'],
+  },
+  {
+    a: 'mcheyne',
+    t: 'La Sabiduría llama a los simples',
+    y: 1842,
+    p: 'Dundee, Escocia (St. Peter\u2019s, año aproximado)',
+    o: 'Sermón sobre Proverbios 8 predicado a fines de su ministerio, cuando la ciudad de Dundee llenaba la iglesia para oírlo y muchos llegaban curiosos sin cultura bíblica. M\u2019Cheyne presenta a la Sabiduría personal de Dios como un heraldo en las plazas que no escoge a los doctos.',
+    x: 'Proverbios 8:4 — "¡A vosotros, oh hombres, llamo; y mi voz es a los hijos de los hombres!"',
+    th: ['Evangelismo', 'Anhelos humanos', 'Gracia'],
+    ol: [
+      'La Sabiduría eterna no hace su corte entre palacios ni escuelas, sino que se planta en las encrucijadas y clama a los simples, porque su gloria es doble: ser la más alta de las cosas y bajar al nivel de la voz humana.',
+      'Los hombres confunden altura con mérito y creen que Dios habla el idioma de los doctos; pero Cristo predicó su evangelio al nivel del arado y del horno, y la única razón por la que un hombre no oye es que prefiere el silencio de sus ídolos.',
+      'La llamada sigue abierta mientras se vive: los necios murieron por desprecio y no por falta de invitación, y por eso el oyente de Dundee que tiene hoy la voz en el oído no sabe si la tendrá mañana en la calle.',
+    ],
+    q: ['"No hay oído demasiado rustico para la Sabiduría; hay sólo oídos que fingen sordera para seguir amando sus yerros."'],
+  },
+  {
+    a: 'mcheyne',
+    t: 'La viña del Señor',
+    y: 1840,
+    p: 'Dundee, Escocia (estilo fiel de su colección de sermones de 1863, año aproximado)',
+    o: 'Síntesis editorial del mensaje de M\u2019Cheyne sobre la parábola de la viña de Isaías, en la línea de sus sermones de corteza y fruto que predicó a su parroquia escocesa. No hay registro fechado de la prédica concreta, pero el texto y el tono pertenecen a su colección impresa.',
+    x: 'Isaías 5:1 — "Mi amado tenía una viña en una ladera muy fértil."',
+    th: ['Crisis y prueba', 'Idolatría del corazón', 'Santidad'],
+    ol: [
+      'Isaías canta el amor de Dios como un hortelano que despeja una ladera, quita las piedras y la planta con cepa escogida, y luego espera uvas; el escándalo de la canción es que después de tanta misericordia da uvas silvestres.',
+      'El profeto hace juzgar al viñadero por los propios hombres de Jerusalén, que condenan la viña estéril sin saber que son la viña, porque el pecado vive del anonimato y muere cuando se descubre el dueño del campo.',
+      'M\u2019Cheyne aplica la ladera fértil a una parroquia que goza de templo, Biblia y ministerio, y pregunta qué fruto buscan los cielos en ella; la viña sin uvas no es defecto de la tierra sino traición del huerto.',
+    ],
+    q: ['"Dios no demanda uvas perfectas, pero sí uvas verdaderas: la viña que da agavancos ha amado el estéril amparo de su esterilidad."'],
+  },
+  {
+    a: 'mcheyne',
+    t: 'La puesta de sol de la vida',
+    y: 1842,
+    p: 'Dundee, Escocia (estilo fiel de su colección de sermones de 1863, año aproximado)',
+    o: 'Síntesis editorial de su predicación sobre la vejez creyente, construida sobre el pedido de David anciano y en la línea de sus sermones de consuelo a los viejos de su parroquia y su hermana mayor. No está atestiguada la prédica fechada, pero el texto y la aplicación pertenecen a su colección.',
+    x: 'Salmo 71:18 — "Y hasta la vejez y las canas, oh Dios, no me desampares, hasta que haya anunciado tu brazo a esta generación, y tu poder a todo el que ha de venir."',
+    th: ['Muerte y eternidad', 'Anhelos humanos', 'Gracia'],
+    ol: [
+      'El anciano creyente no pide desapego del mundo ni fuerza de juventud, sino el mismo sostén de siempre hasta el final: pide que el Dios que lo sostuvo al nacer no lo suelte en el brillo de sus canas.',
+      'La vejez del santo no es balcón desde el que se despide, sino pulpito desde el que se cuenta el brazo de Dios a la generación siguiente; sus días caídos son peldaños, no escombros, porque sirven de relación.',
+      'En el creyente la tarde no tiene amargura sino madurez, porque mientras el cuerpo se apaga la fe se alimenta de memoria y de esperanza, y el sol que se pone en Dundee se levanta en la ciudad eterna.',
+    ],
+    q: ['"El creyente no envejece hacia el sepulcro sino hacia el abrazo: sus canas son coronas de nieve de un verano que viene."'],
+  },
+  {
+    a: 'mcheyne',
+    t: 'El llanto por los que duermen',
+    y: 1841,
+    p: 'Dundee, Escocia (estilo fiel de su colección de sermones de 1863, en marco fúnebre de la parroquia, año aproximado)',
+    o: 'Síntesis editorial de su consuelo fúnebre sobre los que duermen en Jesús, predicado en una Dundee donde la fiebre arrebataba amigos y hermanos del rebaño y el pastor mismo velaba muertos queridos. No hay registro fechado de la prédica concreta, pero el texto y el consuelo son propios de su colección.',
+    x: '1 Tesalonicenses 4:13 — "Tampoco queremos que ignoréis acerca de los que duermen, para que no entristezcáis como los otros que no tienen esperanza."',
+    th: ['Muerte y eternidad', 'Crisis y prueba', 'Firma y certeza'],
+    ol: [
+      'Pablo no prohíbe las lágrimas sino la desesperación: distingue un duelo con cielo de un duelo sin horizonte, porque el cristiano llora sobre una puerta y el pagano sobre una pared.',
+      'El sueño es vocabulario de amor y no de mentira: los que duermen en Jesús no se disolvieron, sino que están en la más honda vigilia, esperando el alba en que el Señor traerá consigo a los suyos.',
+      'M\u2019Cheyne llora con Dundee sus muertos de fiebre y enseñanza a un luto que espera, donde cada sepultura es un piso menos en la casa y la reunión del cielo se hace más atractiva que la de la tierra.',
+    ],
+    q: ['"El cristiano llora a los que duermen como quien deja la ventana abierta, no como quien tapa un agujero sin fondo."'],
+  },
+  {
+    a: 'mcheyne',
+    t: 'El avivamiento de Dundee',
+    y: 1839,
+    p: 'Dundee, Escocia (St. Peter\u2019s, marco documentado del despertamiento con W. C. Burns como predicador invitado; título editorial)',
+    o: 'En el verano de 1839 M\u2019Cheyne viajó a Israel con los ministros que luego escribieron la misión de exploración a los judíos, y W. C. Burns predicó en su lugar en St. Peter\u2019s mientras caía el despertamiento que llenó la ciudad de quejas y conversos. A su regreso, M\u2019Cheyne escribió a su rebaño aquella carta célebre en que pide no hacer el avivamiento un dios y pone a Cristo por encima del fuego, y esa madera es la que esta ficha recoge.',
+    x: 'Habacuc 3:2 — "Oh Jehová, oí tu palabra, y temí; aviva tu obra, oh Jehová, en medio de los tiempos."',
+    th: ['Poder sobrenatural', 'Oración', 'Evangelismo'],
+    ol: [
+      'El avivamiento no es una máquina de multitudes sino la visita de Dios a su obra tardía, y por eso Habacuc no pide prodigios nuevos sino la vitalidad de los antiguos: aviva tu obra, oh Jehová, en medio de los años.',
+      'Cuando Burns predicó y la ciudad lloró por sus pecados, M\u2019Cheyne aprendió al volver que Dios no espera al pastor favorito: el Espíritu sopla donde quiere, y el pastor fiel debe alegrarse de que Cristo sea predicado aunque no sea por su voz.',
+      'La carta del regreso advierte el riesgo del templo del avivamiento, porque las almas pueden amarse a sí mismas en su emoción religiosa; el remedio no es apagar el fuego sino mirar la obra entera a la luz de Cristo crucificado.',
+    ],
+    q: ['"No pongas el avivamiento en lugar de Cristo: no lo ames por su llama, ama la casa que la llama ilumina."'],
+    i: 'El despertamiento de 1839 llenó St. Peter\u2019s y consagró a Burns como predicador de avivamientos; la carta de M\u2019Cheyne a su rebaño se convirtió en clásico de la pedagogía del discernimiento espiritual.',
+  },
+  {
+    a: 'evans',
+    t: 'La mesa del amor soberano',
+    y: 1805,
+    p: 'Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre la gran cena de Lucas 14, en la línea de sus parábolas dramáticas predicadas en las casas y patios de Gales a mineros y campesinos. No está atestiguada la prédica fechada, pero el tema y la imaginación pertenecen a su colección impresa.',
+    x: 'Lucas 14:17 — "Venid, porque ya todo está preparado."',
+    th: ['Gracia', 'Evangelismo', 'Anhelos humanos'],
+    ol: [
+      'Un gran señor hace un banquete y los invitados de su libranza se escusan con tierras, bueyes y esposa recién tomada, porque el corazón humano desprecia lo que le viene regalado y compra lo que le viene sangrando.',
+      'El amo no cancela la mesa sino que la ensancha: envía al criado a las calles y los callejones a traer pobres, mancos, cojos y ciegos, y así la exclusiva de Israel se convierte en el festín de los desechados de la tierra.',
+      'Evans dibuja la mesa como una muralla de amor sobrado, donde el lugar sobrante es el puesto del predicador y el hambre de los montes galeses es la razón de la invitación que aún grita: ya todo está preparado.',
+    ],
+    q: ['"El hombre siempre inventa una excusa que le parezca digna, porque ningún pecador confiesa que rechaza el cielo por amar su barro."'],
+  },
+  {
+    a: 'evans',
+    t: 'El faro de la costa',
+    y: 1808,
+    p: 'Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre la iglesia como luz del mundo, imaginada para comunidades marineras de las costas de Gales, donde los faros y las mareas eran la geografía diaria. No está atestiguada la prédica fechada, pero el símbolo y el tono pertenecen a su colección impresa.',
+    x: 'Mateo 5:14 — "Vosotros sois la luz del mundo; una ciudad asentada sobre un monte no se puede esconder."',
+    th: ['Evangelismo', 'Poder sobrenatural', 'Santidad'],
+    ol: [
+      'El faro no discute con la tormenta ni vende mapas de calma: se planta en la roca del puro peligro y arde, porque su oficio no es explicar el mar sino decir a los barcos dónde está la muerte y dónde el puerto.',
+      'Cristo no pide a su iglesia que sea sabia como el mundo ni brillante como las cortes, sino que arda en lo alto, visible para el barco borracho y para el barco honrado, y que su luz cueste aceite y horas.',
+      'Una iglesia apagada es peor que un faro roto, porque el faro roto se ve negro desde lejos y la iglesia tibia miente con su señales: Evans predicaba que el alba de Gales se jugaba en el aceite de sus santos.',
+    ],
+    q: ['"No preguntes si el mar está en calma: pregunta si tu luz arde, porque los barcos no naufragan por tormenta sino por falta de faro."'],
+  },
+  {
+    a: 'evans',
+    t: 'El pacto de sangre',
+    y: 1810,
+    p: 'Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre la sangre de la alianza, en la línea de sus grandes dramatizaciones del pacto que llenaban las capillas de Gales con la épica del Sinaí y del Calvario. No está atestiguada la prédica fechada, pero el tema y la imaginación pertenecen a su colección impresa.',
+    x: 'Éxodo 24:8 — "Y Moisés tomó la sangre y roció sobre el pueblo, y dijo: He aquí la sangre del pacto que Jehová ha hecho con vosotros sobre todas estas cosas."',
+    th: ['Gracia', 'Firma y certeza', 'Adoración'],
+    ol: [
+      'En el Sinaí la sangre baña el pueblo que acaba de prometer y ya quebrará, porque los pactos humanos mueren en la palabra y los de Dios viven en la sangre; así la fe no se apoya en lo que el hombre dice sino en lo que Dios derrama.',
+      'Evans pone las dos montañas frente a frente: el rollo rociado al pie del Sinaí y la copa de la última cena, mostrando que el Calvario no deroga el pacto sino que lo paga con un Cordero en lugar de toros.',
+      'La certeza del creyente no es la firmeza de su promesa sino la de la firma divina, y por eso puede mirar su propio corazón roto sin desesperar, porque el pacto no se escribe en su pecho sino en la sangre del Hijo.',
+    ],
+    q: ['"Todo pacto de palabra muere con la palabra; el pacto de Dios vive porque se firmó con sangre y se guarda en un cuerpo que resucitó."'],
+  },
+  {
+    a: 'evans',
+    t: 'La puerta que Dios cerró',
+    y: 1813,
+    p: 'Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre el arca de Noé y sus entradas, en la línea de sus sermones dramáticos sobre el diluvio que sostenían la imaginación de sus oyentes rurales. No está atestiguada la prédica fechada, pero el tema y las imágenes pertenecen a su colección impresa.',
+    x: 'Génesis 7:16 — "Y entraron macho y hembra de toda carne, como Dios había mandado a Noé; y Jehová cerró la puerta tras él."',
+    th: ['Crisis y prueba', 'Firma y certeza', 'Muerte y eternidad'],
+    ol: [
+      'El diluvio tiene una sola puerta y un solo carpintero: la salvación no depende del ingenio del que se ahoga sino de la obediencia de entrar por donde Dios puso la entrada, cuando aún queda hora de entrar.',
+      'La mano que cerró la puerta no fue la de Noé sino la de Jehová, y ahí Evans instala la doctrina del cuidado divino: el creyente dentro del arca no depende de su fuerza para sostener el madero, sino del Dios que sella el lado de afuera.',
+      'Fuera del arca hay bueyes y palacios y gritos; dentro hay estiércol y hambruna y jaula; sin embargo el estiércol dentro del plan de Dios vale más que el palacio fuera de él, porque el agua no negocia con la altura de las torres.',
+    ],
+    q: ['"Nadie puso un dedo en la puerta del arca desde adentro ni desde afuera: la salvación se abre por donde Dios la abre y se cierra como Él la cierra."'],
+  },
+  {
+    a: 'evans',
+    t: 'Él debe crecer',
+    y: 1816,
+    p: 'Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre la palabra del Bautista, en la línea de sus sermones sobre la gloria de Cristo y el anonadamiento del siervo que predicó a sus capillas galesas. No está atestiguada la prédica fechada, pero el tema y el tono pertenecen a su colección impresa.',
+    x: 'Juan 3:30 — "Es necesario que él crezca, mas yo mengüe."',
+    th: ['Santidad', 'Adoración', 'Gracia'],
+    ol: [
+      'Juan no se apaga por envidia vencida a empujones sino por una ley que reconoce gozoso: cuando el novio está presente, el amigo del novio se aleja del novio para no robarle la mirada que ha venido a conducir.',
+      'Evans dibuja el sol de mediodía y la lámpara del alba: la lámpara no se ofende cuando llega el día, porque fue encendida precisamente para eso, y el siervo fiel mide su éxito por la sombra que le queda.',
+      'La mengua del hombre es el crecimiento de Cristo en la historia y en el corazón, y por eso la santidad no es inflarse de Dios sino vaciarse a su medida, hasta que el creyente sea apenas la mano que señala.',
+    ],
+    q: ['"Feliz la lámpara que se funde en el amanecer: su aceite no se gastó en vano, sino en dar tiempo a que el sol saliera."'],
+  },
+  {
+    a: 'evans',
+    t: 'Los dos caminos del valle',
+    y: 1820,
+    p: 'Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre la puerta angosta del Sermón del Monte, en la línea de sus contraposiciones dramáticas de vida y muerte, tan del gusto de sus oyentes que caminaban montañas y senderos. No está atestiguada la prédica fechada, pero el texto y las imágenes pertenecen a su colección impresa.',
+    x: 'Mateo 7:13-14 — "Entrad por la puerta angosta; porque ancha es la puerta y espacioso el camino que lleva a la perdición, y muchos son los que entran por ella; pero angosta es la puerta y estrecho el camino que lleva a la vida, y muy pocos son los que la hallan."',
+    th: ['Arrepentimiento', 'Muerte y eternidad', 'Evangelismo'],
+    ol: [
+      'El camino ancho no necesita entrada ni esfuerzo: se entra de espaldas y sin saber, guiado por la multitud, mientras que la puerta angosta exige arrodillarse y soltar lo cargado, porque el pecado no cabe doblado por el marco de la cruz.',
+      'Evans ve a Gales entera caminando por la llanura cómoda hacia un despeñadero que nadie mira, y pide a cada oyente que cuente las pisadas alrededor: la compañía no prueba el rumbo, y el abismo agradece la compañía.',
+      'El estrecho no es estrecho de injusticia sino de verdad: excluye cargamentos, no personas, y el que entra despojado descubre al final que salió del valle con las manos más llenas que nunca.',
+    ],
+    q: ['"La multitud no es mapa: el camino ancho es siempre el más lleno de pies y el más vacío de destino."'],
+  },
+  {
+    a: 'evans',
+    t: 'El barco en la tormenta',
+    y: 1823,
+    p: 'Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre la tempestad calmada del mar de Galilea, imaginada para una tierra de costas y pesquerías donde la tormenta era vecina. No está atestiguada la prédica fechada, pero la escena y el tono pertenecen a su colección impresa.',
+    x: 'Marcos 4:38 — "y le despertaron, y le dijeron: Maestro, ¿no tienes cuidado que perecemos?"',
+    th: ['Crisis y prueba', 'Poder sobrenatural', 'Firma y certeza'],
+    ol: [
+      'El barco llevaba al Señor dormido sobre un cojín, y esa imagen es la teología entera del creyente en la tormenta: la nave que se hunde lleva dentro a Aquel por quien el mar fue hecho, y su sueño no es olvido sino calma anticipada.',
+      'Los discípulos preguntan con enojo si no le importa que perezcan, y aprenden que el cuidado de Cristo no se mide por el ruido de su respuesta sino por el peso de su palabra: una sola orden y el viento enmudece como criatura en su corral.',
+      'Evans aplica la escena a la iglesia perseguida y al creyente en su noche, mostrando que la tormenta conduce al barco donde Cristo está, y que el peligro real no era el agua sino el miedo que olvida quién viaja en la popa.',
+    ],
+    q: ['"Si Cristo duerme en tu barco, la tormenta no es naufragio sino lección: despiértalo y verás que el mar era suyo desde antes de tu miedo."'],
+  },
+  {
+    a: 'evans',
+    t: 'La piedra desechada',
+    y: 1826,
+    p: 'Caerphilly, Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre la piedra que los constructores desecharon, predicada en su período de Caerphilly a obreros y canteros que conocían el arte de construir y desechar. No está atestiguada la prédica fechada, pero el símbolo y el tono pertenecen a su colección impresa.',
+    x: 'Salmo 118:22 — "La piedra que desecharon los edificadores ha venido a ser cabeza del ángulo."',
+    th: ['Firma y certeza', 'Poder sobrenatural', 'Crisis y prueba'],
+    ol: [
+      'Los constructores del templo esquivaron una piedra por pobre y torcida, y esa misma piedra, que nadie quiso cargar, terminó en la cabeza del edificio porque el plano no era de los canteros sino del Rey.',
+      'Evans ve en el rechazo de Nazaret la primera medición errada de la historia: los doctos medían al Mesías con la vara de su expectativa y lo declararon inservible, sin saber que la promesa pesaba más que su vara.',
+      'La piedra desechada es el consuelo de los desechados: el evangelio gira alrededor de lo que el mundo rechazó, y el creyente que se siente sobrante del edificio descubre que su valor no lo fija la mano humana sino el ángulo donde Dios lo coloca.',
+    ],
+    q: ['"El plano no se corrige con la piedra: cuando el mundo desecha lo que Dios escogió, la caída del muro enseñará aritmética a los constructores."'],
+  },
+  {
+    a: 'evans',
+    t: 'Los campos blancos de Gales',
+    y: 1829,
+    p: 'Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre los campos blancos para la siega, en la línea de su celo por el despertamiento de los montes galeses y de las Sierras del país. No está atestiguada la prédica fechada, pero el tema y la aplicación pertenecen a su colección impresa.',
+    x: 'Juan 4:35 — "Alzad vuestros ojos y mirad los campos, porque ya están blancos para la siega."',
+    th: ['Evangelismo', 'Anhelos humanos', 'Poder sobrenatural'],
+    ol: [
+      'Los discípulos miraban la comarca con el hambre en el cuerpo y no vieron pueblo; Jesús la miró con el hambre de cumplir la voluntad del Padre y vio cosecha: el ojo decide lo que el campo es.',
+      'El tiempo de la siega no es el de la costumbre agrícola sino el de la gracia: entre la siembra y la espiga pasaban meses, y sin embargo la palabra sembrada por el pozo ya estaba blanca, porque Dios madura más rápido que la luna.',
+      'Evans pide a Gales alzar los ojos de sus disputas y sus rencillas de capilla para ver los campos: el que siega recibe salario y junta fruto para vida eterna, y el que espera el momento perfecto llega tarde a la hoz.',
+    ],
+    q: ['"El campo ya está blanco cuando tú todavía estás discutiendo el mes: el único tiempo de la siega es el que hoy respira tu vecino."'],
+  },
+  {
+    a: 'evans',
+    t: 'El estandarte del Rey',
+    y: 1832,
+    p: 'Caerphilly, Gales (estilo fiel de su colección de sermones, ed. Cross, Gutenberg #42340; años aproximados)',
+    o: 'Síntesis editorial de su predicación sobre el estandarte alzado por causa de la verdad, en la línea de su visión guerrera y pactista de la iglesia, heredera del lenguaje de batalla del Antiguo Testamento. No está atestiguada la prédica fechada, pero el símbolo y el tono pertenecen a su colección impresa.',
+    x: 'Salmo 60:4 — "Has dado a los que te temen bandera, para que se alcen a causa de la verdad. Selah"',
+    th: ['Firma y certeza', 'Poder sobrenatural', 'Santidad'],
+    ol: [
+      'El estandarte no se da para decorar el campamento sino para concentrarlo: en la dispersión de la batalla, la tropa no se reúne por gritos ni por heroes individuales sino por el paño del Rey que se levanta sobre la confusión.',
+      'Dios alza la bandera para los que lo temen, no para los fuertes: el temor de Dios es la mano que puede agarrar el asta, y la verdad es la razón por la que la tela sube, de modo que ni el miedo ni la moda pueden derribarla.',
+      'Evans manda a la iglesia de su tierra enarbolar la verdad en vez de negociar pausas con el error, porque el ejército que baja el estandarte para conversar con el enemigo termina acampando en el lado equivocado del valle.',
+    ],
+    q: ['"La bandera no se iza para que la admire la tropa sino para que la tropa sepa dónde está el Rey: quítale la verdad y te quedas con un trapo."'],
+  },
+  {
+    a: 'massillon',
+    t: 'La oración de la corte',
+    y: 1718,
+    p: 'Versalles, Francia (Le Petit Carême, predicado ante Luis XV)',
+    o: 'Primer sermón del Petit Carême que Massillon pronunció ante el rey niño de catorce años en la capilla de Versalles durante la Cuaresma de 1718. Predica ante un soberano la oración privada como la única sala donde no hay espaldas de seda ni ojos de favor, y el silencio de la corte sirve de contrapeso.',
+    x: 'Mateo 6:6 — "Pero tú, cuando ores, entra en tu aposento, y cerrada la puerta, ora a tu Padre que está en secreto; y tu Padre que ve en lo secreto te recompensará en público."',
+    th: ['Oración', 'Santidad', 'Idolatría del corazón'],
+    ol: [
+      'El gran mundo rezaba poco y bien adornado, y Massillon descubre ante el rey la raíz del mal: se ora para ser oído por hombres, y en cuanto se quita la galería se cae la devoción, porque era teatro y no aliento.',
+      'El aposento cerrado es la única corte verdadera donde el soberano de Versalles se vuelve criatura, y allí aprende lo que ninguna audiencia le da: que su corona no le ha comprado un minuto de atención ante Dios sin el corazón.',
+      'La oración no es un ornamento del creyente sino su respiración en secreto, la apertura del cielo sobre un cuarto pobre, y el que la descubre descubre también que la ausencia de testigos no empobrece el tesoro sino que lo protege.',
+    ],
+    q: ['"En la corte se aprende a hablar ante los hombres; sólo en el aposento se aprende a estar ante Dios."'],
+    i: 'El Petit Carême ante Luis XV se imprimió y circuló por toda Europa como modelo de oratoria sagrada al servicio de la reformación moral de los grandes.',
+  },
+  {
+    a: 'massillon',
+    t: 'Las tentaciones del grande',
+    y: 1718,
+    p: 'Versalles, Francia (Le Petit Carême, predicado ante Luis XV)',
+    o: 'Sermón del Petit Carême sobre las tentaciones, pronunciado ante la corte durante la Cuaresma de 1718. Massillon describe la situación del poderoso como una escuela donde la adulación hace invisible el peligro, y advierte al rey adolescente que su trono es el lugar donde caer es más fácil y más caro.',
+    x: '1 Corintios 10:12 — "Así que, el que se cree estar, mire no caiga."',
+    th: ['Santidad', 'Arrepentimiento', 'Idolatría del corazón'],
+    ol: [
+      'El pobre tropieza y se levanta con cicatriz; el grande cae y no lo sabe, porque cien cortesanos le aplauden el tropiezo, y Massillon enseña que la altura no es seguridad sino caída más lenta y con menos testigos honestos.',
+      'Las tentaciones del poder no son las del hambre sino las del aplauso: la vanidad, la cólera, la pereza piadosa, y todas visten uniforme de deber, de modo que el grande necesita más vigilancia que el campesino y la obtiene menos.',
+      'El que se cree estar es el hombre más expuesto del reino, y el remedio no es la desconfianza amarga sino la verdad de un espejo donde la corte no pinta: la oración, el confesor fiel y la memoria de los que cayeron desde más alto.',
+    ],
+    q: ['"Nadie cae tan bajo como el grande, porque nadie le ha dicho jamás la palabra alta que lo habría detenido."'],
+  },
+  {
+    a: 'massillon',
+    t: 'La muerte que se olvida',
+    y: 1718,
+    p: 'Versalles, Francia (Le Petit Carême, predicado ante Luis XV)',
+    o: 'Sermón del Petit Carême sobre la muerte, predicado ante la corte en la Cuaresma de 1718, donde Massillon denuncia que los grandes han expulsado la muerte de sus palacios con ornato y palabras suaves. Ante el rey niño pide que se le enseñe a contar sus días antes de que la corte le enseñe a olvidarlos.',
+    x: 'Salmo 90:12 — "Enséñanos de modo que contemos nuestros días, y traigamos al corazón sabiduría."',
+    th: ['Muerte y eternidad', 'Arrepentimiento', 'Idolatría del corazón'],
+    ol: [
+      'Los hombres no ignoran que han de morir: lo saben como se saben las cuentas ajenas, y por eso la ignorancia más peligrosa no es la del dato sino la del corazón que ha cesado de sentirlo.',
+      'Massillon pinta la muerte expulsada de la corte: se la nombra con apodos, se la aleja a los hospitalarios y a los pobres, y de este modo el palacio se convierte en una casa donde todos preparan un viaje que juran no hacer.',
+      'La sabiduría pedida por Moisés no es melancolía sino aritmética del corazón: contar los días para no desperdiciarlos, y esa cuenta, hecha en la juventud de un rey, vale más que todas las leyes de su edad madura.',
+    ],
+    q: ['"El corazón que ha dejado de contar sus días no ha perdido la fe en la muerte: ha perdido la fe en su propio tiempo."'],
+  },
+  {
+    a: 'massillon',
+    t: 'El Cristo que la corte no conoce',
+    y: 1718,
+    p: 'Versalles, Francia (Le Petit Carême, predicado ante Luis XV)',
+    o: 'Sermón del Petit Carême sobre el poco conocimiento que los cristianos tienen de Jesucristo, pronunciado ante la corte en la Cuaresma de 1718. Massillon muestra que el nombre de Cristo se pronuncia constantemente en Versalles y casi nunca se le conoce, y que el cristiano de gran mundo vive del sobrenombre sin comprar la mercancía.',
+    x: 'Filipenses 3:8 — "Y ciertamente, aun estimo todas las cosas en pérdida por la excelencia del conocimiento de Cristo Jesús, mi Señor."',
+    th: ['Anhelos humanos', 'Adoración', 'Gracia'],
+    ol: [
+      'Los cristianos saben de Cristo lo que sabe de una provincia quien sólo ha leído su mapa: nombres, fechas, fronteras, y viven contentos con esa geografía muerta sin sospechar que el conocimiento del Señor es un tesoro por el que Pablo dio todo lo demás.',
+      'Massillon desarma las razones del desconocimiento: la pereza del corazón que no quiere leer, el bullicio de la corte que no deja escuchar, y sobre todo el temor secreto de que, conocido de verdad, este Señor costaría demasiado.',
+      'Quien conoce a Cristo de verdad lo estima como pérdida todo lo que antes llamaba ganancia, y esa aritmética nueva es la única que puede reformar un reino, porque un monarca que ha visto la excelencia del Señor ya no confunde su corona con el cielo.',
+    ],
+    q: ['"Hay cristianos que llevan el nombre de Cristo como un perfume: lo usan para que huela bien su vida y jamás para que les cueste nada."'],
+  },
+  {
+    a: 'massillon',
+    t: 'La caridad de los grandes',
+    y: 1718,
+    p: 'Versalles, Francia (Le Petit Carême, predicado ante Luis XV)',
+    o: 'Sermón del Petit Carême sobre la caridad para con el prójimo, predicado ante la corte durante la Cuaresma de 1718, con la parábola del buen samaritano puesta ante el soberano. Massillon convierte el camino de Jericó en el camino real de Francia, donde los caídos abundan y los que pasan de largo están muy bien vestidos.',
+    x: 'Lucas 10:33 — "Mas un samaritano, que iba de camino, vino junto a él, y al verle, fue movido a misericordia."',
+    th: ['Santidad', 'Anhelos humanos', 'Arrepentimiento'],
+    ol: [
+      'El sacerdote y el levita no faltaron a la ley: faltaron al hombre, y Massillon enseña que la religión puede ser el vehículo más cómodo del desamor, porque excusa el pasar de largo con la palabra deber.',
+      'El samaritano no hace obra de fundador sino de hombre: ve, se conmueve, se acerca, paga, y su caridad no espera decreto ni gloria, mientras que la de los grandes se administra por interpósita conciencia y se paga con moneda de mandato.',
+      'Ante el rey, el predicador lanza la pregunta invertida de la parábola: quién fue prójimo del caído, y aplica que el reino entero será juzgado no por sus códigos de caridad sino por sus caminos de Jericó, por lo que sus grandes hicieron al ver la sangre.',
+    ],
+    q: ['"La compasión que se queda en el pensamiento es una limosna que el rico hace a su propia dulzura."'],
+  },
+  {
+    a: 'massillon',
+    t: 'La muerte de los justos',
+    y: 1718,
+    p: 'Versalles, Francia (Le Petit Carême, predicado ante Luis XV)',
+    o: 'Sermón del Petit Carême sobre la muerte de los justos, predicado ante la corte en la Cuaresma de 1718. Massillon separa las dos muertes: la que asusta a los grandes por pérdida y la que abre al justo por descanso, y enseña ante el rey que la santidad es la única herencia que mejora con el fin.',
+    x: 'Salmo 116:15 — "Estimada es a los ojos de Jehová la muerte de sus santos."',
+    th: ['Muerte y eternidad', 'Firma y certeza', 'Gracia'],
+    ol: [
+      'El mundo cuenta la muerte por lo que quita, y Dios la cuenta por lo que recibe: la muerte de su santo no es una pérdida en su reino sino la entrada de un precioso, y esa doble contabilidad separa a los dos pueblos que viven mezclados.',
+      'La muerte del justo no es más suave en el cuerpo pero es distinta en el sentido: muere despidiéndose de miseria y no de bienes, de taberna y no de palacio, y por eso lo que al impío le arranca gritos al santo le sirve de puerta.',
+      'Massillon enseña a la corte que la vida del justo es la larga preparación de su muerte y su muerte el primer día de su posesión, de modo que el único modo de bien morir es el único modo de bien vivir.',
+    ],
+    q: ['"Dios no asiste a la muerte de su santo como médico de urgencia, sino como padre que recibe el precio de la sangre de su Hijo."'],
+  },
+  {
+    a: 'massillon',
+    t: 'La oración fúnebre del Delfín',
+    y: 1711,
+    p: 'París, Francia (oración fúnebre documentada por el Delfín, hijo de Luis XIV)',
+    o: 'Oración fúnebre por Luis, gran Delfín de Francia, muerto en 1711 tras la corte en la iglesia, predicada por Massillon, entonces obispo de Metz y predicator del rey. El heredero muerto antes que el rey abría ante Francia la lección de que la sucesión no es propiedad del hombre, y Massillon la desarmó con lentitud ante la familia real.',
+    x: 'Eclesiastés 12:1 — "Acuérdate de tu Creador en los días de tu juventud, antes que vengan los días malos, y lleguen los años en los cuales no digas: No hay en ellos contentamiento."',
+    th: ['Muerte y eternidad', 'Crisis y prueba', 'Idolatría del corazón'],
+    ol: [
+      'Francia entierro a su esperanza y no a un anciano, y Massillon hace oír ante el trono que el Delfín también se acordó tarde: los días malos llegaron, y la majestad de la casa real no compró ni un contentamiento más.',
+      'La oración fúnebre es un espejo puesto ante los príncipes vivos: si el heredero del mayor trono del mundo no pudo posponer su cuenta con Dios, cada oyente de rango y de seda debe preguntar dónde pone su juventud.',
+      'Massillon no clava el diente en la desesperación sino en la juventud que aún puede acordarse: el grito del Eclesiastés es una misericordia, porque la memoria del Creador guardada en la juventud es el único seguro contra los días malos.',
+    ],
+    q: ['"La corona no pospone la muerte: sólo consigue que la muerte llegue vestida de púrpura."'],
+    i: 'La oración por el Delfín consagró a Massillon como el predicator de la casa real y preparó el Petit Carême ante el futuro Luis XV.',
+  },
+  {
+    a: 'massillon',
+    t: 'La esperanza de Francia enterrada',
+    y: 1712,
+    p: 'París, Francia (oración fúnebre documentada por el duque de Borgoña, nieto de Luis XIV)',
+    o: 'Oración fúnebre por el duque de Borgoña, nieto de Luis XIV y esperanza del trono, muerto en 1712 con veinte años pocos días después de su padre, cuando Francia contaba ya con él como futuro Luis XV. Massillon predicó ante la familia real el duelo de un reino que enterraba dos veces en un año su sucesión entera.',
+    x: 'Job 14:1-2 — "El nacido de mujer es corto de días, y harto de inquietud. Nace como la flor, y es cortado, y huye como la sombra, y no persevera."',
+    th: ['Muerte y eternidad', 'Crisis y prueba', 'Anhelos humanos'],
+    ol: [
+      'El príncipe de veinte años no murió en el campo ni en la guerra sino en la flor misma de la promesa, y Massillon toma la palabra de Job para enseñar a Francia que la flor no negocia con la hoz: la promesa de mañana es una merced, no un título.',
+      'El duelo del reino es la lección del reino: los que contaban dynastías y matrimonios aprenden que la historia no se firma en la voluntad de los hombres, y que la esperanza puesta en la carne es siempre una cuenta abierta.',
+      'Massillon no deja la corte en el duelo sino en la pregunta: si la esperanza de Francia era flores, ¿qué deben hacer los que sobreviven al príncipe muerto?, y la respuesta del sermón es la de Job: la fijeza no está en el hombre sino en su Redentor.',
+    ],
+    q: ['"Los reinos ponen su esperanza en la flor más cara del jardín, y la hoz no pregunta el precio de la flor."'],
+    i: 'La doble oración fúnebre por el Delfín y su hijo marcó el fin de la confianza dinástica de Luis XIV y cimentó la fama europea de Massillon.',
+  },
+  {
+    a: 'massillon',
+    t: 'El engaño de los siglos',
+    y: 1704,
+    p: 'Versalles, Francia (estilo fiel de su Cuaresma de 1704 ante la corte, año aproximado)',
+    o: 'Síntesis editorial de su predicación sobre la vanidad de las cosas, en la línea de la Cuaresma que Massillon predicó ante la corte en 1704, cuando su palabra desarmaba lentamente la solemnidad de Versalles. No está atestiguada la prédica fechada concreta, pero el texto y la crítica a la vanidad de los siglos pertenecen a su colección.',
+    x: 'Eclesiastés 1:2 — "Vanidad de vanidades, dijo el Predicador; vanidad de vanidades, todo es vanidad."',
+    th: ['Idolatría del corazón', 'Muerte y eternidad', 'Anhelos humanos'],
+    ol: [
+      'El Predicador no condona una vanidad: condona la suma de todas, y Massillon aplica la cuenta a los grandes, que multiplican vanidades con más esmero y las llaman gloria, honor, correspondencia y trato, nombres nuevos para el vaho viejo.',
+      'Cada siglo se cree distinto del anterior y hereda sus ídolos con la moda cambiada: la corte de Versalles adora lo que adoró Babilonia con sillas más cómodas, y por eso la palabra vanidad no es arqueología sino el presente mismo.',
+      'La frase todo es vanidad no es desesperación sino escalera: quien la ha pronunciado en serio se ha quedado sin suelo para edificar idolatría alguna, y desde ese vacío el corazón empieza, por fin, a buscar lo que no pasa.',
+    ],
+    q: ['"Las generaciones cambian de ropa a sus ídolos y se creen nuevas; el Predicador, que ha visto pasar los siglos, no cambió ni una palabra."'],
+  },
+  {
+    a: 'massillon',
+    t: 'La Natividad ante la corte',
+    y: 1704,
+    p: 'Versalles, Francia (estilo fiel de su colección de sermones de Adviento y solemnidades ante la corte, año aproximado)',
+    o: 'Síntesis editorial de su predicación navideña sobre el nacimiento del Salvador, en la línea de los sermones de solemnidad que Massillon pronunció ante la corte real. No está atestiguada la prédica fechada concreta, pero el texto y la aplicación del pesebre a la grandeza cortesana pertenecen a su colección.',
+    x: 'Lucas 2:11 — "porque os ha nacido hoy, en la ciudad de David, un Salvador, que es Cristo el Señor."',
+    th: ['Adoración', 'Gracia', 'Anhelos humanos'],
+    ol: [
+      'El Salvador no nace en palacio ni en campaña sino en un establo prestado, y Massillon pone el pesebre frente a Versalles: la primera lección de la fe es que el Señor eligió la pobreza donde la grandeza no puede entrar sin despojarse.',
+      'El ángel anuncia gran gozo para todo el pueblo y no para la corte exclusivamente, y esta igualdad del pesebre desarma la jerarquía de la sala: ante el niño de Belén el príncipe se arrodilla al nivel del pastor y sólo conserva su lugar si conserva su esterilidad de corazón.',
+      'La Natividad es el mayor escándalo de la historia del orgullo: Dios hecho niño deshereda toda la vanagloria de los hombres, y el que no aprende a inclinarse ante un establo jamás entenderá qué buscaba Dios al hacerse tan pequeño.',
+    ],
+    q: ['"Dios bajó hasta el pesebre para que ningún hombre pudiera alegar que el cielo está a altura imposible: la única altura es la del corazón."'],
+  },
+{
+    a: 'bourdaloue',
+    t: 'La oración que piensa',
+    y: 1668,
+    p: 'París (Cuaresma predicada ante la corte de Luis XIV, estilo fiel de sus Obras completas, ed. 1864)',
+    o: 'Predicado en el marco de sus Cuaresmas de la corte, cuando Bourdaloue atacaba de frente la religión tibia de los grandes: una devoción que reza sin pensar. El sermón desmonta el quietismo devoto que confunde abandono con abandono del deber.',
+    x: 'Mateo 26:41 — "Velad y orad, para que no entréis en tentación; el espíritu a la verdad está dispuesto, mas la carne es débil."',
+    th: ['Oración', 'Santidad'],
+    ol: [
+      'La oración sin atención es un hábito de la boca que deja intacto el corazón, y Bourdaloue demuestra punto por punto que el olvido de velar precede siempre a la caída.',
+      'El espíritu está dispuesto, dice el Señor, y esa disposición es un tesoro que la pereza disipa cuando la voluntad no sostiene lo que el entendimiento ya sabe.',
+      'Orar es pensar delante de Dios: examinar la conciencia, nombrar el vicio propio sin rodeos y pedir la gracia concreta contra la tentación concreta que nos amenaza hoy.'
+    ],
+    q: [
+      'La oración que no piensa no es piedad: es el descanso disfrazado de devoción.'
+    ],
+    i: 'Modelo de oratoria sagrada contra el quietismo; influyó en la espiritualidad moral del clero francés del siglo XVII.'
+  },
+  {
+    a: 'bourdaloue',
+    t: 'La pasión contemplada',
+    y: 1669,
+    p: 'París (estilo fiel de su colección de sermones sobre la Pasión, Obras completas, ed. 1864)',
+    o: 'Sermon de Semana Santa ante oyentes acostumbrados a la devoción decorativa de la corte: Bourdaloue se niega a mover lágrimas y se propone leer la cruz con lógica. Cada sufrimiento del Señor es examinado como una lección moral exigente.',
+    x: 'Juan 19:30 — "Cuando Jesús hubo tomado el vinagre, dijo: Consumado es. Y habiendo inclinado la cabeza, entregó el espíritu."',
+    th: ['Crisis y prueba', 'Gracia'],
+    ol: [
+      'El Hijo de Dios no termina su obra con queja ni con resignación pasiva: la palabra consumado declara que cada gesto de su pasión tuvo propósito y medida.',
+      'Contemplar la cruz con razón es descubrir que la obediencia que sufrió hasta el fin juzga nuestra vida cristiana a medias, cómoda y sin precio.',
+      'Quien mira el madero y no cambia nada en su conducta ha hecho del mayor sacrificio de la historia un espectáculo, no un sacramento de conversión.'
+    ],
+    q: [
+      'La cruz es el tratado moral más severo que jamás se predicó, y está escrito en un cuerpo que sangra.'
+    ]
+  },
+  {
+    a: 'bourdaloue',
+    t: 'La penitencia aplazada',
+    y: 1670,
+    p: 'París (estilo fiel de sus sermones sobre la penitencia, Obras completas, ed. 1864)',
+    o: 'Bourdaloue dedicó varias cuaresmas a desenmascarar la ingeniería de posponer la conversión: el pecador culto que admite su estado y fija la enmienda para una edad futura. El sermón analiza esa economía del aplazamiento como la más elegante forma de dureza de corazón.',
+    x: 'Hebreos 3:15 — "Si oyereis su voz, no endurezcáis vuestros corazones, como en la provocación en el día de la tentación."',
+    th: ['Penitencia', 'Arrepentimiento', 'Muerte y eternidad'],
+    ol: [
+      'La penitencia aplazada no es prudencia sino desprecio calculado: se convierte la salud del alma en asunto que puede esperar mientras corre el negocio y la ambición.',
+      'El endurecimiento del corazón no llega con escándalos: se fabrica lentamente con cada aviso escuchado y desechado, hasta que la voz de Dios deja de romper el hielo.',
+      'Convertirse mañana es la divisa con que el hombre rinde hoy su voluntad al vicio, y mañana jamás llega porque el hábito de demora crece con los años.'
+    ],
+    q: [
+      'Decir mañana es el modo más cortés de decir nunca.'
+    ],
+    i: 'Sus análisis de la impeniencia final se citaron durante siglos como manual de examen para conversos tibios.'
+  },
+  {
+    a: 'bourdaloue',
+    t: 'La complacencia en sí mismo',
+    y: 1671,
+    p: 'París (estilo fiel de sus Cuaresmas de la corte, Obras completas, ed. 1864)',
+    o: 'Sermón contra la complacencia, vicio que Bourdaloue describe como el amor propio disfrazado de virtud entre personas de mérito real. Frente a sus oyentes cultos, dibuja al fariseo del templo como un hombre de buenas obras y corazón cerrado.',
+    x: 'Lucas 18:13 — "Mas el publicano, estando lejos, no quería ni aun alzar los ojos al cielo, sino que se golpeaba el pecho, diciendo: Dios, sé propicio a mí, pecador."',
+    th: ['Santidad', 'Idolatría del corazón'],
+    ol: [
+      'El amor propio se disfraza de conciencia: el hombre se complace en su devoción, en su honestidad y en su celo, y esa satisfacción vuela el lugar donde Dios debía reinar.',
+      'El fariseo ayuna, diezma y ora, y con todo ello no baja del templo justificado, porque sus virtudes eran espejos donde se miraba a sí mismo.',
+      'El publicano enseña la única postura que abre el cielo: la oración breve del pecador que no se excusa, que no compara, y que pide propiciación como quien pide la vida.'
+    ],
+    q: [
+      'Hay virtudes tan llenas de nosotros mismos que dejan en el alma menos sitio para Dios que los pecados.'
+    ]
+  },
+  {
+    a: 'bourdaloue',
+    t: 'La mentira de la corte',
+    y: 1672,
+    p: 'París (Cuaresma predicada ante Luis XIV, estilo fiel de sus sermones sobre la veracidad, Obras completas, ed. 1864)',
+    o: 'Ningún predicador del siglo se atrevió a tratar la mentira ante el rey con la frialdad geométrica de Bourdaloue: sin anécdotas, divide la falsedad en especies y condena una por una las palabras dobles de la vida pública.',
+    x: 'Proverbios 12:22 — "Los labios mentirosos son abominación a Jehová; mas los que obran la verdad le son de su agrado."',
+    th: ['Santidad', 'Firma y certeza'],
+    ol: [
+      'La mentira tiene grados y cortesías, pero toda palabra que sabe que es falsa corrompe al que la pronuncia, porque divide al hombre interior entre lo que dice y lo que es.',
+      'En la corte, como en el comercio, la palabra doble se ha vuelto moneda corriente: se engaña con tonos, con silencios y con medias verdades tan eficaces como falsedades completas.',
+      'La veracidad es una cuestión de gloria de Dios antes que de honor humano, porque la lengua es instrumento consagrado al que dio la palabra.'
+    ],
+    q: [
+      'Un hombre que miente con destreza ha perdido más que su crédito: ha perdido su propia compañía.'
+    ]
+  },
+  {
+    a: 'bourdaloue',
+    t: 'La ambición que sube',
+    y: 1673,
+    p: 'París (estilo fiel de sus Cuaresmas de la corte, Obras completas, ed. 1864)',
+    o: 'Ante la corte más ambiciosa de Europa, Bourdaloue predica contra la ambición sin citar nombres: examina el deseo de subir como una pasión que se disfraza de diligencia y de celo, y opone a su escalera la lógica invertida del Evangelio.',
+    x: 'Marcos 10:43 — "pero el que quiera hacerse grande entre vosotros será vuestro servidor."',
+    th: ['Idolatría del corazón', 'Santidad'],
+    ol: [
+      'La ambición no pregunta qué debe hacerse, sino qué hará brillar al que lo hace, y así convierte los empleos, el ministerio y aun la piedad en peldaños.',
+      'Cristo no restringe la grandeza: la redefine, y con esa redefinición tumba toda carrera edificada sobre el provecho propio y el anhelo de ser visto.',
+      'Servir es la única ascensión que el Evangelio bendice, porque en el reino de Dios se sube inclinándose y se gana perdiendo lo que la carne llama ganancia.'
+    ],
+    q: [
+      'La ambición es un hambre que crece con cada alimento que recibe y no conoce otro límite que la tumba.'
+    ]
+  },
+  {
+    a: 'bourdaloue',
+    t: 'La caridad ordenada',
+    y: 1674,
+    p: 'París (estilo fiel de sus sermones sobre la caridad, Obras completas, ed. 1864)',
+    o: 'Bourdaloue se niega a predicar el amor como sentimiento: analiza el capítulo trece de la primera carta a los corintios como un código de conducta, y somete a examen la benevolencia elegante que solo dona lo que no cuesta.',
+    x: '1 Corintios 13:4 — "El amor es sufrido, es benigno; el amor no tiene envidia, el amor no es jactancioso, no se envanece."',
+    th: ['Santidad', 'Anhelos humanos'],
+    ol: [
+      'La caridad no es un afecto tierno sino una justicia hacia Dios y hacia el prójimo, y por eso puede describirse en actos: sufrir, ceder, no envidiar, no inflarse.',
+      'El limosnero que da con desprecio ha perdido la mitad de su limosna, porque la caridad se mide por lo que cuesta dar y no por lo que se entrega.',
+      'Sin caridad, los dones más brillantes son moneda sin curso: la elocuencia, la ciencia y hasta el martirio no valen nada en la balanza donde se pesa el alma.'
+    ],
+    q: [
+      'La caridad que no cuesta nada es rara vez caridad: es vanidad que ha encontrado un pasatiempo piadoso.'
+    ]
+  },
+  {
+    a: 'bourdaloue',
+    t: 'La providencia que gobierna',
+    y: 1675,
+    p: 'París (estilo fiel de sus sermones sobre la providencia, Obras completas, ed. 1864)',
+    o: 'En tiempos de guerra y de penuria, cuando los grandes discutían la fortuna, Bourdaloue predica la providencia como doctrina práctica: no como consuelo flojo, sino como la verdad que desarma la ansiedad y juzga la inquietud de los que no confían.',
+    x: 'Mateo 10:29 — "¿No se venden dos pajarillos por un cuarto? Y ni uno de ellos cae a la tierra sin vuestro Padre."',
+    th: ['Firma y certeza', 'Crisis y prueba', 'Oración'],
+    ol: [
+      'El padrecito que cae al suelo no muere por azar: si lo mínimo del creado está gobernado, la vida del hombre bautizado está gobernada con más razón todavía.',
+      'La inquietud excesiva por el mañana es una herejía práctica: confiesa con la boca al Padre que gobierna y vive como si el mundo dependiera de nuestro cálculo.',
+      'Confiar en la providencia no exime del trabajo: obliga a él con serenidad, porque el que cree que Dios gobierna hace su deber y deja a Dios el resultado.'
+    ],
+    q: [
+      'No hay providencia de Dios que pueda leerse en el transcurso del día, pero toda se lee al final del libro.'
+    ]
+  },
+  {
+    a: 'bourdaloue',
+    t: 'El día del Señor',
+    y: 1676,
+    p: 'París (estilo fiel de sus sermones sobre el domingo, Obras completas, ed. 1864)',
+    o: 'Contra la profanación elegante del domingo en la corte, donde el día del Señor se gastaba en diversiones y visitas, Bourdaloue defiende la asamblea como la que santifica el tiempo: predicado a oyentes que ya no creían necesitarla.',
+    x: 'Éxodo 20:8 — "Acuérdate del día del reposo para santificarlo."',
+    th: ['Adoración', 'Santidad'],
+    ol: [
+      'El mandamiento del reposo no es una ley de cancillería sino un regalo: Dios reserva un día y lo consagra para que el alma respire y recuerde a quién debe el aliento.',
+      'El que gasta el domingo entero sin Dios ha robado el tiempo dos veces: de la gloria que se le debía y del descanso que su propio corazón necesitaba.',
+      'La asamblea santifica el tiempo porque reúne a los dispersos: el cristiano que ora solo es firme, pero el que ora con la Iglesia es indestructible.'
+    ],
+    q: [
+      'El hombre que no santifica un día a la semana terminará por no santificar ninguno.'
+    ]
+  },
+  {
+    a: 'bourdaloue',
+    t: 'La anatomía de la tentación',
+    y: 1677,
+    p: 'París (estilo fiel de sus Cuaresmas de la corte, Obras completas, ed. 1864)',
+    o: 'Sermón de método más que de fuego: Bourdaloue disecciona la tentación como un anatomista, distinguiendo la sugerencia, el deleite y el consentimiento, para enseñar dónde exactamente muere la libertad y nace el pecado.',
+    x: 'Santiago 1:14 — "sino que cada uno es tentado cuando de su propia concupiscencia es atraído y atrapado."',
+    th: ['Santidad', 'Crisis y prueba'],
+    ol: [
+      'La tentación no entra por fuerza en el alma: encuentra en ella una concupiscencia que le abre, y el demonio no hace más que llamar a la puerta que nuestro apetito deja entreabierta.',
+      'Entre la sugestión y el pecado hay un espacio de libertad: el deleite que se aloja, el pensamiento que se demora y el consentimiento que ya no se retira son los grados de la caída.',
+      'Vencer la tentación no es heroicidad de un instante sino vigilancia ordinaria: cortar el deleite en su nacimiento es más fácil que arrancar el hábito cuando ya echa raíces.'
+    ],
+    q: [
+      'El demonio tienta poco: la mayor parte del trabajo la hacemos nosotros mismos con nuestra propia concupiscencia.'
+    ]
+  },
+  {
+    a: 'morgan',
+    t: 'La crisis del bautismo',
+    y: 1903,
+    p: 'Londres (capítulo nacido de su serie de predicación, luego fijado en The Crises of the Christ)',
+    o: 'Morgan leía el Evangelio como una arquitectura de crisis decisivas: aquí expone el Jordán como el momento en que el Hijo se presenta públicamente y el cielo se abre. La homilía muestra su método de ver el libro entero antes de entrar en el detalle.',
+    x: 'Mateo 3:17 — "y hubo una voz de los cielos que decía: Este es mi Hijo amado, en quien tengo complacencia."',
+    th: ['Firma y certeza', 'Poder sobrenatural'],
+    ol: [
+      'El bautismo de Jesús no es un acto de penitencia sino una presentación: el que no tenía pecado se pone de pie entre los que vienen confesando, para identificarse con la nación que necesita lavarse.',
+      'El cielo que se abre sobre el Jordán rompe el silencio de cuatro siglos: la voz que había callado desde Malaquías vuelve a nombrar a un Hijo.',
+      'Toda la obra que sigue, hasta la cruz, arranca de esta aprobación pública del Padre: el Señor no trabaja para ganar el amor del cielo, sino desde ese amor ya pronunciado.'
+    ],
+    q: [
+      'El Hijo no descendió al río para buscar una bendición: descendió para convertirse en la puerta por donde la bendición bajaría al mundo.'
+    ],
+    i: 'El capítulo fijo el método de The Crises of the Christ: leer la vida de Cristo como una escalera de momentos fundacionales.'
+  },
+  {
+    a: 'morgan',
+    t: 'La crisis del desierto',
+    y: 1903,
+    p: 'Londres (de su serie sobre las crisis de Cristo, luego en The Crises of the Christ)',
+    o: 'Morgan expone las tres tentaciones como el examen del Hijo: la prueba no es si el diablo es fuerte, sino si el Hijo se mantendrá dentro del método de Dios. La homilía muestra su costumbre de estructurar el pasaje antes de predicarlo.',
+    x: 'Mateo 4:4 — "Escrito está: No sólo de pan vivirá el hombre, sino de toda palabra que sale de la boca de Dios."',
+    th: ['Crisis y prueba', 'Santidad'],
+    ol: [
+      'El Hijo vence no discutiendo con el tentador sino refugiándose en el texto escrito: cada golpe de su resistencia es un pasaje del Antiguo Testamento hecho arma.',
+      'Las tres tentaciones son una sola invitación con tres disfraces: tomar el rey sin la cruz, forzar al Padre con el gesto espectacular y adorar a otro para heredar sin padecer.',
+      'El desierto es la escuela del ministerio: quien no ha aprendido allí que se vive de la palabra de Dios se venderá después por pan a la primera hambruna del éxito.'
+    ],
+    q: [
+      'La tentación no pregunta si puedes, sino si vas a hacerlo por el camino de Dios o por el atajo del diablo.'
+    ]
+  },
+  {
+    a: 'morgan',
+    t: 'La crisis del monte de la transfiguración',
+    y: 1905,
+    p: 'Londres (Westminster Chapel, estilo fiel de The Westminster Pulpit)',
+    o: 'Predicado en su ciclo sobre el Evangelio de Mateo: Morgan veía en la transfiguración la gloria que arde bajo la carne, el momento en que la humanidad velada del Señor deja ver por un instante lo que siempre fue.',
+    x: 'Mateo 17:2 — "y se transfiguró delante de ellos; y su rostro resplandeció como el sol, y sus vestidos se hicieron blancos como la luz."',
+    th: ['Poder sobrenatural', 'Adoración'],
+    ol: [
+      'La transfiguración no añade nada al Hijo: descubre lo que ya era, porque la carne no escondía la gloria por defecto sino por misericordia hacia los que todavía no podían sostenerla.',
+      'Moisés y Elías hablan con Él de su partida: la ley y los profetas convergen sobre la cruz, y en la montaña la Escritura entera se ve de pie alrededor del Señor.',
+      'Los tres discípulos no suben para un privilegio sino para un encargo: el que ha visto la gloria debe bajar con ella al valle donde el niño epiléptico espera.'
+    ],
+    q: [
+      'La gloria no vino al monte: la gloria salió de debajo de la carne por un momento y volvió a cubrirse.'
+    ]
+  },
+  {
+    a: 'morgan',
+    t: 'La crisis de Getsemaní',
+    y: 1907,
+    p: 'Londres (Westminster Chapel, estilo fiel de The Westminster Pulpit)',
+    o: 'En su lectura arquitectónica de la pasión, Morgan expone Getsemaní como la puerta de la cruz: aquí el Hijo bebe la copa que nadie más podía beber, y la agonía se lee no como miedo sino como consagración final del Calvario.',
+    x: 'Mateo 26:39 — "Y adelantándose un poco, se postró sobre su rostro, orando y diciendo: Padre mío, si es posible, pase de mí esta copa; pero no sea como yo quiero, sino como tú."',
+    th: ['Crisis y prueba', 'Gracia'],
+    ol: [
+      'La copa no era la muerte en general: era esa muerte concreta, hecho pecado por nosotros, y el Hijo santo la mira de frente antes de beberla sin escapar.',
+      'Getsemaní no es debilidad vencida sino voluntad ofrecida: la frase no sea como yo quiero, sino como tú es el centro del Evangelio dicho por el propio Señor.',
+      'Los discípulos duermen mientras se decide la redención: toda la historia de la Iglesia está en esa escena, con el cielo en agonía y la carne sin vela.'
+    ],
+    q: [
+      'Getsemaní no es el lugar donde Cristo casi fracasa: es el lugar donde la cruz se hizo posible antes de llegar a ser real.'
+    ]
+  },
+  {
+    a: 'morgan',
+    t: 'La crisis de Gabbatha',
+    y: 1908,
+    p: 'Londres (Westminster Chapel, estilo fiel de The Westminster Pulpit)',
+    o: 'Morgan llama a Gabbatha la crisis del tribunal: el Juez de los vivos y de los muertos de pie ante un tribunal humano. La homilía contrasta la autoridad del César con la que calla en el reo, en su tono de exposición contenida.',
+    x: 'Juan 19:15 — "Ellos gritaron: Quita, quita, crucifícale. Les dice Pilato: ¿A vuestro rey he de crucificar? Respondieron los príncipes de los sacerdotes: No tenemos rey sino a César."',
+    th: ['Crisis y prueba', 'Firma y certeza'],
+    ol: [
+      'El juicio de Cristo invierte todos los tribunales: el reo interroga al magistrado, y el que dicta sentencia es el que más la teme.',
+      'La frase no tenemos rey sino a César es la renuncia más trágica de la historia de Israel: la nación escogida declara su bancarrota espiritual con la voz de sus príncipes.',
+      'Gabbatha enseña que ningún poder humano condena al Señor: Él permite el tribunal para que en él se juzgue al mundo y se cumpla la Escritura.'
+    ],
+    q: [
+      'El mundo juzgó al Juez y en ese juicio fue juzgado: Gabbatha es la sentencia del hombre contra sí mismo.'
+    ]
+  },
+  {
+    a: 'morgan',
+    t: 'La crisis de Golgota',
+    y: 1909,
+    p: 'Londres (Westminster Chapel, estilo fiel de The Westminster Pulpit)',
+    o: 'Morgan predica las siete palabras de la cruz no como siete sermones devocionales sino como una sola arquitectura: cada palabra abre un salón del misterio redentor, desde el perdón hasta la entrega final del espíritu.',
+    x: 'Lucas 23:46 — "Y clamando Jesús a gran voz, dijo: Padre, en tus manos encomiendo mi espíritu. Y habiendo dicho esto, expiró."',
+    th: ['Gracia', 'Muerte y eternidad'],
+    ol: [
+      'Las siete palabras no son fragmentos: son el edificio completo de la redención, con cimientos de perdón, columnas de misericordia y remate de entrega.',
+      'La primera palabra es intercesión y la última es confianza: el Señor abre y cierra su obra en oración, y todo el Calvario transcurre dentro de un corazón que reza.',
+      'El velo rasgado confirma lo que la voz clamada declara: la muerte del Hijo no es un accidente sufrido sino un acceso abierto, hecho por Él y dado a nosotros.'
+    ],
+    q: [
+      'En el Calvario la muerte no venció: la muerte fue vencida mientras parecía celebrar su victoria.'
+    ]
+  },
+  {
+    a: 'morgan',
+    t: 'La crisis de Pentecostés',
+    y: 1910,
+    p: 'Londres (Westminster Chapel, estilo fiel de The Westminster Pulpit)',
+    o: 'Morgan cierra su línea de crisis con Pentecostés: el Espíritu que clausura la espera de los discípulos y abre la era de la Iglesia. La homilía enlaza la ascensión con el fuego del comedor, mostrando la continuidad de la obra del Señor.',
+    x: 'Hechos 2:4 — "Y fueron todos llenos del Espíritu Santo, y comenzaron a hablar en otras lenguas, según el Espíritu les daba que hablasen."',
+    th: ['Poder sobrenatural', 'Evangelismo'],
+    ol: [
+      'La espera de los discípulos no era inacción sino obediencia: el Señor les había ordenado no salir hasta ser revestidos, y Pentecostés es el cumplimiento puntual de esa orden.',
+      'El Espíritu no viene como ornamento de la Iglesia sino como su vida: sin el fuego del comedor, la asamblea es un club con buena memoria y sin poder.',
+      'Las lenguas del primer anuncio revierten la confusión de Babel: el Evangelio nace hablando la lengua de cada pueblo, y ese es su método para siempre.'
+    ],
+    q: [
+      'La Iglesia no nació de un plan de hombres sino de una promesa cumplida: Pentecostés es la firma de Dios sobre la obra de la cruz.'
+    ]
+  },
+  {
+    a: 'morgan',
+    t: 'El gran médico',
+    y: 1911,
+    p: 'Londres (Westminster Chapel, estilo fiel de The Westminster Pulpit)',
+    o: 'En su predicación regular de Westminster Chapel, Morgan detiene el ritmo expositivo para detenerse en la frase del Señor sobre los enfermos: la homilía despliega la figura del gran médico y el diagnóstico del alma que el mundo no sabe hacerse.',
+    x: 'Marcos 2:17 — "Al oír esto Jesús, les dijo: Los sanos no tienen necesidad de médico, sino los enfermos. No he venido a llamar a justos, sino a pecadores."',
+    th: ['Gracia', 'Arrepentimiento'],
+    ol: [
+      'El Señor no vino a abrir un consultorio para sanos: su método empieza siempre por el diagnóstico, y el que no se reconoce enfermo queda fuera del alcance de su medicina.',
+      'Los fariseos no estaban sanos sino anestesiados: la religión sin arrepentimiento produce el único enfermo que niega la enfermería.',
+      'La llamadura de Cristo no es premio a la salud sino cita para los que se saben mal: el pecador que se declara tal ha dado el primer paso dentro de la consulta.'
+    ],
+    q: [
+      'El peor síntoma del alma es ignorar que está enferma, y la peor religión es la que cura ese síntoma con halagos.'
+    ]
+  },
+  {
+    a: 'morgan',
+    t: 'El mensaje del libro abierto',
+    y: 1912,
+    p: 'Londres (Westminster Chapel, estilo fiel de The Westminster Pulpit)',
+    o: 'Morgan, que leía cada libro de la Escritura unas cuarenta veces antes de predicarlo, expone aquí la visita de Nazaret como la carta fundacional de la misión: la Biblia como la casa de Dios, con el Señor de pie en su propio salón leyendo lo que de Él estaba escrito.',
+    x: 'Lucas 4:18 — "El Espíritu del Señor está sobre mí, por cuanto me ha ungido para dar buenas nuevas a los pobres; me ha enviado a sanar a los quebrantados de corazón."',
+    th: ['Evangelismo', 'Firma y certeza'],
+    ol: [
+      'En Nazaret el Señor no improvisa: abre el rollo, lee y dice hoy se cumple, y con esa frase declara que toda la Escritura era un mapa cuyo centro acababa de llegar.',
+      'La Biblia no es un archivo de máximas sino la casa donde Dios recibe: el que la abre con hambre encuentra al Huésped dentro de sus páginas.',
+      'El pueblo que oyó con admiración terminó en furia: el libro abierto siempre divide, y la franqueza de la palabra es la prueba de que es viva.'
+    ],
+    q: [
+      'El libro que no se abre no alimenta: la Biblia es pan de cada día o es decoración de anaquel.'
+    ]
+  },
+  {
+    a: 'morgan',
+    t: 'La resurrección y la vida',
+    y: 1913,
+    p: 'Londres (Westminster Chapel, estilo fiel de su ciclo de predicación sobre el Evangelio de Juan)',
+    o: 'De su largo ciclo sobre el Evangelio de Juan, Morgan toma el encuentro de Betania: el Yo soy que no promete una resurrección futura sino que se declara presente. La homilía muestra su hábito de leer cada signo del cuarto Evangelio como revelación progresiva.',
+    x: 'Juan 11:25 — "Le dijo Jesús: Yo soy la resurrección y la vida; el que en mí cree, aunque esté muerto, vivirá."',
+    th: ['Muerte y eternidad', 'Poder sobrenatural', 'Firma y certeza'],
+    ol: [
+      'Ante la tumba el Señor no dice que resucitará a Marta: dice que Él es la resurrección, y así desplaza la esperanza de un acontecimiento a una Persona.',
+      'El llanto de Jesús no es impotencia: es la ira del Hijo ante la muerte, entendida como el intruso que invade la casa de su amigo.',
+      'Marta confiesa con exactitud y no entiende todavía: la fe en la Escritura correcta necesita el encuentro personal para convertirse en consuelo vivo.'
+    ],
+    q: [
+      'La esperanza cristiana no es que la muerte terminará: es que la muerte ya ha encontrado a Alguien que la desarma.'
+    ]
+  },
+  {
+    a: 'sunday',
+    t: 'Wonderful',
+    y: 1905,
+    p: 'Chicago (sermón documentado de sus campañas de tabernáculo, recogido en su colección impresa)',
+    o: 'Uno de los sermones más famosos de Billy Sunday, predicado en decenas de campañas: un vuelco atlético sobre el nombre de Cristo, nombre Wonderful, Admirable, que el evangelista descuelga frase a frase como quien golpea una pelota contra el vaso del pecado.',
+    x: 'Isaías 9:6 — "porque un niño nos es nacido, hijo nos es dado, y el principado será sobre su hombro; y se llamará su nombre Admirable, Consejero, Dios Fuerte, Padre Eterno, Príncipe de Paz."',
+    th: ['Adoración', 'Poder sobrenatural'],
+    ol: [
+      'El nombre Admirable no es un epíteto de calendario: es una lista de emergencias humanas, y cada título del versículo responde a una carencia que el pecador reconoce en la silla del tabernáculo.',
+      'Sunday tumba la indiferencia preguntando qué nombre ha invocado el mundo en sus horas finales: nadie muere llamando a sus ídolos, y todos los que han pasado la muerte de cerca saben a quién gritar.',
+      'El sermón golpea con la única conclusión que admite: si el nombre es Admirable, entonces la vida que no se rinde a Él ha quedado fuera de la mayor oferta que la historia ha hecho a un hombre.'
+    ],
+    q: [
+      'Cristo no es un tema para hablar en domingo: es el nombre que responde cuando todo lo demás cuelga el teléfono.'
+    ],
+    i: 'Convertido en pieza central de sus campañas, este sermón fijó su fama de predicador capaz de hacer teología con el ritmo del estadio.'
+  },
+  {
+    a: 'sunday',
+    t: 'Las mejores obras del diablo',
+    y: 1908,
+    p: 'Estados Unidos (sermón documentado de sus campañas, impreso por la prensa de sus reuniones)',
+    o: 'En su sermón documentado sobre el diablo, Sunday alegaba que la mejor obra de Satanás no es el escándalo sino la respetabilidad sin conversión: el hombre que va a la iglesia, paga sus cuentas y sigue perdido, y por eso nadie lo alerta.',
+    x: '2 Corintios 11:14 — "Y no es maravilla, porque el mismo Satanás se transforma en ángel de luz."',
+    th: ['Arrepentimiento', 'Idolatría del corazón'],
+    ol: [
+      'El diablo no necesita fabricar ateos: le basta con llenar los bancos de gente que confunde pertenecer a una iglesia con haber nacido de nuevo.',
+      'La transformación en ángel de luz no es un truco de escenario: es la moral exterior impecable que esconde un corazón jamás rendido, y esa es la obra maestra que Sunday denunciaba en sus reuniones.',
+      'Ninguna etiqueta salva: la membresía, la costumbre familiar y la decencia pública son las cortinas del taller donde el alma nunca se ha negociado con Dios.'
+    ],
+    q: [
+      'El diablo manda a sus peores obras vestidas de domingo, con la Biblia debajo del brazo y el corazón intacto.'
+    ]
+  },
+  {
+    a: 'sunday',
+    t: 'Arregla tus cuentas con Dios',
+    y: 1910,
+    p: 'Estados Unidos (sermón documentado de sus campañas de tabernáculo, impreso por la prensa de sus reuniones)',
+    o: 'Su llamado documentado más repetido, predicado al final de cada campaña: Sunday cruzaba el tabernáculo y apuraba la decisión inmediata, porque para él la reconciliación con Dios no era un proyecto de temporada sino una cuenta que se paga hoy.',
+    x: '2 Corintios 5:20 — "Así que, somos embajadores en nombre de Cristo, como si Dios rogase por medio de nosotros: Reconciliaos con Dios."',
+    th: ['Arrepentimiento', 'Evangelismo', 'Crisis y prueba'],
+    ol: [
+      'Dios no mendiga: Dios suplica, y esa es la inversión que el versículo pone delante de todo auditorio orgulloso, con el Creador rogando por medio de un embajador',
+      'Las cuentas con Dios no se refinancian: cada año de demora agrega intereses de duro estudio, y el moribundo en la mesa de operaciones no pide una cita para mañana.',
+      'La reconciliación es un acto, no un sentimiento: se baja del banco, se cruza el tabernáculo y se firma la paz con Dios en la línea donde ya está esperando el testimonio.'
+    ],
+    q: [
+      'Mañana es la excusa favorita del infierno: Dios dice hoy, y el diablo dice demora.'
+    ],
+    i: 'El llamado fijó el estilo de cierre de sus campañas: miles de decisiones bajando del banco por el sendero del tabernáculo.'
+  },
+  {
+    a: 'sunday',
+    t: 'El retroceso',
+    y: 1909,
+    p: 'Estados Unidos (sermón documentado de sus campañas, impreso por la prensa de sus reuniones)',
+    o: 'Sunday predicó el retroceso como nadie: con caricaturas físicas del creyente que se enfría, citado por sus oyentes durante décadas. El sermón no consuela al caído: lo empuja a la vuelta, y nombra el primer peldaño del descenso sin adornos.',
+    x: 'Jeremías 2:19 — "Conoce, pues, y ve cuán malo y amargo sea para ti el haber dejado tú a Jehová tu Dios, y que mi temor no está en ti, ha dicho el Señor Jehová de los ejércitos."',
+    th: ['Arrepentimiento', 'Santidad'],
+    ol: [
+      'El retroceso no es una caída súbita: es un enfriamiento por grados, y el creyente que ha bajado de una temperatura sin darse cuenta descubre el hielo cuando ya está en el centro del lago.',
+      'La apostasía es amarga porque sabe mentir: promete vida al dejar la casa del Padre y entrega ceniza, y el versículo obliga al fugitivo a saber, no a sospechar, cuán mal le salió el trato.',
+      'La vuelta no es nostalgia: es arrepentimiento con pies, deshacer el camino hecho, y Sunday lo pedía en el tabernáculo con la misma urgencia con que pedía la primera conversión.'
+    ],
+    q: [
+      'Nadie se cae de una iglesia de golpe: se enfría, se enfría y se enfría, hasta que el fuego se apaga sin haber hecho ruido.'
+    ]
+  },
+  {
+    a: 'sunday',
+    t: 'La segunda venida de Cristo',
+    y: 1912,
+    p: 'Estados Unidos (estilo fiel de su evangelismo, predicado en el cierre de campañas)',
+    o: 'En su evangelismo, Sunday usaba la segunda venida no como curiosidad de cronología sino como palanca de urgencia: si el Dueño vuelve, el empleado está en la puerta con las cuentas listas. El sermón es fiel a su manera de golpear la eternidad contra el reloj.',
+    x: 'Hechos 1:11 — "varones galileos, ¿por qué estáis mirando al cielo? Este mismo Jesús, que ha sido tomado de vosotros al cielo, vendrá del mismo modo que le habéis visto subir."',
+    th: ['Muerte y eternidad', 'Firma y certeza', 'Evangelismo'],
+    ol: [
+      'El ángel no dice que vendrá otro: dice que vendrá este mismo Jesús, y la fe no descansa en un calendario sino en un cuerpo que los cielos recibieron y devolverán.',
+      'La segunda venida no es un tema de congresos: es la palabra que ordena la bolsa del pecador hoy, porque nadie negocia con la eternidad si cree que el Juez está a la vuelta de la esquina.',
+      'Sunday corta la curiosidad profética de raíz: la pregunta no es cuándo sino quién, porque el que está listo no necesita fechas y el que no lo está no las soportaría.'
+    ],
+    q: [
+      'El que vive listo para la venida de Cristo no tiene tiempo de desperdiciar la vida en cosas que no la valen.'
+    ]
+  },
+  {
+    a: 'sunday',
+    t: 'Sembrar y cosechar',
+    y: 1913,
+    p: 'Estados Unidos (sermón impreso de sus campañas, recogido en su colección)',
+    o: 'Sermón impreso de su colección, con el ritmo agropecuario queSunday sabía usar con audiencias de pueblo y de ciudad: la ley de la siembra no negocia, y el sermón camina por el surco mostrando cada semilla del pecado que termina en su cosecha.',
+    x: 'Gálatas 6:7 — "no os engañéis; Dios no puede ser burlado: pues todo lo que el hombre sembrare, eso también segará."',
+    th: ['Arrepentimiento', 'Crisis y prueba'],
+    ol: [
+      'Nadie siembra cardos y espera trigo: la ley de la cosecha es la única legislación que el hombre no puede apelar, porque Dios no se burla y el suelo no olvida.',
+      'El engaño del pecador es sembrar a plazos: piensa cosechar después y alegrarse ahora, pero la parcela no firma contratos y devuelve lo que recibió con intereses.',
+      'La cosecha del Espíritu obedece la misma ley en positivo: el que siembra bien en el alma ajena segará vida eterna, y Sunday predicaba ambas caras de la ley con la misma pala.'
+    ],
+    q: [
+      'Siembras una noche de placer y cosechas años de arrepentimiento: la tierra nunca se equivoca de recibo.'
+    ]
+  },
+  {
+    a: 'sunday',
+    t: 'El hogar cristiano',
+    y: 1915,
+    p: 'Estados Unidos (estilo fiel de su evangelismo doméstico, predicado en campañas)',
+    o: 'En su evangelismo doméstico, Sunday atacaba los hogares divididos con la misma descarga con que atacaba el salón: el estilo fiel de sus llamadas a las familias es un asedio contra la ambivalencia, apurando la decisión de una casa entera de una sola vez.',
+    x: 'Josué 24:15 — "pero yo y mi casa serviremos a Jehová."',
+    th: ['Santidad', 'Anhelos humanos', 'Firma y certeza'],
+    ol: [
+      'Josué no pregunta a la asamblea qué opinan los demás: firma primero, y su decisión pone el termómetro de la casa aunque el resto titubee con los dioses de allá alrededor.',
+      'El hogar cristiano no es una casa con una Biblia en la mesa: es una casa donde alguien decidió por la familia y sostiene la decisión cuando el trabajo, la deuda y la costumbre la ponen a prueba.',
+      'Sunday empujaba al cabeza de familia a romper la paridad: una casa servida a medias entre Dios y el mundo no es un compromiso, es una fuga por etapas.'
+    ],
+    q: [
+      'Mejor una casa entera a ras de suelo con Dios que un palacio de dos pisos con el diablo en la planta baja.'
+    ]
+  },
+  {
+    a: 'sunday',
+    t: 'El joven que cree en sí mismo',
+    y: 1914,
+    p: 'Estados Unidos (estilo fiel de sus llamadas a la juventud, predicado en campañas de tabernáculo)',
+    o: 'Sunday, ex deportista profesional, hablaba a los jóvenes como un veterano del vestuario: el estilo fiel de sus llamadas a la juventud convierte la confianza en sí mismo en un reto espiritual, con la franqueza que los jóvenes escuchaban de nadie más.',
+    x: '1 Timoteo 4:12 — "Ninguno tenga en poco tu juventud; sé modelo de los fieles en la palabra, en conducta, en amor, en espíritu, en fe, en pureza."',
+    th: ['Santidad', 'Anhelos humanos'],
+    ol: [
+      'Creen en sí mismos, les decía, pero la confianza sin dirección termina en el zaguán de cualquier pasión: el ídolo del instante desmonta la carrera antes del segundo tiempo.',
+      'El apóstol no le dice al joven que espere a ser mayor: le dice que sea modelo ahora, y Sunday traducía esa orden a la vida del estadio, del taller y del escritorio.',
+      'La juventud no es un préstamo: es el capital inicial de toda la vida, y el joven que lo invierte en Dios no llega a la madurez quebrado y pidiendo un rescate.'
+    ],
+    q: [
+      'Confía en ti mismo si quieres, pero recuerda que el hombre que no cree en nadie termina creyendo en cualquiera.'
+    ]
+  },
+  {
+    a: 'sunday',
+    t: 'La oración que abre el tabernáculo',
+    y: 1916,
+    p: 'Estados Unidos (estilo fiel de su evangelismo, predicado en los comienzos de campaña)',
+    o: 'Antes de cada campaña, Sunday y sus colaboradores levantaban semanas de oración previa, y el estilo fiel de su evangelismo condensa esa práctica en un sermón: el tabernáculo de madera se abre primero en el cuarto de oración y después con el martillo.',
+    x: 'Santiago 5:16 — "La oración eficaz del justo puede mucho."',
+    th: ['Oración', 'Poder sobrenatural'],
+    ol: [
+      'La oración eficaz no es discurso largo: es justo que habla claro, con la boca limpia y el pedido concreto, y por eso puede mucho donde la elocuencia no mueve una silla.',
+      'El tabernáculo se levanta con clavos pero se abre con oración: Sunday atribuía a las semanas previas de petición las multitudes que después llenaban el recinto.',
+      'El avivamiento no baja de la tarima sino del cielo: los que oran antes de la campaña cosechan después, y los que no oran solo recogen lo que la carne fabrica.'
+    ],
+    q: [
+      'El diablo ríe de nuestros planes y tiembla cuando el justo se pone de rodillas.'
+    ]
+  },
+  {
+    a: 'sunday',
+    t: 'El final de la carrera',
+    y: 1920,
+    p: 'Estados Unidos (estilo fiel de sus predicaciones de madurez y despedida, en sus últimos años de campañas)',
+    o: 'En el tramo final de su carrera, cuando el cuerpo ya no podía saltar como en los primeros tabernáculos, el estilo fiel de sus predicaciones de madurez mira hacia atrás desde el atleta veterano: la despedida de un hombre que corrió en público y no quería descalificarse al final.',
+    x: '2 Timoteo 4:7 — "He peleado la buena batalla, he acabado la carrera, he guardado la fe."',
+    th: ['Firma y certeza', 'Muerte y eternidad', 'Crisis y prueba'],
+    ol: [
+      'El veterano no cuenta los aplausos de la pista: cuenta las vueltas completas, y las tres frases del versículo son el inventario de un hombre que no abandonó ningún tramo de su prueba.',
+      'La corona no se gana en la salida: se gana en el último tramo, cuando las piernas pesan y el estadio ya no grita, y ahí es donde la fe se distingue del entusiasmo.',
+      'Sunday cerraba mirando al banco de los jueces: el Señor justo premia, y esa sentencia futura era para él la única auditoría que valía la pena preparar desde hoy.'
+    ],
+    q: [
+      'No importa cómo entraste a la pista: importa cómo sales, porque la corona se entrega en la meta y no en el vestuario.'
+    ]
+  },
+{
+    a: 'king',
+    t: 'La muerte del mal en la playa',
+    y: 1957,
+    p: 'Dexter Avenue Baptist Church, Montgomery (púlpito dominical; King Papers, Stanford)',
+    o: 'Un año después del boicot, la congregación necesitaba un lenguaje para lo vivido sin llamarlo triunfo humano. King sostiene que lo que Israel vio en la orilla no fue la caída de un ejército ante otro, sino del mal ante el juicio de Dios. La escena del mar despejado ordena mirar atrás una sola vez y luego caminar.',
+    x: 'Éxodo 14:30 — "Y salvó Jehová a Israel aquel día de mano de los egipcios; e Israel vio a los egipcios muertos a la orilla del mar."',
+    th: ['Crisis y prueba', 'Poder sobrenatural'],
+    ol: [
+      'El éxodo enseña que hay madrugadas en las que el pueblo cruza el agua mientras la historia lo persigue, y la fe consiste en avanzar aunque el carro del opresor aún suene en la orilla contraria.',
+      'Israel miró los cuerpos en la playa y no celebró la ruina ajena: entendió que el mismo mar que se abrió para salvar se cerró para juzgar, y guardó silencio antes que canto.',
+      'Ninguna discriminación dura para siempre, porque el mal que se alza contra la justicia queda finalmente tendido en la costa, y el pueblo liberado debe escribir esa memoria para las generaciones.',
+    ],
+    q: [
+      'El mar que se abre para un pueblo se cierra contra el mal: la playa de la historia guarda siempre ese doble testimonio.',
+      'No festejamos la caída del opresor, celebramos que Dios es fiel a su promesa cuando la noche parece no terminar.',
+    ],
+    i: 'Predicado en pleno rebrote del Klan en Montgomery, dio a la comunidad del boicot una teología del fin del mal. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'king',
+    t: '¿Qué es el hombre?',
+    y: 1959,
+    p: 'Ebenezer Baptist Church, Atlanta (sermón dominical; King Papers, Stanford)',
+    o: 'King toma la pregunta del salmista para confrontar una época que mide al hombre por producción y poder. El sermón recorre la doble condición humana, de barro y de corona, para terminar en adoración. Fue el núcleo antropológico de su obra publicada más tarde.',
+    x: 'Salmo 8:4 — "¿Qué es el hombre, para que tengas de él memoria? ¿Y el hijo del hombre, para que lo visites?"',
+    th: ['Anhelos humanos', 'Muerte y eternidad'],
+    ol: [
+      'El salmista mide al hombre entre el polvo y la corona: menor que los cielos en talla, mayor que ellos en destino, y esa doble medida desarma toda antropología que solo cuenta células.',
+      'Una civilización que domina la naturaleza y todavía no domina su corazón responde a esta pregunta con máquinas cada vez mayores y respuestas cada vez más pequeñas.',
+      'La grandeza del hombre no está en lo que produce sino en que Dios lo visita, y por eso la pregunta del salmo termina en adoración y no en inventario.',
+    ],
+    q: [
+      'El hombre es una paradoja de polvo y gloria: quien olvida el polvo hace tiranos, quien olvida la gloria hace esclavos.',
+    ],
+    i: 'Versión central de su antropología publicada después en Strength to Love. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'king',
+    t: 'Sueños rotos',
+    y: 1961,
+    p: 'Ebenezer Baptist Church, Atlanta (sermón dominical; King Papers, Stanford)',
+    o: 'Casi todo el mundo carga una esperanza que murió antes de nacer, y el púlpito suele mentir prometiendo que la fe la resucita entera. King predica que Dios no repara el sueño de modo automático, pero sí al quebrantado. La consolación creyente es otra cosa: un rediseño de gracia.',
+    x: 'Salmo 34:18 — "Cercano está Jehová a los quebrantados de corazón; y salva a los contritos de espíritu."',
+    th: ['Anhelos humanos', 'Gracia'],
+    ol: [
+      'Los sueños rotos no son accidentes del camino creyente sino su terreno ordinario, y la Escritura nunca prometió un itinerario sin escombros a quienes caminan con Dios.',
+      'El salmo no dice que Dios cercano consuele a los triunfadores, dice que se inclina sobre los quebrantados, y esa cercanía es la única terapia que no requiere disfraz.',
+      'La gracia no siempre devuelve el sueño pedido: a veces lo sustituye por un propósito mayor que el soñador jamás habría elegido, y solo después se reconoce como mejor.',
+    ],
+    q: [
+      'La gracia no siempre entrega el sueño que pedimos; suele entregar uno que no sabíamos necesitar.',
+    ],
+    i: 'Recogido en Strength to Love como médula de su consolación pastoral. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'king',
+    t: 'El hombre que fue un necio',
+    y: 1959,
+    p: 'Ebenezer Baptist Church, Atlanta (sermón dominical; King Papers, Stanford)',
+    o: 'King desarma el retrato del rico insensato negando que su pecado fuera la codicia cruel: fue el éxito sin ventanas. La parábola de Jesús le sirve para desenmascarar una cultura que acumula graneros y vacía almas. La medianoche funciona en el sermón como auditorio que iguala todas las cuentas.',
+    x: 'Lucas 12:20 — "Necio, esta noche vienen a pedirte tu alma; y lo que has preparado, ¿de quién será?"',
+    th: ['Idolatría del corazón', 'Muerte y eternidad'],
+    ol: [
+      'El rico del granero no era un villano: era exitoso, y su ruina fue construir una vida sin ventanas hacia Dios y sin puertas hacia el hermano.',
+      'Se puede llenar el granero y vaciar el alma, porque la escala del bienestar material no sabe medir el bien interior que sostiene a una persona cuando el censo termina.',
+      'La medianoche iguala todas las cuentas bancarias, y por eso el necio no fracasó por almacenar sino por olvidar que el alma no entra en el inventario.',
+    ],
+    q: [
+      'El necio no amó demasiado el dinero: amó demasiado poco lo que el dinero no puede comprar.',
+      'Rico para sí y pobre para Dios es la única bancarrota que no avisa.',
+    ],
+    i: 'Pieza de su crítica moral a la afluencia americana, incluida luego en su obra publicada. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'king',
+    t: 'Un golpe a medianoche',
+    y: 1957,
+    p: 'Dexter Avenue Baptist Church, Montgomery (King Papers, Stanford)',
+    o: 'King describe la medianoche como hora de la civilización: sociedades que fabrican abundancia material y se quedan sin el pan del evangelio. La parábola del amigo importuno le sirve para defender una oración insistente y pública. El sermón interpela tanto a la iglesia cómoda como al vecindario desesperado.',
+    x: 'Lucas 11:8 — "Os digo: aunque no se levante a darle por ser su amigo, por su importunidad se levantará, y le dará todo lo que necesite."',
+    th: ['Oración', 'Crisis y prueba'],
+    ol: [
+      'La parábola de Jesús no retrata a un Dios dormido que hay que despertar, sino a un Padre que se complace en la persistencia de los que claman sin vergüenza.',
+      'La medianoche de una civilización no es la falta de electricidad sino la falta de pan espiritual: avances técnicos sobre un suelo vaciado de sentido y de misericordia.',
+      'El que golpea a medianoche confiesa dos cosas a la vez, que la casa ajena tiene lo que él no posee y que no piensa irse hasta recibirlo.',
+    ],
+    q: [
+      'La oración que golpea a medianoche no convence a Dios de dar el pan: convence al que ora de que sin ese pan no hay mañana.',
+    ],
+    i: 'Sermón de su catálogo montgomeryiano sobre la oración y la urgencia social. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'king',
+    t: 'Las tres dimensiones de una vida completa',
+    y: 1959,
+    p: 'Ebenezer Baptist Church, Atlanta (versiones predicadas entre 1959 y 1967; King Papers, Stanford)',
+    o: 'King repite durante años su tesis de la vida en tres medidas: largo, ancho y alto. El largo persigue un objetivo digno, el ancho se abre al amor del prójimo y el alto descansa en Dios. El sermón une su ética social con su devoción sin separarlas jamás.',
+    x: 'Eclesiastés 4:12 — "Y si alguien prevalece contra uno, dos le resisten; y cordón de tres dobleces no se rompe pronto."',
+    th: ['Anhelos humanos', 'Santidad'],
+    ol: [
+      'La vida completa tiene una longitud que persigue un objetivo digno, una anchura que se abre al amor de los hermanos y una altura que se apoya en Dios, y ninguna de las tres sobra.',
+      'Quien cultiva solo el largo produce eficiencia sin compasión, y quien cultiva solo el ancho produce cariño sin brújula: el cordón necesita los tres hilos tensados a la vez.',
+      'En la ciudad cúbica de Juan el largo, el ancho y el alto se miden iguales, señal de que una vida madura ya no jerarquiza a Dios y al prójimo, sino que los entrelaza.',
+    ],
+    q: [
+      'Una vida que solo se mide en largo termina atascada; la altura no es lujo espiritual, es el tercer hilo sin el cual todo se rompe.',
+    ],
+    i: 'Su sermón más repetido en décadas de púlpito, piedra angular de su ética integral. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'king',
+    t: 'La mente fuerte y el corazón tierno',
+    y: 1959,
+    p: 'Ebenezer Baptist Church, Atlanta (King Papers, Stanford)',
+    o: 'King diagnostica una época que divide a la gente entre duros sin compasión y blandos sin criterio. El mandato de Jesús sobre serpientes y palomas le ofrece la síntesis: fortaleza de juicio y suavidad de trato. El sermón funda su ética de la resistencia no violenta.',
+    x: 'Mateo 10:16 — "He aquí yo os envío como a ovejas en medio de lobos; sed, pues, prudentes como las serpientes, y sencillos como las palomas."',
+    th: ['Santidad', 'Crisis y prueba'],
+    ol: [
+      'La fe madura no elige entre ser dura o ser mansa: reúne la mente que analiza sin miedo y el corazón que no sabe despreciar, aunque el mundo los separe en castas.',
+      'El ingenuo sin firmeza es presa fácil del engaño, y el cínico sin ternura convierte toda relación en transacción: Jesús manda cultivar las dos alas del mismo pájaro.',
+      'La resistencia no violenta nace de esta síntesis, porque exige la dureza de no ceder al mal y la mansedumbre de no devolverlo con la misma moneda.',
+    ],
+    q: [
+      'Ni la paloma sola ni la serpiente sola sobreviven: la madurez cristiana es fortaleza que no endurece y ternura que no se rinde.',
+    ],
+    i: 'Base doctrinal de su noviolencia, recogida después en Strength to Love. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'king',
+    t: 'Redefiniendo los valores perdidos',
+    y: 1954,
+    p: 'Second Baptist Church, Detroit (gira juvenil del Norte; King Papers, Stanford)',
+    o: 'En uno de sus primeros sermones del Norte, King compara una civilización de instrumentos perfectos con una brújula moral rota. El texto del Señor sobre buscar primero el Reino ordena la crítica: no es falta de riqueza, es desorden de prioridades. El púlpito acusa a la nación antes que consolarla.',
+    x: 'Mateo 6:33 — "Mas buscad primeramente el reino de Dios y su justicia, y todas estas cosas serán añadidas."',
+    th: ['Idolatría del corazón', 'Santidad'],
+    ol: [
+      'La civilización ha ganado en instrumentos lo que pierde en brújula: sabemos más de bombas que de justicia y medimos con precisión lo que vale menos.',
+      'Perder los valores no es olvidar ideales abstractos, es ordenar la vida al revés, buscando primero las cosas que se añaden y dejando para después el Reino.',
+      'El orden del Reino no desprecia el pan: lo coloca donde recibe bendición, después y no antes de la justicia de Dios.',
+    ],
+    q: [
+      'Una nación puede producir riquezas y cultura y seguir en quiebra moral: el orden de las prioridades es el verdadero inventario.',
+    ],
+    i: 'Sermón temprano que ya contiene la crítica cultural de toda su carrera posterior. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'king',
+    t: 'La carta de Pablo a los cristianos americanos',
+    y: 1956,
+    p: 'Dexter Avenue Baptist Church, Montgomery (sermón epistolar leído luego en giras; King Papers, Stanford)',
+    o: 'Con la ficción literaria de una carta apostólica dirigida a la iglesia de su país, King pone a Pablo escribiendo desde la cárcel romana al siglo veinte americano. La cortesía del tono acentúa la ironía del reproche. El dispositivo le permite a la Escritura interrogar a la cultura sin mediador.',
+    x: 'Efesios 4:14 — "para que ya no seamos niños fluctuantes, llevados por doquiera de todo viento de doctrina."',
+    th: ['Santidad', 'Crisis y prueba'],
+    ol: [
+      'La carta elogia el genio científico del destinatario y a la vez le pregunta qué ha hecho por su alma, porque un instrumento perfecto en manos de un corazón torcido agranda la ruina.',
+      'La madurez que pide Pablo no es acumulación de saber sino firmeza de raíces: árboles de fe que no se doblan ante cada viento cultural que pasa.',
+      'El sermón demuestra que la Escritura no necesita ser actualizada para hablar al presente, basta dejarla firmar la carta con su propia mano.',
+    ],
+    q: [
+      'El genio sin carácter es un cohete sin brújula: llega más lejos y cae en peor lugar.',
+    ],
+    i: 'Pieza inventiva de su oratoria, difundida después en sus giras y publicada en sus antologías. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'king',
+    t: 'El sueño americano',
+    y: 1961,
+    p: 'Ebenezer Baptist Church, Atlanta (King Papers, Stanford)',
+    o: 'Años antes del mitin de la capital, King ya predicaba el sueño como teología y no como política. La promesa americana solo es honesta si arranca del Creador que hizo de un mismo origen a todos los hombres. El sermón une el evangelio de la imagen de Dios con la crítica a la segregación.',
+    x: 'Gálatas 3:28 — "no hay judío ni griego; no hay esclavo ni libre; no hay varón ni hembra; porque todos vosotros sois uno en Cristo Jesús."',
+    th: ['Crisis y prueba', 'Anhelos humanos'],
+    ol: [
+      'King distingue entre un sueño de privilegios y un sueño de fundamento: la promesa del país solo es honesta cuando se apoya en el Creador que hizo de un origen común a todos los hombres.',
+      'La igualdad que defiende no es una moda del siglo sino una convicción bíblica sobre la imagen de Dios, y por eso no se negocia en cada elección ni se mide en encuestas.',
+      'Un credo proclamado y no encarnado agrava la desilusión de los que lo esperan, y por eso el sueño exige tribunales y corazones, leyes y madrugadas de oración.',
+    ],
+    q: [
+      'Una democracia que declara la igualdad y la niega en la vereda no necesita más consignas: necesita convertirse.',
+    ],
+    i: 'Versión púlpito de la tesis que luego maduró en su discurso de 1963. © King Estate vía IPM; transcripción académica en kinginstitute.stanford.edu (solo con fines de estudio).',
+  },
+  {
+    a: 'washer',
+    t: 'Un sermón que ha enojado a muchos',
+    y: 2006,
+    p: 'Grabación de conferencia, SermonAudio (verificado)',
+    o: 'Nace de la constatación de que miles de profesiones de fe no sobreviven la primera prueba real. Washer pide detener el evangelismo de decisiones y volver a la pregunta de Pablo: está usted en la fe o solo está en la lista. El enojo del título es la reacción esperada del corazón no examinado.',
+    x: '2 Corintios 13:5 — "Examinaos a vosotros mismos si estáis en la fe; probaos a vosotros mismos. ¿O no os conocéis a vosotros mismos, que Jesucristo está en vosotros?"',
+    th: ['Firma y certeza', 'Arrepentimiento'],
+    ol: [
+      'La Escritura no manda examinar la fecha en que firmaste una tarjeta sino la vida que hoy produce evidencia de la presencia de Cristo.',
+      'El miedo a inquietar a los falsamente seguros ha producido multitudes tranquilas camino al juicio, y ese silencio pastoral es el mayor acto de odio espiritual.',
+      'Un examen honesto no desangra la fe verdadera: la fortalece, porque la certeza que no puede pasar una prueba no era certeza, era costumbre.',
+    ],
+    q: [
+      'Es más amable asustar hoy a un falso convertido que dejarlo dormir hasta el juicio.',
+      'La salvación no es una decisión que tomaste una tarde: es una obra que Dios está haciendo y que se nota.',
+    ],
+    i: 'Sermón repetido y discutido en círculos bautistas del sur de Estados Unidos; inclinó a muchos ministros hacia el examen personal antes del llamado público.',
+  },
+  {
+    a: 'washer',
+    t: 'La soberanía de Dios en la salvación',
+    y: 2010,
+    p: 'Grabación de SermonAudio (estilo fiel de su enseñanza teológica; año aproximado)',
+    o: 'Washer parte de la palabra pequeña del texto, nadie, para desmontar siglos de autoconfianza religiosa. Antes de preguntar si el hombre quiere venir, el evangelio afirma que no puede. La atracción del Padre se predica como obra regeneradora y no como gesto decorativo.',
+    x: 'Juan 6:44 — "Nadie puede venir a mí, si el Padre que me envió no le trajere; y yo le resucitaré en el día postrero."',
+    th: ['Gracia', 'Firma y certeza'],
+    ol: [
+      'Antes de preguntar si el hombre quiere venir, el texto afirma que nadie puede, y esa palabra pequeña desmonta siglos de autoconfianza religiosa.',
+      'La atracción del Padre no es un empujón externo sino una obra que abre ojos y oídos cautivos, y mueve la voluntad muerta a abrazar al Hijo de corazón entero.',
+      'Quien entiende que su venida a Cristo fue tramada y ejecutada por Dios deja de presumir su decisión y comienza a adorar la misericordia que la produjo.',
+    ],
+    q: [
+      'El hombre no pierde la salvación por falta de información: la rechaza por falta de voluntad, y por eso hace falta que Dios la vuelva hacia sí.',
+    ],
+    i: 'Núcleo de su enseñanza teológica repetida en conferencias de todo el mundo hispano.',
+  },
+  {
+    a: 'washer',
+    t: 'El evangelio al desnudo',
+    y: 2008,
+    p: 'Grabación de SermonAudio (estilo fiel de su colección; año aproximado)',
+    o: 'Washer defiende un evangelio con contenido verificable y no con atractivos: muerto, sepultado y resucitado según las Escrituras. Su diagnóstico es que la Iglesia moderna ha decorado el mensaje hasta disimular el escándalo. La predicación vuelve a la fórmula de Pablo como fundamento inamovible.',
+    x: '1 Corintios 15:3-4 — "Cristo murió por nuestros pecados, conforme a las Escrituras; y que fue sepultado, y que resucitó al tercer día, conforme a las Escrituras."',
+    th: ['Evangelismo', 'Gracia'],
+    ol: [
+      'El evangelio que predicó Pablo no dependía de técnicas ni de atracciones: era un mensaje con contenido verificable, muerto, sepultado y resucitado conforme a las Escrituras.',
+      'Cada palabra sobra si se quita la sustitución, porque un Cristo que solo enseña y no paga deja al hombre en la misma condena, solo que con mejores ejemplos.',
+      'La Iglesia no necesita modernizar el mensaje sino volver a decirlo entero, aunque el mundo lo llame irrelevante y la religión lo llame escandaloso.',
+    ],
+    q: [
+      'Si el evangelio que predicas no ofende al orgulloso y no consuela al quebrado, probablemente no es el evangelio.',
+    ],
+    i: 'Resumen habitual de su defensa pública del mensaje evangélico frente a versiones terapéuticas.',
+  },
+  {
+    a: 'washer',
+    t: 'La iglesia que Dios quiere',
+    y: 2012,
+    p: 'Grabación de SermonAudio (estilo fiel de su crítica a la iglesia del entretenimiento; año aproximado)',
+    o: 'Washer contrapone la iglesia que Cristo edifica con la que el mercado diseña. Su pregunta incisiva es si nuestra asamblea sobreviviría sin el aparato de entretenimiento que la sostiene. La promesa de Cristo sobre las puertas del infierno delimita qué obra merece el nombre de iglesia.',
+    x: 'Mateo 16:18 — "que tú eres Pedro, y sobre esta roca edificaré mi iglesia; y las puertas del infierno no prevalecerán contra ella."',
+    th: ['Poder sobrenatural', 'Santidad'],
+    ol: [
+      'La iglesia pertenece a Cristo, se edifica sobre su confesión y sobrevive al infierno: todo lo demás que la cultura enseña sobre cómo hacer iglesia es decoración.',
+      'Cuando la asamblea se convierte en mercado de entretenimiento gana multitudes y pierde poder, porque lo que atrae por la carne solo se sostiene con carne.',
+      'La promesa de Cristo no garantiza nuestros programas sino su obra: él construye, él sostiene y él purifica a la esposa que se le entregó.',
+    ],
+    q: [
+      'Una iglesia que ya no necesita del Espíritu para llenarse ha dejado de ser la iglesia que Cristo edifica.',
+    ],
+    i: 'Mote de su crítica repetida al evangelismo centrado en el consumidor.',
+  },
+  {
+    a: 'washer',
+    t: 'La oración de la medianoche',
+    y: 2011,
+    p: 'Grabación de SermonAudio (estilo fiel de su enseñanza sobre la oración misionera; año aproximado)',
+    o: 'Washer usa la viuda insistente para confrontar una iglesia que organiza más de lo que clama. Su pregunta final es si el Señor, al volver, encontrará gente que ore como si Dios fuera real. La oración aparece como obra misionera antes que como hábito devocional.',
+    x: 'Lucas 18:7 — "¿Y acaso Dios no hará justicia a sus escogidos, que claman a él día y noche?"',
+    th: ['Oración', 'Crisis y prueba'],
+    ol: [
+      'La viuda insistente no tenía méritos ni influencia, y su única riqueza era la terquedad de volver cada día al juez que la despreciaba.',
+      'Si un juez injusto cede ante la persistencia, cuánto más el Padre justo ante los clamores de sus escogidos: la parábola compara para contrastar, no para igualar.',
+      'La pregunta final de Jesús sigue pesando: cuando vuelva, ¿hallará en su iglesia gente que ora como si Dios fuera real, o gente que solo organiza como si no existiese?',
+    ],
+    q: [
+      'El cielo no responde a la necesidad que no sabe clamar: Dios espera de su iglesia más que proyectos, espera gemidos.',
+    ],
+    i: 'Eje de su enseñanza misionera en HeartCry, donde la oración precede a la estrategia.',
+  },
+  {
+    a: 'washer',
+    t: 'El precio de seguir a Cristo',
+    y: 2009,
+    p: 'Grabación de SermonAudio (estilo fiel de su colección; año aproximado)',
+    o: 'Washer denuncia el discipulado de letra pequeña que promete vida eterna sin cruz. Jesús, dice, jamás engañó a los voluntarios: habló de torres que se calculan y ejércitos que se pesan. La renuncia total se predica como puerta de entrada, no como optativa para avanzados.',
+    x: 'Lucas 14:33 — "Así, pues, cualquiera de vosotros que no renuncia a todas las cosas que posee, no puede ser mi discípulo."',
+    th: ['Arrepentimiento', 'Anhelos humanos'],
+    ol: [
+      'Jesús no engaña con letra pequeña: habla de cargar la cruz, de calcular la torre y de pesar el ejército, para que nadie se convierta por entusiasmo publicitario.',
+      'El discipulado no es añadir Jesús a una vida ya llena, es demoler el reino propio para edificar sobre la voluntad de otro Rey.',
+      'Renunciarlo todo no empobrece: descubre que la posesión más peligrosa era el yo, y que fuera de sus manos todo lo demás recobra su lugar.',
+    ],
+    q: [
+      'Cristo no viene a completar tu vida, viene a comprarla entera; y el que regatea una habitación no le ha dado nada.',
+    ],
+    i: 'Tema recurrente de sus conferencias contra el evangelismo de beneficios.',
+  },
+  {
+    a: 'washer',
+    t: 'La ceguera del corazón religioso',
+    y: 2013,
+    p: 'Grabación de SermonAudio (estilo fiel de su colección; año aproximado)',
+    o: 'Washer sostiene que la religión puede ser la forma más refinada de huir de Dios: culto puntual y doctrina correcta sobre un corazón ausente. La palabra de Jesús a los fariseos le sirve de espejo para la iglesia actual. El mensaje termina en petición de cirugía, no de técnica.',
+    x: 'Mateo 15:8 — "Este pueblo de labios me honra; mas su corazón está lejos de mí."',
+    th: ['Idolatría del corazón', 'Arrepentimiento'],
+    ol: [
+      'La religión puede llegar a ser la forma más refinada de huir de Dios: culto puntual, doctrina correcta y un corazón que ama otra cosa.',
+      'El peligro no está en las prácticas sino en la sustitución, porque el corazón que no adora a Dios no queda vacío: siempre halla un ídolo menor que entronizar.',
+      'La obra del Espíritu no empieza enseñando vocabulario nuevo sino abriendo el pecho, para que el hombre vea la distancia real entre sus labios y su afecto.',
+    ],
+    q: [
+      'Un culto puede estar lleno mientras el corazón está ausente: Dios no mide decibeles, mide distancia.',
+    ],
+    i: 'Diagnóstico habitual de sus mensajes sobre la religiosidad vacía en América Latina y Estados Unidos.',
+  },
+  {
+    a: 'washer',
+    t: 'El amor que describe a Dios',
+    y: 2010,
+    p: 'Grabación de SermonAudio (estilo fiel de su cristología; año aproximado)',
+    o: 'Washer define el amor divino contra el sentimentalismo: un amor que decide pagar y no un sentimiento que descubre mérito. El tiempo elegido por Dios, cuando éramos pecadores, es la prueba. De ahí saca la seguridad del creyente y su obligación de amar así.',
+    x: 'Romanos 5:8 — "Mas Dios muestra su amor para con nosotros, en que siendo aún pecadores, Cristo murió por nosotros."',
+    th: ['Gracia', 'Evangelismo'],
+    ol: [
+      'El amor de Dios no es un sentimiento que descubre mérito: es una decisión que lo paga, y el texto lo demuestra con el tiempo elegido, cuando éramos enemigos.',
+      'Predicar un amor que solo satisface al egoísta es predicar otro dios: el amor del evangelio es santo, y por eso costó sangre y no solo lágrimas.',
+      'La seguridad del creyente no se apoya en sus caídas menos frecuentes, sino en que el amor que lo alcanzó actuó cuando en él no había nada que amar.',
+    ],
+    q: [
+      'Dios no esperó a que fuéramos amables para amarnos; si lo hubiera hecho, todavía estaría esperando.',
+    ],
+    i: 'Base de su cristología pastoral, repetida en sus escritos de HeartCry.',
+  },
+  {
+    a: 'washer',
+    t: 'El poder para vivir como Dios manda',
+    y: 2014,
+    p: 'Grabación de SermonAudio (estilo fiel de su enseñanza del Espíritu; año aproximado)',
+    o: 'Washer ataca la versión de la vida cristiana que depende de fuerza de voluntad. Su tesis es que el mandato de andar en el Espíritu describe una morada continua y no un impulso ocasional. La santificación aparece como guerra sostenida por poder ajeno al propio.',
+    x: 'Gálatas 5:16 — "Andad en el Espíritu, y no satisfagáis la concupiscencia de la carne."',
+    th: ['Poder sobrenatural', 'Santidad'],
+    ol: [
+      'El mandato cristiano no se cumple con voluntad reforzada sino con un andar continuo: la morada del Espíritu desmonta paso a paso los caminos de la carne.',
+      'La santificación no es perfección instantánea sino guerra sostenida, y el que deja de pelear por cansancio confiesa que camina en la carne aunque predique del Espíritu.',
+      'El fruto no lo fabrica el creyente: lo produce el Espíritu en la rama que permanece, y por eso la vida cristiana es mandato y dependencia al mismo tiempo.',
+    ],
+    q: [
+      'La carne no se reforma, se crucifica; y la cruz no es un sentimiento, es una decisión diaria.',
+    ],
+    i: 'Resumen de su enseñanza sobre la santificación en los retiros de pastores de HeartCry.',
+  },
+  {
+    a: 'washer',
+    t: 'La misión: el corazón de Dios por las naciones',
+    y: 2015,
+    p: 'Grabación de SermonAudio (estilo fiel de HeartCry; año aproximado)',
+    o: 'Washer sitúa la misión en el trono antes que en el comité: el Cordero fue inmolado por gentes de toda lengua y eso define a la iglesia. Su crítica es a la cristiandad que adora a un Salvador cuyo propósito no le interesa. El llamado es a la obediencia, no al heroísmo.',
+    x: 'Apocalipsis 5:9 — "porque fuiste inmolado, y con tu sangre nos redimiste para Dios, de todo linaje y lengua y pueblo y nación."',
+    th: ['Evangelismo', 'Adoración'],
+    ol: [
+      'En el trono del cielo la misión no es un departamento de la iglesia, sino la razón por la cual el Cordero fue inmolado y recibe el cántico de las multitudes.',
+      'El misionero no es un héroe voluntarioso sino un pecador obediente enviado por un Dios que compró gentes de toda lengua con el mismo precio de sangre.',
+      'Si el corazón de la iglesia no late por las naciones, su liturgia es incompleta, porque adora a un Cordero cuyo propósito alcanzó más allá de sus fronteras.',
+    ],
+    q: [
+      'La misión no es la obra de los apasionados: es la sangre del Cordero derramada por pueblos que aún no cantan.',
+    ],
+    i: 'Visión que articula el ministerio internacional de HeartCry Missionary Society.',
+  },
+  {
+    a: 'sproul',
+    t: 'La providencia de Dios',
+    y: 1999,
+    p: 'Serie de enseñanza de Ligonier (estilo fiel de su biblioteca; año aproximado)',
+    o: 'Sproul toma el versículo para enseñar que la providencia no es un consuelo vago sino una doctrina con gramática exacta. Todas las cosas, dice, no algunas, y el bien definido por el propósito del que llama. La serie entera gira en torno al gobierno silencioso de Dios sobre la historia.',
+    x: 'Romanos 8:28 — "sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme al propósito de Dios son llamados."',
+    th: ['Firma y certeza', 'Crisis y prueba'],
+    ol: [
+      'La providencia no es un consuelo vago sino una doctrina con gramática: todas las cosas, no algunas, y ayudan a bien según el propósito del que llama, no según nuestro calendario.',
+      'Entre la oración y la respuesta gobierna un Dios que no improvisa, y su cadena de gobierno sostiene desde los eclipses hasta las lágrimas de los suyos.',
+      'La certeza del cristiano no descansa en que las cosas salgan bien, sino en que nada sale suelto del gobierno del Padre.',
+    ],
+    q: [
+      'Dios no causa el mal, pero tampoco lo deja cabalgar sin rienda: la providencia es el gobierno silencioso que convierte hasta la ruina en siervo.',
+    ],
+    i: 'Serie clásica de Ligonier, reeditada durante décadas como curso de doctrina para laicos.',
+  },
+  {
+    a: 'sproul',
+    t: 'La voluntad de Dios',
+    y: 2000,
+    p: 'Serie de enseñanza de Ligonier (estilo fiel de su serie sobre la voluntad; año aproximado)',
+    o: 'Sproul diagnostica que la pregunta por la voluntad de Dios suele buscar un mapa secreto del futuro. La Escritura ya entregó el punto de partida, y es la santificación. Su triple clasificación de la voluntad libera al creyente del ansia de adivinar.',
+    x: '1 Tesalonicenses 4:3 — "pues la voluntad de Dios es vuestra santificación; que os apartéis de fornicación."',
+    th: ['Santidad', 'Firma y certeza'],
+    ol: [
+      'La pregunta por la voluntad de Dios suele buscar un mapa secreto del futuro cuando la Escritura ya entregó el punto de partida: vuestra santificación.',
+      'Sproul distingue entre el decreto que gobierna todo, el precepto que manda y la disposición que desea, y esa triple clasificación libera del ansia de adivinar.',
+      'El creyente que busca la voluntad de Dios la halla primero en el dormitorio y en el escritorio, donde la santidad se decide antes que en las señales del cielo.',
+    ],
+    q: [
+      'Muchos piden a Dios una señal para el futuro mientras ignoran el mandato que ya tienen sobre la mesa.',
+    ],
+    i: 'Curso de Ligonier que ordenó la conversación evangélica sobre decisión y voluntad divina.',
+  },
+  {
+    a: 'sproul',
+    t: 'El dilema divino de la cruz',
+    y: 2005,
+    p: 'Serie de enseñanza de Ligonier (estilo fiel de su enseñanza sobre la propiciación; año aproximado)',
+    o: 'Sproul plantea el problema moral del universo: cómo absuelve un juez santo a culpables sin manchar el tribunal. La respuesta de la cruz es la propiciación, donde la ira y el amor de Dios se encuentran en el mismo altar. De ahí nace su defensa de la justificación imputada.',
+    x: 'Romanos 3:26 — "a fin de ser él el justo, y a la vez el que justifica al que es de la fe de Jesús."',
+    th: ['Gracia', 'Santidad'],
+    ol: [
+      'El problema moral del universo es cómo puede un juez santo absolver culpables sin corromper el tribunal, y la cruz es la única solución que no compra la justicia.',
+      'La propiciación no significa que un Padre amable engaña a un Hijo indignado: la Trinidad concuerda en que la ira y el amor se encuentren en el mismo altar.',
+      'La justificación declara justo al pecador por un sustituto, y ese verbo forense es el corazón del evangelio que Lutero redescubrió contra toda síntesis barata.',
+    ],
+    q: [
+      'Dios no perdona por decreto arbitrario: perdona porque la cuenta ya se pagó, y por eso es justo y justificador a la vez.',
+    ],
+    i: 'Cátedra de propiciación que alimentó la formación doctrinal de Ligonier en dos generaciones.',
+  },
+  {
+    a: 'sproul',
+    t: 'El Padre nuestro',
+    y: 2001,
+    p: 'Serie de enseñanza de Ligonier (estilo fiel de su serie sobre la oración del Señor; año aproximado)',
+    o: 'Sproul recorre la oración del Señor mostrando que su orden es ya una cirugía del corazón. La filiación y la adoración van antes que la lista de peticiones, y el plural disuelve la oración privada como asunto individual. Cada línea reordena el universo del que ora.',
+    x: 'Mateo 6:9 — "Vosotros, pues, oraréis así: Padre nuestro que estás en los cielos, santificado sea tu nombre."',
+    th: ['Oración', 'Adoración'],
+    ol: [
+      'La oración que Jesús enseña empieza con la filiación y con la adoración, no con la lista de pedidos, y ese orden es ya una cirugía del corazón.',
+      'El nuestro de la primera línea disuelve la oración como asunto privado: se ora en plural, como cuerpo, y por el nombre del Padre antes que por el pan.',
+      'Cada petición del padrenuestro reordena el universo del que ora: el Reino primero, el pan después, y el perdón como condición de comunión, no como favor.',
+    ],
+    q: [
+      'Quien empieza a orar pidiendo nunca aprendió a orar: el comienzo del padrenuestro enseña a mirar arriba antes de abrir la mano.',
+    ],
+    i: 'Serie de Ligonier de uso extendido en escuelas de oración y estudio en grupos.',
+  },
+  {
+    a: 'sproul',
+    t: 'La oscuridad en la cruz',
+    y: 2009,
+    p: 'Serie de enseñanza de Ligonier (estilo fiel de su exposición del abandono; año aproximado)',
+    o: 'Sproul insiste en que el grito del Gólgota no es un desmayo de fe sino un salmo de fe dicho bajo juicio real. En la cruz ocurrió algo más terrible que un martirio: el Hijo cargó el abandono que los condenados de todos los siglos merecieron. Por eso el creyente jamás grita sin respuesta.',
+    x: 'Marcos 15:34 — "Dios mío, Dios mío, ¿por qué me has desamparado?"',
+    th: ['Crisis y prueba', 'Gracia'],
+    ol: [
+      'El grito del Gólgota no es un desmayo de fe sino un salmo de fe: Jesús cita a David mientras carga el abandono que los condenados de todos los siglos merecieron.',
+      'En la cruz ocurrió algo más terrible que el martirio: el Hijo conoció el juicio real del Padre contra el pecado que no era suyo.',
+      'El desamparo fue momentáneo y redentor, y por eso el que cree jamás gritará ese grito sin respuesta, porque la oscuridad ya fue habitada por otro.',
+    ],
+    q: [
+      'En el centro de la cruz no está el dolor de un mártir, está el juicio de un sustituto; por eso el cristiano jamás es desamparado.',
+    ],
+    i: 'Su exposición más recordada sobre el sufrimiento expiatorio, repetida en Viernes Santo.',
+  },
+  {
+    a: 'sproul',
+    t: 'La perseverancia de los santos',
+    y: 2003,
+    p: 'Serie de enseñanza de Ligonier (estilo fiel de su enseñanza sobre la seguridad; año aproximado)',
+    o: 'Sproul defiende la seguridad del creyente como confianza en el carácter de Dios y no como optimismo sobre el propio. Los santos perseveran porque son guardados por el poder que los levantó. La doctrina, bien entendida, produce humildad sostenida y no libertinaje.',
+    x: 'Filipenses 1:6 — "el que comenzó en vosotros la buena obra la perfeccionará hasta el día de Jesucristo."',
+    th: ['Firma y certeza', 'Gracia'],
+    ol: [
+      'La seguridad del creyente no es optimismo sobre su carácter sino confianza en el carácter de Dios, que no abandona a medias las obras que comienza.',
+      'Los santos perseveran porque son guardados por el poder mismo que los levantó, y esa garantía es obra divina antes que rendimiento humano.',
+      'La doctrina no produce libertinaje sino humildad sostenida, porque el que se sabe guardado rinde cuentas con gratitud y no con terror.',
+    ],
+    q: [
+      'La salvación no es una suscripción que se cancela por impago: la pagó entera el Cordero, y por eso nadie la rescinde.',
+    ],
+    i: 'Docencia central de Ligonier sobre la doctrina de la gracia en su quinto punto reformado.',
+  },
+  {
+    a: 'sproul',
+    t: 'La gloria de la Navidad',
+    y: 2006,
+    p: 'Predicación adventicia de St. Andrew\u2019s Chapel (estilo fiel de sus mensajes de diciembre; año aproximado)',
+    o: 'Sproul recuerda que el niño del pesebre es la segunda persona de la Trinidad velada en carne. El cántico de los pastores anuncia paz vertical antes que paz social, porque la Navidad resuelve primero el pleito entre el cielo y la tierra. La celebración verdadera es asombro de encarnación, no nostalgia.',
+    x: 'Lucas 2:14 — "¡Gloria a Dios en las alturas, y en la tierra paz, buena voluntad para con los hombres!"',
+    th: ['Adoración', 'Gracia'],
+    ol: [
+      'El cántico de los pastores anuncia paz vertical antes que paz social, porque la Navidad resuelve primero el pleito entre el cielo y la tierra.',
+      'El niño del pesebre es la segunda persona de la Trinidad velada en carne, y la gloria no se abolió en Belén, se hospedó entre nosotros.',
+      'La verdadera celebración adventicia no es nostalgia de pesebres sino asombro de encarnación: Dios visitó a su pueblo con obras y no con sentimientos.',
+    ],
+    q: [
+      'La Navidad no es que el cielo mirara con ternura la tierra, es que el Verbo bajó a pagar la cuenta que la tierra no podía firmar.',
+    ],
+    i: 'Predicación anual de Adviento en su cátedra de Sanford, reproducida en las series navideñas de Ligonier.',
+  },
+  {
+    a: 'sproul',
+    t: 'El fuego del bautismo del Espíritu',
+    y: 2007,
+    p: 'Serie de enseñanza de Ligonier (estilo fiel de su enseñanza sobre el Espíritu; año aproximado)',
+    o: 'Sproul une la promesa de poder al mandato de testimonio: el Espíritu desciende para que la iglesia declare, no para que se admire. Distingue el bautismo de regeneración del llenado repetido, y advierte contra los certificados de élite espiritual. El poder prometido es valentía ordenada para señalar a Cristo.',
+    x: 'Hechos 1:8 — "Pero recibiréis poder, cuando haya venido sobre vosotros el Espíritu Santo, y me seréis testigos en Jerusalén, en toda Judea, en Samaria, y hasta lo último de la tierra."',
+    th: ['Poder sobrenatural', 'Evangelismo'],
+    ol: [
+      'La promesa de poder no está desligada del mandato de testimonio: el Espíritu desciende para que la iglesia declare, no para que se admire a sí misma.',
+      'Sproul distingue el bautismo de regeneración del llenado repetido, y advierte contra convertir la experiencia en certificado de élite espiritual.',
+      'El poder prometido no es furia emocional sino valentía ordenada para señalar a Cristo desde la propia ciudad hasta el fin de la tierra.',
+    ],
+    q: [
+      'Una iglesia sin el Espíritu organiza; una iglesia con el Espíritu testifica: la diferencia no está en los métodos, está en el fuego.',
+    ],
+    i: 'Enseñanza de Ligonier que ordenó el debate sobre el Espíritu en círculos reformados.',
+  },
+  {
+    a: 'sproul',
+    t: 'La fe que salva sola',
+    y: 2010,
+    p: 'Serie de enseñanza de Ligonier (estilo fiel de su defensa de la Reforma; año aproximado)',
+    o: 'Sproul vuelve a la batalla de la Reforma: la justificación es gratuita, por medio de la fe, sin mérito que presuma. Desmonta la caricatura que confunde fe sola con fe solitaria, porque la fe que salva trae arrepentimiento y fruto. La doctrina recupera la paz de la conciencia.',
+    x: 'Efesios 2:8-9 — "Porque por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios; no por obras, para que nadie se glorie."',
+    th: ['Gracia', 'Santidad'],
+    ol: [
+      'La sola fide no inventa un evangelio nuevo: traduce el veredicto de Pablo de que la justificación es gratuita, por medio de la fe y sin mérito que presuma.',
+      'Sproul desmonta la caricatura que confunde fe sola con fe solitaria: la fe que salva no está sola, porque viene acompañada de arrepentimiento y fruto.',
+      'La Reforma no fue una disputa de especialistas sino la recuperación de la paz de la conciencia, que ningún sistema de méritos pudo dar jamás.',
+    ],
+    q: [
+      'Somos salvos solo por la fe, pero la fe que salva nunca viene sola: trae consigo un corazón que se arrepiente y manos que obedecen.',
+    ],
+    i: 'Defensa reiterada de la sola fide en toda la obra docente de Ligonier.',
+  },
+  {
+    a: 'sproul',
+    t: 'La segunda venida: la esperanza de la iglesia',
+    y: 2012,
+    p: 'Serie de enseñanza de Ligonier (estilo fiel de su escatología; año aproximado)',
+    o: 'Sproul ancla la escatología en la promesa del ángel: el mismo Jesús que subió vendrá de manera corporal y visible. Descarta los cálculos de fechas y reclama la ética de la espera. La esperanza de la venida no es escapismo sino consagración con lámparas encendidas.',
+    x: 'Hechos 1:11 — "este Jesús, que ha sido tomado de vosotros al cielo, así vendrá como le habéis visto ir al cielo."',
+    th: ['Muerte y eternidad', 'Poder sobrenatural'],
+    ol: [
+      'El ángel promete un retorno corporal y visible, no un sentimiento interior: el mismo Jesús que subió vendrá, y esa literalidad ordena toda la escatología.',
+      'Sproul descarta los cálculos de fechas y reclama la ética de la espera: una iglesia que mira el cielo vive con las lámparas encendidas y el trabajo terminado.',
+      'La esperanza de la venida no es escapismo sino consagración, porque el Rey que regresa encuentra a su pueblo gobernando su casa y no dormido en el sofá.',
+    ],
+    q: [
+      'La escatología no nació para vender mapas del futuro, sino para enderezar el presente de una iglesia que sabe que el Rey ya se fue y volverá.',
+    ],
+    i: 'Docencia amilenial de Ligonier difundida en sus series sobre el fin de los tiempos.',
+  },
+
 ]
 
 export const EXTRA_SERMONS: InspirationSermon[] = EXTRA_SEEDS.map(expandSeed)
