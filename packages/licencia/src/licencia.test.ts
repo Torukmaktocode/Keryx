@@ -23,14 +23,15 @@ async function jwtDelBackend(huella: string): Promise<string> {
     .sign(clave)
 }
 
-function crearOrquestador(fetchEspia: typeof fetch) {
+function crearOrquestador(fetchEspia: typeof fetch, msRevalidar?: number) {
   return crearLicencia({
     backendUrl: 'https://w.dev',
     clavePublicaPem: PUBLICA,
     piezasHuella: ['maquina', 'instalacion'],
     carpeta,
     safeStorage: crearSafeStorageFalso(),
-    fetchFn: fetchEspia
+    fetchFn: fetchEspia,
+    msRevalidar
   })
 }
 
@@ -124,5 +125,42 @@ describe('orquestador con backend falso', () => {
     await licencia.iniciar('p@mail.com', 'secreta123')
     licencia.salir()
     expect(licencia.estado().estado).toBe('sin_licencia')
+  })
+
+  it('refrescar con 403 sin_acceso borra la licencia y devuelve expirada', async () => {
+    const licencia = crearOrquestador((async (url, init) => {
+      const ruta = new URL(String(url)).pathname
+      const cuerpo = JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>
+      if (ruta === '/auth/login') return Response.json({ ok: true, data: { token: 'sesion-token', email: cuerpo.email, estado: 'activa' } })
+      if (ruta === '/license/activar') {
+        return Response.json({ ok: true, data: { licencia: await jwtDelBackend(String(cuerpo.huella ?? 'huella-activa')), expiraISO: new Date(FIN_REAL + 7 * 86400000).toISOString(), estado: 'activa' } })
+      }
+      return Response.json({ ok: false, error: 'sin suscripcion activa', codigo: 'sin_acceso' }, { status: 403 })
+    }) as typeof fetch, 0)
+    const e = await licencia.iniciar('p@mail.com', 'secreta123')
+    if ('error' in e) throw new Error(String(e.error))
+    expect(e.estado).toBe('activa')
+    const r1 = await licencia.refrescarSiToca()
+    expect(r1.estado).toBe('expirada')
+    const r2 = await licencia.refrescarSiToca()
+    expect(r2.estado).toBe('sin_licencia')
+    expect(licencia.estado().estado).toBe('sin_licencia')
+  })
+
+  it('refrescar con fallo de red mantiene la licencia', async () => {
+    const licencia = crearOrquestador((async (url: RequestInfo | URL, init?: RequestInit) => {
+      const ruta = new URL(String(url)).pathname
+      const cuerpo = JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>
+      if (ruta === '/auth/login') return Response.json({ ok: true, data: { token: 'sesion-token', email: cuerpo.email, estado: 'activa' } })
+      if (ruta === '/license/activar') {
+        return Response.json({ ok: true, data: { licencia: await jwtDelBackend(String(cuerpo.huella ?? 'huella-activa')), expiraISO: new Date(FIN_REAL + 7 * 86400000).toISOString(), estado: 'activa' } })
+      }
+      throw new Error('ENOTFOUND')
+    }) as unknown as typeof fetch, 0)
+    const e = await licencia.iniciar('p@mail.com', 'secreta123')
+    if ('error' in e) throw new Error(String(e.error))
+    const r = await licencia.refrescarSiToca()
+    expect(r.estado).toBe('activa')
+    expect(licencia.estado().estado).toBe('activa')
   })
 })

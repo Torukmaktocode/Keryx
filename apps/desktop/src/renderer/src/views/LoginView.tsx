@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import type { JSX } from 'react'
 import { useI18n } from '@keryx/i18n'
+import type { EstadoActual } from '@keryx/core/licencia'
 import { api } from '../lib/api'
 import { esErrorLogin, codigoAKey } from '../lib/licencia-ui'
 
-export function LoginView({ alListo }: { alListo: () => void }): JSX.Element {
+export function LoginView({ alListo }: { alListo: (estado?: EstadoActual) => void }): JSX.Element {
   const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -20,7 +21,7 @@ export function LoginView({ alListo }: { alListo: () => void }): JSX.Element {
       setErrorKey(t(codigoAKey(rta.codigo) as never))
       return
     }
-    alListo()
+    alListo(rta)
   }
 
   return (

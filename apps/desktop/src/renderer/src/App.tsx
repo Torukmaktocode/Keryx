@@ -168,7 +168,15 @@ function PuertaLicencia(): JSX.Element {
   }
 
   if (vistaLicencia === 'cargando') return <div className="licencia-panel">{t('app.loading')}</div>
-  if (vistaLicencia === 'login') return <LoginView alListo={() => setVistaLicencia('ok')} />
+  if (vistaLicencia === 'login')
+    return (
+      <LoginView
+        alListo={(estado) => {
+          setEstadoLicencia(estado ?? null)
+          setVistaLicencia('ok')
+        }}
+      />
+    )
   if (vistaLicencia === 'bloqueo' && estadoLicencia) return <BloqueoView estado={estadoLicencia} alListo={aLogin} />
   return <Shell estadoLicencia={estadoLicencia} />
 }

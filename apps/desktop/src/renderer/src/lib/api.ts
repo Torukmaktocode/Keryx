@@ -31,6 +31,17 @@ async function unwrap<T>(promise: Promise<Result<T>>): Promise<T> {
 
 const raw = window.keryx
 
+const CODIGOS_BACKEND = new Set([
+  'credenciales',
+  'trial_agotado',
+  'limite_dispositivos',
+  'rate_limit',
+  'sesion',
+  'formato',
+  'sin_acceso',
+  'vencida'
+])
+
 export const api = {
   engine: (): Promise<EngineInfo> => unwrap(raw.app.engine()),
   version: (): Promise<string> => unwrap(raw.app.version()),
@@ -145,7 +156,10 @@ export const api = {
     estado: (): Promise<EstadoActual> => unwrap(raw.licencia.estado()),
     login: async (args: { email: string; password: string }): Promise<EstadoActual | LicenciaError> => {
       const rta: Result<EstadoActual | LicenciaError> = await raw.licencia.login(args)
-      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'formato' }
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      if ('error' in rta.data) {
+        return { ...rta.data, codigo: rta.data.codigo && CODIGOS_BACKEND.has(rta.data.codigo) ? rta.data.codigo : 'red' }
+      }
       return rta.data
     },
     salir: (): Promise<null> => unwrap(raw.licencia.salir()),

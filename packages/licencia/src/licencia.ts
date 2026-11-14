@@ -70,7 +70,12 @@ export function crearLicencia(opciones: OpcionesLicencia) {
     if (!v.valido) return estadoDesdeVerificacion(v, jwt)
     if (Date.now() - ultimaRed < (opciones.msRevalidar ?? 24 * 3600000)) return estadoDesdeVerificacion(v, jwt)
     const renovada = await cliente.refrescar(jwt)
-    if (!('error' in renovada)) {
+    if ('error' in renovada) {
+      if (renovada.codigo === 'sin_acceso') {
+        almacen.borrar()
+        return { estado: 'expirada' }
+      }
+    } else {
       almacen.guardar(renovada.licencia)
       ultimaRed = Date.now()
     }

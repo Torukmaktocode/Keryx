@@ -245,7 +245,7 @@ export async function registerIpc(
   register(IPC.aiStatus, () => aiStatus(store.getSettings()))
 
   licencia.iniciarCron()
-  register(IPC.licenciaEstado, () => licencia.verificar())
+  register(IPC.licenciaEstado, () => licencia.refrescarSiToca())
   register(IPC.licenciaRefrescar, () => licencia.refrescarSiToca())
   register(IPC.licenciaLogin, (args) => {
     const { email, password } = licenciaLoginSchema.parse(args[0])
