@@ -15,6 +15,7 @@ import type {
   SwordModule,
   Verse
 } from './types'
+import type { EstadoActual, LicenciaError } from './licencia'
 import type {
   CoalicionItem,
   CoalicionRequest,
@@ -141,5 +142,12 @@ export interface KeryxApi {
   ai: {
     chat(req: AiChatRequest): Promise<Result<AiChatResult>>
     status(): Promise<Result<AiStatus>>
+  }
+  licencia: {
+    estado(): Promise<Result<EstadoActual>>
+    login(args: { email: string; password: string }): Promise<Result<EstadoActual | LicenciaError>>
+    salir(): Promise<Result<null>>
+    checkout(): Promise<Result<null>>
+    refrescar(): Promise<Result<EstadoActual>>
   }
 }

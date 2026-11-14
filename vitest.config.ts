@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 
-const pkg = (name: string): string => resolve(process.cwd(), 'packages', name, 'src', 'index.ts')
+const pkg = (name: string): string => resolve(process.cwd(), 'packages', name, 'src')
 
 export default defineConfig({
   resolve: {
@@ -10,7 +10,8 @@ export default defineConfig({
       '@keryx/sword': pkg('sword'),
       '@keryx/db': pkg('db'),
       '@keryx/editor': pkg('editor'),
-      '@keryx/templates': pkg('templates')
+      '@keryx/templates': pkg('templates'),
+      '@keryx/licencia': pkg('licencia')
     }
   },
   test: {

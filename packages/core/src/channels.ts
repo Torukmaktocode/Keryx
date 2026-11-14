@@ -55,7 +55,13 @@ export const IPC = {
   translateGlosario: 'translate:glosario',
 
   aiChat: 'ai:chat',
-  aiStatus: 'ai:status'
+  aiStatus: 'ai:status',
+
+  licenciaEstado: 'licencia:estado',
+  licenciaLogin: 'licencia:login',
+  licenciaSalir: 'licencia:salir',
+  licenciaCheckout: 'licencia:checkout',
+  licenciaRefrescar: 'licencia:refrescar'
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]

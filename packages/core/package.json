@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./channels": "./src/channels.ts",
     "./books": "./src/books.ts",
-    "./types": "./src/types.ts"
+    "./types": "./src/types.ts",
+    "./licencia": "./src/licencia.ts"
   },
   "dependencies": {
     "zod": "^4.6.5"

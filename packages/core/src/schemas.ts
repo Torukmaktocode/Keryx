@@ -246,6 +246,11 @@ export const glosarioParSchema = z.object({
   peso: z.number()
 })
 
+export const licenciaLoginSchema = z.object({
+  email: z.string().email().max(200),
+  password: z.string().min(6).max(200)
+})
+
 export const aiChatSchema = z.object({
   messages: z
     .array(

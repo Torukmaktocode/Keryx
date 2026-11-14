@@ -19,6 +19,7 @@ import type {
   LenguaEstado,
   GlosarioPar
 } from '@keryx/core'
+import type { EstadoActual, LicenciaError } from '@keryx/core/licencia'
 
 async function unwrap<T>(promise: Promise<Result<T>>): Promise<T> {
   const result = await promise
@@ -139,5 +140,16 @@ export const api = {
   ai: {
     chat: (req: AiChatRequest): Promise<AiChatResult> => unwrap(raw.ai.chat(req)),
     status: (): Promise<AiStatus> => unwrap(raw.ai.status())
+  },
+  licencia: {
+    estado: (): Promise<EstadoActual> => unwrap(raw.licencia.estado()),
+    login: async (args: { email: string; password: string }): Promise<EstadoActual | LicenciaError> => {
+      const rta: Result<EstadoActual | LicenciaError> = await raw.licencia.login(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'formato' }
+      return rta.data
+    },
+    salir: (): Promise<null> => unwrap(raw.licencia.salir()),
+    checkout: (): Promise<null> => unwrap(raw.licencia.checkout()),
+    refrescar: (): Promise<EstadoActual> => unwrap(raw.licencia.refrescar())
   }
 }

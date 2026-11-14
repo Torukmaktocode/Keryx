@@ -75,6 +75,13 @@ const api: KeryxApi = {
   ai: {
     chat: (req) => invoke(IPC.aiChat, req),
     status: () => invoke(IPC.aiStatus)
+  },
+  licencia: {
+    estado: () => invoke(IPC.licenciaEstado),
+    login: (args) => invoke(IPC.licenciaLogin, args),
+    salir: () => invoke(IPC.licenciaSalir),
+    checkout: () => invoke(IPC.licenciaCheckout),
+    refrescar: () => invoke(IPC.licenciaRefrescar)
   }
 }
 

@@ -10,6 +10,7 @@ const alias = {
   '@keryx/db': pkg('db'),
   '@keryx/editor': pkg('editor'),
   '@keryx/templates': pkg('templates'),
+  '@keryx/licencia': pkg('licencia'),
   '@keryx/ui': pkg('ui'),
   '@keryx/i18n': pkg('i18n'),
   '@renderer': resolve(__dirname, 'src/renderer/src')
@@ -18,11 +19,11 @@ const alias = {
 export default defineConfig({
   main: {
     resolve: { alias },
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin({ exclude: ['@keryx/licencia'] })]
   },
   preload: {
     resolve: { alias },
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin({ exclude: ['@keryx/licencia'] })]
   },
   renderer: {
     resolve: { alias },

@@ -73,6 +73,7 @@ describe('orquestador con backend falso', () => {
       return new Response('[]')
     }) as typeof fetch)
     const e = await licencia.iniciar('p@mail.com', 'secreta123')
+    if ('error' in e) throw new Error(String(e.error))
     expect(e.estado).toBe('activa')
     expect(e.email).toBe('p@mail.com')
     expect(e.diasRestantes).toBeCloseTo(20, 0)

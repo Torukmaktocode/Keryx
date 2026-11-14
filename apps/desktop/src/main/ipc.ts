@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
@@ -19,6 +19,7 @@ import {
   documentSaveSchema,
   fullscreenSchema,
   installModuleSchema,
+  licenciaLoginSchema,
   presentationSaveSchema,
   detectAppLocale,
   searchRequestSchema,
@@ -37,6 +38,8 @@ import { JsonStore } from '@keryx/db'
 import { aiChat, aiStatus } from './ai'
 import { registerTraductorIpc, precalentarPar } from './traductor'
 import { buscarCoalicion } from './coalicion'
+import { CHECKOUT_URL } from '@keryx/core/licencia'
+import { licencia } from './licencia-puente'
 
 type Handler = (args: unknown[]) => Promise<unknown> | unknown
 
@@ -240,6 +243,22 @@ export async function registerIpc(
     return aiChat(store.getSettings(), req)
   })
   register(IPC.aiStatus, () => aiStatus(store.getSettings()))
+
+  licencia.iniciarCron()
+  register(IPC.licenciaEstado, () => licencia.verificar())
+  register(IPC.licenciaRefrescar, () => licencia.refrescarSiToca())
+  register(IPC.licenciaLogin, (args) => {
+    const { email, password } = licenciaLoginSchema.parse(args[0])
+    return licencia.iniciar(email, password)
+  })
+  register(IPC.licenciaSalir, () => {
+    licencia.salir()
+    return null
+  })
+  register(IPC.licenciaCheckout, () => {
+    if (CHECKOUT_URL) void shell.openExternal(CHECKOUT_URL)
+    return null
+  })
 
   registerTraductorIpc(register, () => store.getSettings().translateLocale)
 
