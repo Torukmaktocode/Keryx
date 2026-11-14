@@ -85,6 +85,20 @@ describe('orquestador con backend falso', () => {
     expect((e as unknown as { codigo?: string }).codigo).toBe('credenciales')
   })
 
+  it('fetch que rechaza devuelve codigo red sin lanzar', async () => {
+    const offline = crearOrquestador((async () => {
+      throw new Error('ENOTFOUND')
+    }) as unknown as typeof fetch)
+    const e = await offline.iniciar('p@mail.com', 'secreta123')
+    expect((e as unknown as { error?: string; codigo?: string }).codigo).toBe('red')
+  })
+
+  it('respuesta no JSON devuelve codigo red sin lanzar', async () => {
+    const html = crearOrquestador((async () => new Response('<html>502</html>', { status: 502 })) as typeof fetch)
+    const e = await html.iniciar('p@mail.com', 'secreta123')
+    expect((e as unknown as { error?: string; codigo?: string }).codigo).toBe('red')
+  })
+
   it('refrescarSiToca no revalida antes de 24h y mantiene el estado', async () => {
     const licencia = crearOrquestador((async (url, init) => {
       const ruta = new URL(String(url)).pathname

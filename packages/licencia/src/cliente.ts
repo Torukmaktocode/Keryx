@@ -10,12 +10,21 @@ export class ClienteLicencia {
   constructor(private backendUrl: string, private fetchFn: typeof fetch = fetch) {}
 
   private async post<T>(ruta: string, cuerpo: unknown): Promise<RtaBackend<T>> {
-    const r = await this.fetchFn(`${this.backendUrl}${ruta}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cuerpo)
-    })
-    return (await r.json()) as RtaBackend<T>
+    let r: Response
+    try {
+      r = await this.fetchFn(`${this.backendUrl}${ruta}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cuerpo)
+      })
+    } catch {
+      return { ok: false, error: 'no se pudo conectar', codigo: 'red' }
+    }
+    try {
+      return (await r.json()) as RtaBackend<T>
+    } catch {
+      return { ok: false, error: 'respuesta no valida del servidor', codigo: 'red' }
+    }
   }
 
   async tokenSesion(email: string, password: string): Promise<{ token: string } | { error: string; codigo?: string }> {
