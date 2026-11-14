@@ -1,0 +1,9 @@
+{
+  "name": "@keryx/licencia",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "jose": "^6.0.0"
+  }
+}
