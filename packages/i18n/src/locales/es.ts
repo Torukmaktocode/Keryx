@@ -515,5 +515,27 @@ export const es = {
   'language.bn': 'Bengalí',
   'language.nah': 'Náhuatl',
   'language.yua': 'Maya yucateco',
-  'settings.sinCorpus': 'Sin corpus: traer una Biblia traducida activa esta lengua'
+  'settings.sinCorpus': 'Sin corpus: traer una Biblia traducida activa esta lengua',
+
+  'licencia.loginTitulo': 'Entra con tu cuenta de Keryx',
+  'licencia.email': 'Correo electrónico',
+  'licencia.password': 'Contraseña',
+  'licencia.entrar': 'Entrar',
+  'licencia.comprar': 'Comprar suscripción',
+  'licencia.renovar': 'Renovar suscripción',
+  'licencia.salir': 'Cerrar sesión',
+  'licencia.estado.sin_licencia': 'Entra con tu cuenta para usar Keryx.',
+  'licencia.estado.trial': 'Prueba gratuita: te quedan {dias} días.',
+  'licencia.estado.activa': 'Suscripción activa.',
+  'licencia.estado.cancelada': 'Suscripción cancelada: puedes usar Keryx hasta el fin del ciclo.',
+  'licencia.estado.gracia': 'Sin conexión: te quedan {dias} días de gracia.',
+  'licencia.estado.expirada': 'Tu suscripción venció. Renueva para seguir usando Keryx.',
+  'licencia.estado.bloqueada': 'Licencia de otro equipo. Cierra sesión en uno para activar este.',
+  'licencia.error.credenciales': 'Correo o contraseña incorrectos.',
+  'licencia.error.trial_agotado': 'Tu prueba terminó. Suscríbete para seguir usando Keryx.',
+  'licencia.error.limite_dispositivos': 'Límite de 3 equipos alcanzado. Cierra sesión en uno para activar este.',
+  'licencia.error.rate_limit': 'Demasiados intentos: espera un minuto.',
+  'licencia.error.sesion': 'Tu sesión venció. Entra de nuevo.',
+  'licencia.error.formato': 'Revisa el correo y la contraseña (mínimo 6 caracteres).',
+  'licencia.error.red': 'No se pudo conectar. Revisa tu internet.'
 }

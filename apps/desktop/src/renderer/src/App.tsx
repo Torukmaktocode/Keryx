@@ -1,7 +1,12 @@
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
+import type { JSX } from 'react'
 import { I18nProvider, useI18n } from '@keryx/i18n'
+import type { EstadoActual } from '@keryx/core/licencia'
 import { useAppStore } from './store/appStore'
 import { api } from './lib/api'
+import { LoginView } from './views/LoginView'
+import { BloqueoView } from './views/BloqueoView'
+import { BannerLicencia } from './components/BannerLicencia'
 import { Sidebar } from './components/Sidebar'
 import { ReaderView } from './views/ReaderView'
 import { StudyView } from './views/StudyView'
@@ -22,7 +27,7 @@ const PresentacionesView = lazy(() =>
   import('./views/PresentacionesView').then((m) => ({ default: m.PresentacionesView })),
 )
 
-function Shell() {
+function Shell({ estadoLicencia }: { estadoLicencia: EstadoActual | null }) {
   const { t } = useI18n()
   const view = useAppStore((s) => s.view)
   const ready = useAppStore((s) => s.ready)
@@ -81,6 +86,7 @@ function Shell() {
         </button>
       )}
       <main className="content">
+        <BannerLicencia estado={estadoLicencia} />
         <div className="window-controls">
           <button
             className="btn ghost small"
@@ -133,14 +139,43 @@ function Shell() {
   )
 }
 
+function PuertaLicencia(): JSX.Element {
+  const { t } = useI18n()
+  const bootstrap = useAppStore((s) => s.bootstrap)
+  const [vistaLicencia, setVistaLicencia] = useState<'cargando' | 'ok' | 'login' | 'bloqueo'>('cargando')
+  const [estadoLicencia, setEstadoLicencia] = useState<EstadoActual | null>(null)
+
+  useEffect(() => {
+    void api.licencia
+      .estado()
+      .then((e) => {
+        setEstadoLicencia(e)
+        if (e.estado === 'sin_licencia') setVistaLicencia('login')
+        else if (e.estado === 'expirada' || e.estado === 'bloqueada') setVistaLicencia('bloqueo')
+        else setVistaLicencia('ok')
+      })
+      .catch(() => setVistaLicencia('login'))
+  }, [])
+
+  useEffect(() => {
+    if (vistaLicencia !== 'ok') return
+    void bootstrap()
+  }, [vistaLicencia, bootstrap])
+
+  function aLogin(): void {
+    setEstadoLicencia(null)
+    setVistaLicencia('login')
+  }
+
+  if (vistaLicencia === 'cargando') return <div className="licencia-panel">{t('app.loading')}</div>
+  if (vistaLicencia === 'login') return <LoginView alListo={() => setVistaLicencia('ok')} />
+  if (vistaLicencia === 'bloqueo' && estadoLicencia) return <BloqueoView estado={estadoLicencia} alListo={aLogin} />
+  return <Shell estadoLicencia={estadoLicencia} />
+}
+
 export default function App() {
   const theme = useAppStore((s) => s.settings.theme)
   const locale = useAppStore((s) => s.settings.uiLocale)
-  const bootstrap = useAppStore((s) => s.bootstrap)
-
-  useEffect(() => {
-    void bootstrap()
-  }, [bootstrap])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -152,7 +187,7 @@ export default function App() {
 
   return (
     <I18nProvider locale={locale}>
-      <Shell />
+      <PuertaLicencia />
     </I18nProvider>
   )
 }

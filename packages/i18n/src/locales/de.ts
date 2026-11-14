@@ -514,5 +514,27 @@ export const de: Record<TranslationKey, string> = {
   'language.bn': 'Bengalí',
   'language.nah': 'Náhuatl',
   'language.yua': 'Maya yucateco',
-  'settings.sinCorpus': 'Sin corpus: traer una Biblia traducida activa esta lengua'
+  'settings.sinCorpus': 'Sin corpus: traer una Biblia traducida activa esta lengua',
+
+  'licencia.loginTitulo': 'Melden Sie sich mit Ihrem Keryx-Konto an',
+  'licencia.email': 'E-Mail',
+  'licencia.password': 'Passwort',
+  'licencia.entrar': 'Anmelden',
+  'licencia.comprar': 'Abonnement kaufen',
+  'licencia.renovar': 'Abonnement erneuern',
+  'licencia.salir': 'Abmelden',
+  'licencia.estado.sin_licencia': 'Melden Sie sich mit Ihrem Konto an, um Keryx zu nutzen.',
+  'licencia.estado.trial': 'Kostenlose Testphase: noch {dias} Tage.',
+  'licencia.estado.activa': 'Abonnement aktiv.',
+  'licencia.estado.cancelada': 'Abonnement gekündigt: Sie können Keryx bis zum Ende des Zyklus nutzen.',
+  'licencia.estado.gracia': 'Ohne Verbindung: noch {dias} Tage Kulanz.',
+  'licencia.estado.expirada': 'Ihr Abonnement ist abgelaufen. Erneuern Sie es, um Keryx weiter zu nutzen.',
+  'licencia.estado.bloqueada': 'Lizenz eines anderen Rechners. Melden Sie sich auf einem ab, um diesen zu aktivieren.',
+  'licencia.error.credenciales': 'E-Mail oder Passwort falsch.',
+  'licencia.error.trial_agotado': 'Ihre Testphase ist beendet. Abonnieren Sie, um Keryx weiter zu nutzen.',
+  'licencia.error.limite_dispositivos': 'Limit von 3 Rechnern erreicht. Melden Sie sich auf einem ab, um diesen zu aktivieren.',
+  'licencia.error.rate_limit': 'Zu viele Versuche: warten Sie eine Minute.',
+  'licencia.error.sesion': 'Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an.',
+  'licencia.error.formato': 'Prüfen Sie E-Mail und Passwort (mindestens 6 Zeichen).',
+  'licencia.error.red': 'Verbindung fehlgeschlagen. Prüfen Sie Ihr Internet.'
 }

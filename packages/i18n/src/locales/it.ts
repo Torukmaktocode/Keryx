@@ -514,5 +514,27 @@ export const it: Record<TranslationKey, string> = {
   'language.bn': 'Bengalí',
   'language.nah': 'Náhuatl',
   'language.yua': 'Maya yucateco',
-  'settings.sinCorpus': 'Sin corpus: traer una Biblia traducida activa esta lengua'
+  'settings.sinCorpus': 'Sin corpus: traer una Biblia traducida activa esta lengua',
+
+  'licencia.loginTitulo': 'Accedi con il tuo account Keryx',
+  'licencia.email': 'Email',
+  'licencia.password': 'Password',
+  'licencia.entrar': 'Accedi',
+  'licencia.comprar': 'Acquista abbonamento',
+  'licencia.renovar': 'Rinnova abbonamento',
+  'licencia.salir': 'Esci',
+  'licencia.estado.sin_licencia': 'Accedi con il tuo account per usare Keryx.',
+  'licencia.estado.trial': 'Prova gratuita: ti restano {dias} giorni.',
+  'licencia.estado.activa': 'Abbonamento attivo.',
+  'licencia.estado.cancelada': 'Abbonamento annullato: puoi usare Keryx fino alla fine del ciclo.',
+  'licencia.estado.gracia': 'Senza connessione: ti restano {dias} giorni di grazia.',
+  'licencia.estado.expirada': 'Il tuo abbonamento è scaduto. Rinnova per continuare a usare Keryx.',
+  'licencia.estado.bloqueada': 'Licenza di un altro computer. Esci da uno per attivare questo.',
+  'licencia.error.credenciales': 'Email o password errati.',
+  'licencia.error.trial_agotado': 'La tua prova è terminata. Abbonati per continuare a usare Keryx.',
+  'licencia.error.limite_dispositivos': 'Limite di 3 computer raggiunto. Esci da uno per attivare questo.',
+  'licencia.error.rate_limit': 'Troppi tentativi: attendi un minuto.',
+  'licencia.error.sesion': 'La tua sessione è scaduta. Accedi di nuovo.',
+  'licencia.error.formato': 'Controlla email e password (minimo 6 caratteri).',
+  'licencia.error.red': 'Connessione non riuscita. Controlla la tua rete.'
 }

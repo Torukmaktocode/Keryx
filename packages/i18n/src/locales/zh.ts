@@ -513,5 +513,27 @@ export const zh: Record<TranslationKey, string> = {
   'language.bn': 'Bengalí',
   'language.nah': 'Náhuatl',
   'language.yua': 'Maya yucateco',
-  'settings.sinCorpus': 'Sin corpus: traer una Biblia traducida activa esta lengua'
+  'settings.sinCorpus': 'Sin corpus: traer una Biblia traducida activa esta lengua',
+
+  'licencia.loginTitulo': '使用您的 Keryx 账户登录',
+  'licencia.email': '电子邮件',
+  'licencia.password': '密码',
+  'licencia.entrar': '登录',
+  'licencia.comprar': '购买订阅',
+  'licencia.renovar': '续订订阅',
+  'licencia.salir': '退出登录',
+  'licencia.estado.sin_licencia': '请登录您的账户以使用 Keryx。',
+  'licencia.estado.trial': '免费试用：还剩 {dias} 天。',
+  'licencia.estado.activa': '订阅已激活。',
+  'licencia.estado.cancelada': '订阅已取消：您可在周期结束前继续使用 Keryx。',
+  'licencia.estado.gracia': '离线状态：还剩 {dias} 天宽限期。',
+  'licencia.estado.expirada': '您的订阅已到期。请续订以继续使用 Keryx。',
+  'licencia.estado.bloqueada': '许可证属于其他电脑。请在一台电脑上退出登录以激活此电脑。',
+  'licencia.error.credenciales': '电子邮件或密码错误。',
+  'licencia.error.trial_agotado': '您的试用已结束。请订阅以继续使用 Keryx。',
+  'licencia.error.limite_dispositivos': '已达 3 台电脑的上限。请在一台电脑上退出登录以激活此电脑。',
+  'licencia.error.rate_limit': '尝试次数过多：请等待一分钟。',
+  'licencia.error.sesion': '您的会话已过期。请重新登录。',
+  'licencia.error.formato': '请检查电子邮件和密码（至少 6 个字符）。',
+  'licencia.error.red': '无法连接。请检查您的网络。'
 }
