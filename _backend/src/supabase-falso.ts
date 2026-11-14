@@ -27,7 +27,11 @@ export function supabaseFalso(
       const filas = Array.isArray(cuerpo) ? cuerpo : [cuerpo]
       for (const fila of filas) {
         const lista = (base as unknown as Record<string, Record<string, unknown>[]>)[tabla]
-        const idx = lista.findIndex((x) => x['email'] === fila['email'])
+        const idx = lista.findIndex((x) =>
+          tabla === 'dispositivos'
+            ? x['email'] === fila['email'] && x['huella'] === fila['huella']
+            : x['email'] === fila['email']
+        )
         if (idx >= 0) lista[idx] = { ...lista[idx], ...fila }
         else lista.push(fila)
       }
