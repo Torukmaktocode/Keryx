@@ -106,6 +106,27 @@ function entriesOf(dossier: Dossier, kind: string): string[] {
   return dossier.sections.filter((s) => s.kind === kind).flatMap((s) => s.entries)
 }
 
+/** Plegado sin acentos (oracion = oración) para rankear por tema. */
+function foldAccents(value: string): string {
+  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+/** Reordena los comentarios por afinidad al TEMA pedido (estable, 0 tokens):
+ * cambiar el tema cambia la evidencia de los puntos en vez de repetir
+ * siempre el primer comentario del pasaje. */
+function rankearPorTema(lineas: string[], tema: string): string[] {
+  const palabras = foldAccents(tema).split(/\s+/).filter((w) => w.length > 3)
+  if (!palabras.length) return lineas
+  const score = (line: string): number => {
+    const folded = foldAccents(line)
+    return palabras.reduce((n, w) => n + (folded.includes(w) ? 1 : 0), 0)
+  }
+  return lineas
+    .map((line, index) => ({ line, index, score: score(line) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((x) => x.line)
+}
+
 function pointTitles(outlineLines: string[], commentLines: string[]): string[] {
   const raw = outlineLines
     .join('\n')
@@ -132,7 +153,10 @@ export function buildSermonDocument(
   const parsed = parseReference(query)
   const ref = dossier.section ?? (parsed ? `${parsed.book} ${parsed.chapter}${parsed.verse ? `:${parsed.verse}` : ''}` : query)
   const textLines = entriesOf(dossier, 'texto')
-  const commentLines = entriesOf(dossier, 'comentario')
+  const commentLines = rankearPorTema(
+    entriesOf(dossier, 'comentario'),
+    peticion?.tema ?? ''
+  )
   const outlineLines = entriesOf(dossier, 'bosquejo')
   const strongLines = entriesOf(dossier, 'strongs')
   const topicLines = entriesOf(dossier, 'tema')
@@ -150,7 +174,7 @@ export function buildSermonDocument(
 
   const puntos = pointTitles(outlineLines, commentLines).map((title, index) => {
     const line = commentLines[index] ?? ''
-    let evidence = shortEntry(line, 340)
+    let evidence = shortEntry(line, 560)
     if (title.length >= 40 && !title.endsWith('…')) {
       const inicio = evidence.indexOf(title)
       if (inicio !== -1) {
@@ -194,17 +218,17 @@ export function buildSermonDocument(
     texto: textLines.map((line) => shortEntry(line, 400)),
     granIdea: gran || `Escucha ${ref} con calma: busca la frase que resuma el mensaje y sostiene la semana.`,
     contexto: [
-      { label: 'Histórico', text: depthShort(entriesOf(dossier, 'historico')) },
-      { label: 'Cultural', text: depthShort(entriesOf(dossier, 'cultural')) },
-      { label: 'Teológico', text: depthShort(entriesOf(dossier, 'teologico')) },
-      { label: 'Cristológico', text: depthShort(entriesOf(dossier, 'cristologico')) }
+      { label: 'Histórico', text: depthShort(entriesOf(dossier, 'historico'), 600) },
+      { label: 'Cultural', text: depthShort(entriesOf(dossier, 'cultural'), 600) },
+      { label: 'Teológico', text: depthShort(entriesOf(dossier, 'teologico'), 600) },
+      { label: 'Cristológico', text: depthShort(entriesOf(dossier, 'cristologico'), 600) }
     ].filter((line) => line.text.length > 2),
     palabras: strongLines.slice(0, 2).map((entry) => shortEntry(entry, 240)),
     forma: personaShapeOf(persona),
     puntos,
     citas: entriesOf(dossier, 'cita').slice(0, 2).map((entry) => shortEntry(entry, 320)),
-    casoReal: entriesOf(dossier, 'caso').map((entry) => shortEntry(entry, 420)),
-    ilustracion: entriesOf(dossier, 'ilustracion').slice(0, 1).map((entry) => shortEntry(entry, 420)),
+    casoReal: entriesOf(dossier, 'caso').map((entry) => shortEntry(entry, 560)),
+    ilustracion: entriesOf(dossier, 'ilustracion').slice(0, 2).map((entry) => shortEntry(entry, 420)),
     consenso: entriesOf(dossier, 'consenso').slice(0, 3),
     aplicacion: [...entriesOf(dossier, 'aplicacion').slice(0, 2).map((entry) => shortEntry(entry, 260))],
     meditacion: slot(meditationFallback, undefined),

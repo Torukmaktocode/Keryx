@@ -893,9 +893,73 @@ export function queryTokensOf(query: string): string[] {
   )].sort((a, b) => b.length - a.length)
 }
 
+/** Plegado sin acentos para el mapa tematico (amor=amor). */
+function foldAccents(value: string): string {
+  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+/** Mapa tematico canonico (codigo, 0 tokens): la peticion por TEMA no se
+ * resuelve buscando la palabra suelta en la Biblia — "el amor de jesus"
+ * encontraba Genesis 18:24 (por la palabra "amor") y el sermon hablaba
+ * de Sodoma para siempre. Aqui cada tema apunta a su pasaje canónico. */
+const TEMA_PASAJES: Array<{ clave: RegExp; ref: string }> = [
+  { clave: /\bamor\b/, ref: 'Juan 15:12' },
+  { clave: /\boracion\b|\borar\b/, ref: 'Mateo 6:9' },
+  { clave: /\bfe\b|\bcreer\b/, ref: 'Hebreos 11:1' },
+  { clave: /\bgracia\b/, ref: 'Efesios 2:8' },
+  { clave: /\besperanza\b/, ref: 'Romanos 15:13' },
+  { clave: /\bperdon\b|\bperdonar\b/, ref: 'Mateo 6:14' },
+  { clave: /\bpaz\b/, ref: 'Juan 14:27' },
+  { clave: /\bansiedad\b|\bafan\b|\binquietud\b|\bestres\b/, ref: 'Filipenses 4:6' },
+  { clave: /\btemor\b|\bmiedo\b|\bangustia\b/, ref: 'Isaias 41:10' },
+  { clave: /\bcruz\b|\bcrucificado\b/, ref: '1 Corintios 1:18' },
+  { clave: /\bredencion\b|\brescatado\b/, ref: 'Efesios 1:7' },
+  { clave: /\bespiritu santo\b|\bel espiritu\b/, ref: 'Gálatas 5:22' },
+  { clave: /\bsantidad\b|\bsanto\b|\bsagrado\b/, ref: '1 Pedro 1:15' },
+  { clave: /\bservicio\b|\bservir\b|\bministro\b/, ref: 'Marcos 10:45' },
+  { clave: /\bgenerosidad\b|\blimosna\b|\bdar\b|\bdiezmo\b|\bofrenda\b/, ref: '2 Corintios 9:7' },
+  { clave: /\bevangelio\b|\bmision\b|\bmisionero\b/, ref: 'Romanos 1:16' },
+  { clave: /\bmatrimonio\b|\bmarido\b|\bmatrimonio\b|\besposa\b/, ref: 'Efesios 5:25' },
+  { clave: /\bfamilia\b|\bhijos\b|\bpadres\b|\bhogar\b/, ref: 'Proverbios 22:6' },
+  { clave: /\btrabajo\b|\btrabajar\b|\bempleo\b/, ref: 'Colosenses 3:23' },
+  { clave: /\bduelo\b|\bmuerte\b|\bmuerto\b|\bluto\b|\bfallecido\b/, ref: '1 Tesalonicenses 4:13' },
+  { clave: /\benfermedad\b|\benfermo\b|\bsanidad\b|\bsanar\b|\bcuracion\b/, ref: 'Santiago 5:14' },
+  { clave: /\btentacion\b|\bprobar\b|\bcaida\b/, ref: '1 Corintios 10:13' },
+  { clave: /\barrepentimiento\b|\barrepentirse\b/, ref: 'Hechos 3:19' },
+  { clave: /\bpecado\b|\bpecador\b/, ref: 'Romanos 3:23' },
+  { clave: /\bconsolacion\b|\baliento\b|\banimar\b|\bdebilidad\b|\bdescanso\b/, ref: 'Isaias 40:31' },
+  { clave: /\bsabiduria\b/, ref: 'Santiago 1:5' },
+  { clave: /\balegria\b|\bgozo\b|\bregocijo\b/, ref: 'Filipenses 4:4' },
+  { clave: /\biglesia\b|\bcuerpo\b|\bcomunidad\b/, ref: '1 Corintios 12:12' },
+  { clave: /\bbautismo\b|\bbautizar\b/, ref: 'Romanos 6:3' },
+  { clave: /\bcomunion\b|\bhermanos\b|\bfraternidad\b/, ref: 'Hechos 2:42' },
+  { clave: /\bidolatria\b|\bidolo\b|\bdinero\b|\briqueza\b|\bcodicia\b/, ref: 'Mateo 6:24' },
+  { clave: /\bprosperidad\b|\bfuturo\b|\bproposito\b/, ref: 'Jeremias 29:11' },
+  { clave: /\bnacimiento\b|\bnacer de nuevo\b|\bregeneracion\b/, ref: 'Juan 3:3' },
+  { clave: /\bsegunda venida\b|\bregreso\b|\bvuelo\b|\bescatologia\b/, ref: '1 Tesalonicenses 4:16' },
+  { clave: /\bjusticia\b|\bvenganza\b|\bfavoritismo\b/, ref: 'Romanos 12:19' },
+  { clave: /\bhumildad\b|\bhumilde\b|\borgullo\b/, ref: 'Santiago 4:6' },
+  { clave: /\bgratitud\b|\bgracias\b|\baccion de gracias\b/, ref: '1 Tesalonicenses 5:18' },
+  { clave: /\bfidelidad\b|\bfiel\b|\bconstancia\b/, ref: 'Lamentaciones 3:22' },
+  { clave: /\bliderazgo\b|\blider\b|\bapacentar\b/, ref: '1 Pedro 5:2' },
+  { clave: /\bfruto\b/, ref: 'Juan 15:5' },
+  { clave: /\bluz\b|\btestigo\b|\btestimonio\b/, ref: 'Mateo 5:14' }
+]
+
+/** Devuelve el pasaje canonico del tema si la peticion es tematica (sin
+ * referencia explicita); undefined si no hay tema reconocido. */
+export function pasajeDeTema(query: string): PassageHint | undefined {
+  const folded = foldAccents(query)
+  const hit = TEMA_PASAJES.find((entry) => entry.clave.test(folded))
+  if (!hit) return undefined
+  return parseReference(hit.ref) ?? undefined
+}
+
 /** Puntaje multi-palabra: gana el versiculo que cumple MAS palabras de la
  * consulta. Ej: "talita cumi niña mano" puntua Marcos 5:41 (4) sobre un
- * verso cualquiera con "hablar" (1). Empate: la palabra mas rara primero. */
+ * verso cualquiera con "hablar" (1). Empate: la palabra mas rara primero.
+ * Con varias palabras se exige cumplir al menos DOS: una sola palabra comun
+ * ("amor") no basta para anclar un pasaje ajeno al tema. */
 export async function locatePassageByTokens(
   tokens: string[],
   _module: string,
@@ -913,6 +977,7 @@ export async function locatePassageByTokens(
     if (hits.length) perToken.set(word, hits)
   }
   if (!perToken.size) return undefined
+  const minScore = perToken.size > 1 ? 2 : 1
   let best: { hit: SearchResult; score: number } | null = null
   for (const [, hits] of perToken) {
     for (const hit of hits) {
@@ -921,6 +986,7 @@ export async function locatePassageByTokens(
       for (const word of perToken.keys()) {
         if (text.includes(word)) score += 1
       }
+      if (score < minScore) continue
       if (!best || score > best.score) best = { hit, score }
     }
   }
@@ -958,6 +1024,10 @@ export async function runCreator(
   const locatePassage = async (): Promise<PassageHint | undefined> => {
     const direct = parseReference(trimmed)
     if (direct) return direct
+    // Tema reconocido => pasaje canonico del mapa (jamás la palabra suelta
+    // que topa con el primer verso que la contiene).
+    const porTema = pasajeDeTema(trimmed)
+    if (porTema) return porTema
     const terms = intent.searchTerms.length ? intent.searchTerms : queryTokensOf(trimmed)
     const bibles = [
       ...(ctx.settings.priorityModules ?? []).filter((name) =>

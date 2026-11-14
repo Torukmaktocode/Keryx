@@ -786,7 +786,13 @@ export async function buildDossier(
       CANONICAL_BOOKS.find((b) => b.code === parsed.book) ?? CANONICAL_BOOKS[0],
       'es'
     )
-    const topicsFor = ([esName] as string[]).concat(themeForCtx ? [themeForCtx] : []).concat(verseThemes).slice(0, 3)
+    // El tema pedido por el usuario tiene PRIORIDAD: cambiando el tema cambia
+    // el caso real (antes el nombre del libro/verso ganaba y pasajes que
+    // mencionan Sodoma lo repetian para siempre).
+    const topicsFor = (themeForCtx ? [themeForCtx] : [])
+      .concat(parsed ? [esName] : [])
+      .concat(verseThemes)
+      .slice(0, 3)
     const mods = hook.modules
       .filter((m) => m.category === 'Dictionary' && /donde hallarlo|nave|tematico|thompson/i.test(m.name))
       .sort((a, b) => Number(/donde hallarlo/i.test(b.name)) - Number(/donde hallarlo/i.test(a.name)))
