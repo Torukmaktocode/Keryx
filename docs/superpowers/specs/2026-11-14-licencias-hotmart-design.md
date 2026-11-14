@@ -160,7 +160,7 @@ create table dispositivos (
    Worker y los secrets `HOTTOK`, `SUPABASE_URL`,
    `SUPABASE_SERVICE_ROLE_KEY`, `LICENCIA_PRIVADA` (el par Ed25519 se genera
    con un script del repo).
-3. **Hotmart**: Herramientas → Webhook → registrar
+3. **Hotmart** (producto `8968763`): Herramientas → Webhook → registrar
    `https://<worker>.workers.dev/webhooks/hotmart` con eventos "Compra
    aprobada/completada" + "Reembolso/Cancelación" (guía del pastor);
    configurar el Área de miembros externa con la URL de la app; copiar el
