@@ -131,6 +131,12 @@ create table suscripciones (
   actualizado_at timestamptz not null default now()
 );
 
+create table usuarios (
+  email text primary key,
+  password_hash text not null,
+  creado_at timestamptz not null default now()
+);
+
 create table dispositivos (
   email text not null references suscripciones(email),
   huella text not null,
