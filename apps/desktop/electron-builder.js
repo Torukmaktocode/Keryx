@@ -8,12 +8,8 @@ const extraResources = [
   }
 ]
 
-if (existsSync(join(__dirname, '..', '..', 'ai.local.json'))) {
-  extraResources.push({
-    from: '../../ai.local.json',
-    to: 'ai.local.json'
-  })
-}
+// La clave de IA NO viaja en los instaladores: la app usa el proxy
+// /ai/chat del Worker, que la guarda como secret del servidor.
 
 if (existsSync(join(__dirname, 'biblioteca'))) {
   extraResources.push({

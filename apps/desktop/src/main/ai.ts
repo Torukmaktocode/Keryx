@@ -3,6 +3,8 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { app } from 'electron'
 import type { AiChatRequest, AiChatResult, AiStatus, AppSettings } from '@keryx/core'
+import { BACKEND_URL } from '@keryx/core/licencia'
+import { licencia } from './licencia-puente'
 
 const OPENCODE_PROVIDERS = ['opencode', 'opencode-go'] as const
 
@@ -147,11 +149,52 @@ export async function aiChat(
   request: AiChatRequest
 ): Promise<AiChatResult> {
   const ai = resolveAi(settings)
-  if (!ai.apiKey) {
-    throw new Error(
-      'Sin clave de IA. Añade una en Ajustes o instala OpenCode con una sesión iniciada.'
-    )
+  if (ai.apiKey) {
+    return aiChatDirecto(ai, request)
   }
+  const jwt = licencia.jwtActual()
+  if (jwt) {
+    return aiChatProxy(jwt, ai, request)
+  }
+  throw new Error(
+    'Sin clave de IA. Añade una en Ajustes o instala OpenCode con una sesión iniciada.'
+  )
+}
+
+/** Llamada por el proxy del Worker: la clave de OpenAI vive solo en el
+ * servidor — la app envia su licencia y el Worker autoriza y reenvia. */
+async function aiChatProxy(
+  jwt: string,
+  ai: ResolvedAi,
+  request: AiChatRequest
+): Promise<AiChatResult> {
+  const response = await fetch(`${BACKEND_URL}/ai/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      licencia: jwt,
+      model: ai.model,
+      messages: request.messages,
+      temperature: request.temperature ?? 0.6,
+      maxTokens: request.maxTokens ?? 1200
+    })
+  })
+  const cuerpo = (await response.json().catch(() => null)) as
+    | { ok: true; data: { model?: string; choices?: Array<{ message?: { content?: string } }> } }
+    | { ok: false; error: string; codigo?: string }
+    | null
+  if (!cuerpo) throw new Error('El servidor de IA no respondió.')
+  if (cuerpo.ok === false) throw new Error(cuerpo.error)
+  const data = cuerpo.data
+  const text = data.choices?.[0]?.message?.content?.trim() ?? ''
+  if (!text) throw new Error('La IA devolvió una respuesta vacía.')
+  return { text, model: data.model ?? ai.model }
+}
+
+async function aiChatDirecto(
+  ai: ResolvedAi,
+  request: AiChatRequest
+): Promise<AiChatResult> {
   const response = await fetch(`${ai.baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -179,14 +222,18 @@ export async function aiChat(
 
 export async function aiStatus(settings: AppSettings): Promise<AiStatus> {
   const ai = resolveAi(settings)
+  const viaProxy = !ai.apiKey && Boolean(licencia.jwtActual())
   const status: AiStatus = {
-    configured: Boolean(ai.apiKey),
-    source: ai.source,
+    configured: Boolean(ai.apiKey) || viaProxy,
+    source: viaProxy ? 'proxy' : ai.source,
     baseUrl: ai.baseUrl,
     model: ai.model,
     models: []
   }
-  if (!ai.apiKey) return status
+  if (!ai.apiKey) {
+    if (viaProxy) status.models = ['gpt-4o-mini']
+    return status
+  }
   try {
     const response = await fetch(`${ai.baseUrl}/models`, {
       headers: { Authorization: `Bearer ${ai.apiKey}` }

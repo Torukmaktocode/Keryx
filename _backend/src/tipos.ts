@@ -27,6 +27,7 @@ export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string
   LICENCIA_PRIVADA: string
   LICENCIA_PUBLICA: string
+  OPENAI_KEY?: string
 }
 
 export type Rta<T = unknown> =

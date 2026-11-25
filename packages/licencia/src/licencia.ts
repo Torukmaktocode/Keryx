@@ -92,7 +92,11 @@ export function crearLicencia(opciones: OpcionesLicencia) {
     }, opciones.msRevalidar ?? 24 * 3600000)
   }
 
-  return { estado, iniciar, verificar, refrescarSiToca, salir, iniciarCron, huella }
+  function jwtActual(): string | null {
+    return almacen.leer()
+  }
+
+  return { estado, iniciar, verificar, refrescarSiToca, salir, iniciarCron, huella, jwtActual }
 }
 
 export type { LoginRta }

@@ -217,7 +217,7 @@ export interface AiChatResult {
 
 export interface AiStatus {
   configured: boolean
-  source: 'settings' | 'opencode' | 'env' | 'none'
+  source: 'settings' | 'opencode' | 'env' | 'proxy' | 'none'
   baseUrl: string
   model: string
   models: string[]

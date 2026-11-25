@@ -1,6 +1,7 @@
 import { manejarWebhook } from './webhook'
 import { manejarLogin } from './login'
 import { manejarActivar, manejarRefrescar, manejarDesactivar } from './licencia'
+import { manejarIa } from './ia'
 import { rtaError, type Env } from './tipos'
 
 const VENTANA_MS = 60000
@@ -31,6 +32,7 @@ export async function enrutador(req: Request, env: Env): Promise<Response> {
     if (metodo === 'POST' && ruta === '/license/activar') return await manejarActivar(env, req)
     if (metodo === 'POST' && ruta === '/license/refrescar') return await manejarRefrescar(env, req)
     if (metodo === 'POST' && ruta === '/license/desactivar') return await manejarDesactivar(env, req)
+    if (metodo === 'POST' && ruta === '/ai/chat') return await manejarIa(env, req)
 
     return rtaError('ruta no encontrada', 'no_ruta', 404)
   } catch {
