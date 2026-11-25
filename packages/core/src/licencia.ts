@@ -12,5 +12,5 @@ export interface LicenciaError {
   codigo?: string
 }
 
-export const BACKEND_URL = ''
-export const CHECKOUT_URL = ''
+export const BACKEND_URL = 'https://keryx-licencias.keryx-backend.workers.dev'
+export const CHECKOUT_URL = 'https://pay.hotmart.com/8968763'
