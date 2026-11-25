@@ -8,6 +8,13 @@ const extraResources = [
   }
 ]
 
+if (existsSync(join(__dirname, '..', '..', 'ai.local.json'))) {
+  extraResources.push({
+    from: '../../ai.local.json',
+    to: 'ai.local.json'
+  })
+}
+
 if (existsSync(join(__dirname, 'biblioteca'))) {
   extraResources.push({
     from: 'biblioteca',

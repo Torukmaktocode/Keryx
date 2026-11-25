@@ -53,6 +53,7 @@ export function readLocalAiConfig(): LocalAiConfig {
     join(cwd, '..', 'ai.local.json'),
     join(cwd, '..', '..', 'ai.local.json'),
     join(app.getAppPath(), 'ai.local.json'),
+    join(process.resourcesPath ?? '', 'ai.local.json'),
     join(app.getPath('userData'), 'ai.local.json')
   ].filter((value): value is string => Boolean(value))
   for (const path of candidates) {
