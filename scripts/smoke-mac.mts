@@ -75,8 +75,10 @@ console.log(`[smoke] coalicion: ${mb.toFixed(1)} MB, muestra ${primeras.length} 
 if (mb < 50) dificil(`corpus coalicion incompleto: ${mb.toFixed(1)} MB (esperados ~60)`)
 try { JSON.parse(primeras[0]!) } catch { dificil('articulos.jsonl primera linea rota') }
 
-// 3) Python resuelto como hara la app (la falla original del mac)
-const binario = String(pythonBin())
+// 3) Python resuelto como hara la app (la falla original del mac).
+// En el runner de CI si hay CLT instalado, asi que el stub /usr/bin/python3
+// es python real ahi — fallback legitimo solo para el smoke.
+const binario = String(pythonBin() ?? '/usr/bin/python3')
 try {
   execFileSync(binario, ['--version'], { stdio: 'pipe', timeout: 15_000 })
   console.log(`[smoke] python: ${binario} responde`)

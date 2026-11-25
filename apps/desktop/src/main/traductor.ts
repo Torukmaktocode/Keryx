@@ -55,6 +55,8 @@ let instalandoPaquetes = false
  * Homebrew, PEP 668), si "--user" se niega cae a "--break-system-packages"
  * solo. Devuelve true si pip terminÃ³ bien (o ya estaba instalado). */
 async function pipInstalar(): Promise<boolean> {
+  const python = pythonBin()
+  if (!python) return false
   const escalera: string[][] = [
     ['-m', 'pip', 'install', '--user', 'argostranslate'],
     ['-m', 'pip', 'install', '--user', '--break-system-packages', 'argostranslate'],
@@ -62,7 +64,7 @@ async function pipInstalar(): Promise<boolean> {
   ]
   for (const args of escalera) {
     const r = await new Promise<{ code: number; salida: string }>((ok) => {
-      const proc = spawn(pythonBin(), args, { windowsHide: true })
+      const proc = spawn(python, args, { windowsHide: true })
       let salida = ''
       proc.stdout?.on('data', (c: Buffer) => { salida += c.toString() })
       proc.stderr?.on('data', (c: Buffer) => { salida += c.toString() })
@@ -101,10 +103,15 @@ function prepararPaquetes(): void {
 function launchDaemon(): Promise<void> {
   if (child) return Promise.resolve()
   if (launching) return launching
+  const python = pythonBin()
+  if (!python) {
+    console.log('[traductor] sin Python real en el sistema; daemon de traduccion desactivado')
+    return Promise.reject(new Error('sin python'))
+  }
   launching = new Promise<void>((resolve, reject) => {
     try {
       const dir = userDataDir()
-      const proc = spawn(pythonBin(), [daemonPath()], {
+      const proc = spawn(python, [daemonPath()], {
         env: {
           ...process.env,
           PYTHONUTF8: '1',
@@ -497,12 +504,14 @@ export function glosarioDe(lang: string): Array<{ es: string; nat: string; peso:
 async function instalarDialecto(target: string): Promise<boolean> {
   const spec = DIALECTO_A_SPEC.get(target)
   if (!spec) return false
+  const python = pythonBin()
+  if (!python) return false
   const script = app.isPackaged
     ? join(process.resourcesPath, 'scripts', 'instalar_dialectos.py')
     : join(app.getAppPath(), '..', '..', 'scripts', 'instalar_dialectos.py')
   try {
     await new Promise<void>((resolve, reject) => {
-      const proc = spawn(pythonBin(), [script, '--raiz', join(userDataDir(), 'dialectos'), '--dialecto', spec], {
+      const proc = spawn(python, [script, '--raiz', join(userDataDir(), 'dialectos'), '--dialecto', spec], {
         windowsHide: true,
         stdio: ['ignore', 'pipe', 'pipe']
       })
