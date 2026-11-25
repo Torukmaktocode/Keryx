@@ -44,6 +44,26 @@ interface LocalAiConfig {
   model?: string
 }
 
+interface LocalAiFile extends LocalAiConfig {
+  keyEnc?: string
+}
+
+const IA_SAL = 'keryx-ia-2026-licencia'
+
+/** Decodifica keyEnc: XOR con sal fija + base64. Ofuscacion deliberada —
+ * la clave nunca viaja en texto plano dentro del instalador, pero un
+ * cliente local siempre podria extraerla con esfuerzo (limitar gasto). */
+function decodificarKeyEnc(enc: string): string {
+  try {
+    const bytes = Buffer.from(enc, 'base64')
+    let salida = ''
+    for (let i = 0; i < bytes.length; i++) salida += String.fromCharCode(bytes[i]! ^ IA_SAL.charCodeAt(i % IA_SAL.length))
+    return salida
+  } catch {
+    return ''
+  }
+}
+
 /** Lee la clave/proveedor desde un archivo local (gitignored) o variables de entorno. */
 export function readLocalAiConfig(): LocalAiConfig {
   const cwd = process.cwd()
@@ -59,7 +79,8 @@ export function readLocalAiConfig(): LocalAiConfig {
   for (const path of candidates) {
     try {
       if (!existsSync(path)) continue
-      const parsed = JSON.parse(readFileSync(path, 'utf-8')) as LocalAiConfig
+      const parsed = JSON.parse(readFileSync(path, 'utf-8')) as LocalAiFile
+      if (parsed.keyEnc) return { key: decodificarKeyEnc(parsed.keyEnc), baseUrl: parsed.baseUrl, model: parsed.model }
       if (parsed.key || parsed.baseUrl || parsed.model) return parsed
     } catch {
       // siguiente candidato

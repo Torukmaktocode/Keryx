@@ -37,6 +37,17 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Escribir clave IA ofuscada (ai.local.json)
+        env:
+          AI_KEY_EMBED: ${{ secrets.AI_KEY_EMBED }}
+        run: |
+          if [ -n "$AI_KEY_EMBED" ]; then
+            printf '{"keyEnc":"%s"}\n' "$AI_KEY_EMBED" > ai.local.json
+            echo "ai.local.json escrito (${#AI_KEY_EMBED} chars)"
+          else
+            echo "AVISO: sin secret AI_KEY_EMBED; DMG sin IA por defecto"
+          fi
+
       - name: Tests del motor
         run: npm test
 
