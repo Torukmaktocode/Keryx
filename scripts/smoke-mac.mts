@@ -91,7 +91,7 @@ const congelado = join(recursos, 'daemon', 'keryx-daemon', 'keryx-daemon')
 if (existsSync(congelado)) {
   console.log(`[smoke] daemon congelado: ${congelado}`)
   const tempF = mkdtempSync(join(tmpdir(), 'keryx-smoke-f-'))
-  const respuesta = await new Promise<boolean>((ok) => {
+  const respuesta = await new Promise<{ ok: boolean; salida: string; err: string; code: number | null }>((ok) => {
     const f = spawn(congelado, [], {
       env: {
         ...process.env,
@@ -100,29 +100,40 @@ if (existsSync(congelado)) {
         XDG_CONFIG_HOME: join(tempF, 'config'),
         ARGOS_PACKAGES_DIR: join(tempF, 'datos', 'argos-translate', 'packages'),
         KERYX_DIALECTOS_DIR: join(tempF, 'dialectos'),
-        KERYX_CORPUS_DIR: tempF
+        KERYX_CORPUS_DIR: tempF,
+        KERYX_ARGOS_PRELOAD: ''
       },
       stdio: ['pipe', 'pipe', 'pipe']
     })
     let salida = ''
+    let err = ''
     f.stdout?.setEncoding('utf8')
     f.stdout?.on('data', (c: string) => { salida += c })
-    f.on('exit', () => ok(salida.includes('"pairs"')))
-    f.on('error', () => ok(false))
+    f.stderr?.setEncoding('utf8')
+    f.stderr?.on('data', (c: string) => { err += c })
+    f.on('exit', (code) => ok({ ok: salida.includes('"pairs"'), salida, err, code }))
+    f.on('error', (e) => {
+      console.log('[smoke-daemon-congelado] spawn error:', e.message)
+      ok({ ok: false, salida, err, code: null })
+    })
     const t0 = Date.now()
     setTimeout(() => {
-      if (salida.includes('"pairs"')) ok(true)
+      if (salida.includes('"pairs"')) ok({ ok: true, salida, err, code: null })
       else {
-        console.log(`[smoke-daemon-congelado] ${(salida.slice(-400))}`)
         f.kill()
-        ok(false)
+        ok({ ok: false, salida, err, code: null })
       }
     }, 90_000)
     f.stdin?.write(JSON.stringify({ id: 991, op: 'pairs' }) + '\n')
   })
   rmSync(tempF, { recursive: true, force: true })
-  if (respuesta) console.log('[smoke] daemon congelado E2E OK (pairs respondio)')
-  else dificil('el daemon congelado del paquete no responde pairs')
+  if (respuesta.ok) console.log('[smoke] daemon congelado E2E OK (pairs respondio)')
+  else {
+    console.log(`[smoke-daemon-congelado] exit=${respuesta.code}`)
+    console.log(`[smoke-daemon-congelado] stdout: ${respuesta.salida.slice(-600)}`)
+    console.log(`[smoke-daemon-congelado] stderr: ${respuesta.err.slice(-1500)}`)
+    dificil('el daemon congelado del paquete no responde pairs')
+  }
 } else {
   console.log('[smoke] Aviso: el paquete no trae daemon congelado (traduccion exigira Python en el usuario)')
 }
