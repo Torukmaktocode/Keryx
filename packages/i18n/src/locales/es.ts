@@ -567,6 +567,12 @@ export const es = {
   'oracion.cat.trabajo': 'Trabajo',
   'oracion.cat.economia': 'Economía',
   'oracion.cat.gratitud': 'Gratitud',
+  'oracion.cat.salvacion': 'Salvación',
+  'oracion.cat.perdon': 'Perdón',
+  'oracion.cat.fe': 'Fe',
+  'oracion.cat.esperanza': 'Esperanza',
+  'oracion.cat.amor': 'Amor',
+  'oracion.cat.ensenanza': 'Enseñanza',
   'oracion.total': '{count} peticiones',
 
   'oracion.hero.verso': 'Orad unos por otros — Santiago 5:16',

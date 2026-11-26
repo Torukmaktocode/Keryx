@@ -565,6 +565,12 @@ export const fr: Record<TranslationKey, string> = {
   'oracion.cat.trabajo': 'Travail',
   'oracion.cat.economia': 'Finances',
   'oracion.cat.gratitud': 'Gratitude',
+  'oracion.cat.salvacion': 'Salut',
+  'oracion.cat.perdon': 'Pardon',
+  'oracion.cat.fe': 'Foi',
+  'oracion.cat.esperanza': 'Espérance',
+  'oracion.cat.amor': 'Amour',
+  'oracion.cat.ensenanza': 'Enseignement',
   'oracion.total': '{count} requêtes',
 
   'oracion.hero.verso': 'Priez les uns pour les autres — Jacques 5:16',

@@ -564,6 +564,12 @@ export const zh: Record<TranslationKey, string> = {
   'oracion.cat.trabajo': '工作',
   'oracion.cat.economia': '经济',
   'oracion.cat.gratitud': '感恩',
+  'oracion.cat.salvacion': '救恩',
+  'oracion.cat.perdon': '饶恕',
+  'oracion.cat.fe': '信心',
+  'oracion.cat.esperanza': '盼望',
+  'oracion.cat.amor': '爱',
+  'oracion.cat.ensenanza': '教导',
   'oracion.total': '{count} 个请求',
 
   'oracion.hero.verso': '互相代祷 — 雅各书 5:16',

@@ -45,7 +45,7 @@ export async function manejarPublicar(env: Env, req: Request, fetchFn: FetchFn =
   const pais = cadena(cuerpo, 'pais', 80)
   const peticion = cadena(cuerpo, 'peticion', 3000)
   const categoria = cadena(cuerpo, 'categoria', 40) || 'general'
-  const CATEGORIAS = ['general', 'salud', 'familia', 'trabajo', 'economia', 'gratitud']
+  const CATEGORIAS = ['general', 'salvacion', 'perdon', 'fe', 'esperanza', 'amor', 'salud', 'familia', 'trabajo', 'economia', 'gratitud', 'ensenanza']
   if (!nombre || !pais || !peticion) return rtaError('faltan campos obligatorios', 'formato', 400)
   if (peticion.length < 10) return rtaError('la petición es demasiado corta', 'formato', 400)
   if (!CATEGORIAS.includes(categoria)) return rtaError('categoría invalida', 'formato', 400)

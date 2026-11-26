@@ -569,6 +569,12 @@ export const pt: Record<TranslationKey, string> = {
   'oracion.cat.trabajo': 'Trabalho',
   'oracion.cat.economia': 'Finanças',
   'oracion.cat.gratitud': 'Gratidão',
+  'oracion.cat.salvacion': 'Salvação',
+  'oracion.cat.perdon': 'Perdão',
+  'oracion.cat.fe': 'Fé',
+  'oracion.cat.esperanza': 'Esperança',
+  'oracion.cat.amor': 'Amor',
+  'oracion.cat.ensenanza': 'Ensino',
   'oracion.total': '{count} pedidos',
 
   'oracion.hero.verso': 'Orai uns pelos outros — Tiago 5:16',

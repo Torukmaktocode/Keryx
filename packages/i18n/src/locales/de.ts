@@ -565,6 +565,12 @@ export const de: Record<TranslationKey, string> = {
   'oracion.cat.trabajo': 'Arbeit',
   'oracion.cat.economia': 'Finanzen',
   'oracion.cat.gratitud': 'Dankbarkeit',
+  'oracion.cat.salvacion': 'Erlösung',
+  'oracion.cat.perdon': 'Vergebung',
+  'oracion.cat.fe': 'Glaube',
+  'oracion.cat.esperanza': 'Hoffnung',
+  'oracion.cat.amor': 'Liebe',
+  'oracion.cat.ensenanza': 'Lehre',
   'oracion.total': '{count} Anliegen',
 
   'oracion.hero.verso': 'Betet füreinander — Jakobus 5:16',

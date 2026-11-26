@@ -98,7 +98,20 @@ const FORM_VACIO: FormComunidad = {
   texto: ''
 }
 
-const CATEGORIAS_SERMON = ['general', 'salud', 'familia', 'trabajo', 'economia', 'gratitud'] as const
+const CATEGORIAS_SERMON = [
+  'general',
+  'salvacion',
+  'perdon',
+  'fe',
+  'esperanza',
+  'amor',
+  'salud',
+  'familia',
+  'trabajo',
+  'economia',
+  'gratitud',
+  'ensenanza'
+] as const
 
 function FormularioComunidad({ alListo }: { alListo: () => void }): JSX.Element {
   const { t } = useI18n()

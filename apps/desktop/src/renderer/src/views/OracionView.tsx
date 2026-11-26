@@ -14,7 +14,20 @@ type FormOracion = { nombre: string; pais: string; peticion: string; categoria: 
 
 const FORM_VACIO: FormOracion = { nombre: '', pais: '', peticion: '', categoria: 'general' }
 
-const CATEGORIAS = ['general', 'salud', 'familia', 'trabajo', 'economia', 'gratitud'] as const
+const CATEGORIAS = [
+  'general',
+  'salvacion',
+  'perdon',
+  'fe',
+  'esperanza',
+  'amor',
+  'salud',
+  'familia',
+  'trabajo',
+  'economia',
+  'gratitud',
+  'ensenanza'
+] as const
 
 export function OracionView(): JSX.Element {
   const { t } = useI18n()
