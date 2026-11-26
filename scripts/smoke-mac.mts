@@ -222,3 +222,6 @@ try {
 }
 
 console.log('[smoke] LISTO — paquete mac viable')
+/* Salida forzada: los hijos del daemon congelado pueden sostener los pipes
+ * abiertos y colgar el exit normal del proceso de humo. */
+process.exit(0)
