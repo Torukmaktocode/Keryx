@@ -267,10 +267,25 @@ export const comunidadObtenerSchema = z.object({
   id: z.string().uuid()
 })
 
+export const comunidadLikeSchema = z.object({
+  id: z.string().uuid()
+})
+
+export const comunidadComentarSchema = z.object({
+  id: z.string().uuid(),
+  nombre: z.string().min(2).max(80),
+  texto: z.string().min(2).max(1000)
+})
+
+export const comunidadSeguirSchema = z.object({
+  autor: z.string().email().max(200)
+})
+
 export const oracionPublicarSchema = z.object({
   nombre: z.string().min(2).max(80),
   pais: z.string().min(2).max(80),
-  peticion: z.string().min(10).max(3000)
+  peticion: z.string().min(10).max(3000),
+  categoria: z.string().max(40).optional()
 })
 
 export const oracionLlamitaSchema = z.object({

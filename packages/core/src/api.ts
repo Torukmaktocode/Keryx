@@ -16,7 +16,7 @@ import type {
   Verse
 } from './types'
 import type { EstadoActual, LicenciaError } from './licencia'
-import type { SermónComunidadCompleto, SermónComunidadResumen, OraciónResumen } from './types'
+import type { SermónComunidadCompleto, SermónComunidadResumen, OraciónResumen, ComentarioComunidad } from './types'
 import type {
   CoalicionItem,
   CoalicionRequest,
@@ -163,12 +163,17 @@ export interface KeryxApi {
       experiencia?: string
       texto: string
     }): Promise<Result<{ publicado: true } | LicenciaError>>
-    lista(): Promise<Result<SermónComunidadResumen[] | LicenciaError>>
+    lista(args?: { autor?: string }): Promise<Result<Array<SermónComunidadResumen & { email?: string }> | LicenciaError>>
     obtener(args: { id: string }): Promise<Result<SermónComunidadCompleto | LicenciaError>>
+    like(args: { id: string }): Promise<Result<{ likes: number; yo_doy_like: boolean } | LicenciaError>>
+    comentar(args: { id: string; nombre: string; texto: string }): Promise<Result<{ comentado: true } | LicenciaError>>
+    comentarios(args: { id: string }): Promise<Result<ComentarioComunidad[] | LicenciaError>>
+    seguir(args: { autor: string }): Promise<Result<{ seguidores: number; siguiendo: boolean } | LicenciaError>>
+    seguidores(args: { autor: string }): Promise<Result<{ seguidores: number; yo_sigo: boolean } | LicenciaError>>
   }
   oracion: {
-    publicar(args: { nombre: string; pais: string; peticion: string }): Promise<Result<{ publicado: true } | LicenciaError>>
-    lista(): Promise<Result<OraciónResumen[] | LicenciaError>>
+    publicar(args: { nombre: string; pais: string; peticion: string; categoria?: string }): Promise<Result<{ publicado: true } | LicenciaError>>
+    lista(args?: { categoria?: string; modo?: string }): Promise<Result<OraciónResumen[] | LicenciaError>>
     llamita(args: { id: string }): Promise<Result<{ orando: number; yo_oro: boolean } | LicenciaError>>
     responder(args: { id: string; respuesta: string }): Promise<Result<{ respondida: true } | LicenciaError>>
   }

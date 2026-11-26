@@ -26,8 +26,8 @@ export function oracionPublicar(args: { nombre: string; pais: string; peticion: 
   return post<{ publicado: true }>('/oracion/publicar', { ...args })
 }
 
-export function oracionLista(): Promise<OraciónResumen[] | LicenciaError> {
-  return post<OraciónResumen[]>('/oracion/lista', {})
+export function oracionLista(args?: { categoria?: string; modo?: string }): Promise<OraciónResumen[] | LicenciaError> {
+  return post<OraciónResumen[]>('/oracion/lista', { ...(args ?? {}) })
 }
 
 export function oracionLlamita(id: string): Promise<{ orando: number; yo_oro: boolean } | LicenciaError> {

@@ -3,6 +3,7 @@ import { manejarLogin } from './login'
 import { manejarActivar, manejarRefrescar, manejarDesactivar } from './licencia'
 import { manejarIa } from './ia'
 import { manejarPublicar, manejarLista, manejarObtener } from './comunidad'
+import { manejarLike, manejarComentar, manejarComentarios, manejarSeguir, manejarSeguidores } from './comunidad'
 import { manejarPublicar as manejarOracionPublicar, manejarLista as manejarOracionLista, manejarLlamita, manejarResponder } from './oracion'
 import { rtaError, type Env } from './tipos'
 
@@ -38,6 +39,11 @@ export async function enrutador(req: Request, env: Env): Promise<Response> {
     if (metodo === 'POST' && ruta === '/comunidad/publicar') return await manejarPublicar(env, req)
     if (metodo === 'POST' && ruta === '/comunidad/lista') return await manejarLista(env, req)
     if (metodo === 'POST' && ruta === '/comunidad/obtener') return await manejarObtener(env, req)
+    if (metodo === 'POST' && ruta === '/comunidad/like') return await manejarLike(env, req)
+    if (metodo === 'POST' && ruta === '/comunidad/comentar') return await manejarComentar(env, req)
+    if (metodo === 'POST' && ruta === '/comunidad/comentarios') return await manejarComentarios(env, req)
+    if (metodo === 'POST' && ruta === '/comunidad/seguir') return await manejarSeguir(env, req)
+    if (metodo === 'POST' && ruta === '/comunidad/seguidores') return await manejarSeguidores(env, req)
     if (metodo === 'POST' && ruta === '/oracion/publicar') return await manejarOracionPublicar(env, req)
     if (metodo === 'POST' && ruta === '/oracion/lista') return await manejarOracionLista(env, req)
     if (metodo === 'POST' && ruta === '/oracion/llamita') return await manejarLlamita(env, req)

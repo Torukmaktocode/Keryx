@@ -66,6 +66,11 @@ export const IPC = {
   comunidadPublicar: 'comunidad:publicar',
   comunidadLista: 'comunidad:lista',
   comunidadObtener: 'comunidad:obtener',
+  comunidadLike: 'comunidad:like',
+  comunidadComentar: 'comunidad:comentar',
+  comunidadComentarios: 'comunidad:comentarios',
+  comunidadSeguir: 'comunidad:seguir',
+  comunidadSeguidores: 'comunidad:seguidores',
 
   oracionPublicar: 'oracion:publicar',
   oracionLista: 'oracion:lista',

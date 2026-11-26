@@ -235,10 +235,14 @@ export interface SermónComunidadResumen {
   minutos: number
   experiencia: string | null
   creado_at: string
+  likes: number
+  comentarios: number
+  es_mio: boolean
 }
 
 export interface SermónComunidadCompleto extends SermónComunidadResumen {
   texto: string
+  email: string
 }
 
 export interface OraciónResumen {
@@ -247,12 +251,19 @@ export interface OraciónResumen {
   nombre: string
   pais: string
   peticion: string
+  categoria: string
   respondida: boolean
   respuesta: string | null
   respondido_at: string | null
   creado_at: string
   orando: number
   yo_oro: boolean
+}
+
+export interface ComentarioComunidad {
+  nombre: string
+  texto: string
+  creado_at: string
 }
 
 export interface Result<T> {

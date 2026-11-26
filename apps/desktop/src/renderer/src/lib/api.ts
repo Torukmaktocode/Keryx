@@ -187,8 +187,8 @@ export const api = {
       if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
       return rta.data
     },
-    lista: async (): Promise<SermónComunidadResumen[] | LicenciaError> => {
-      const rta: Result<SermónComunidadResumen[] | LicenciaError> = await raw.comunidad.lista()
+    lista: async (args?: { autor?: string }): Promise<Array<SermónComunidadResumen & { email?: string }> | LicenciaError> => {
+      const rta: Result<Array<SermónComunidadResumen & { email?: string }> | LicenciaError> = await raw.comunidad.lista(args)
       if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
       return rta.data
     },
@@ -196,16 +196,41 @@ export const api = {
       const rta: Result<SermónComunidadCompleto | LicenciaError> = await raw.comunidad.obtener(args)
       if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
       return rta.data
+    },
+    like: async (args: { id: string }): Promise<{ likes: number; yo_doy_like: boolean } | LicenciaError> => {
+      const rta: Result<{ likes: number; yo_doy_like: boolean } | LicenciaError> = await raw.comunidad.like(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    comentar: async (args: { id: string; nombre: string; texto: string }): Promise<{ comentado: true } | LicenciaError> => {
+      const rta: Result<{ comentado: true } | LicenciaError> = await raw.comunidad.comentar(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    comentarios: async (args: { id: string }): Promise<Array<{ nombre: string; texto: string; creado_at: string }> | LicenciaError> => {
+      const rta: Result<Array<{ nombre: string; texto: string; creado_at: string }> | LicenciaError> = await raw.comunidad.comentarios(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    seguir: async (args: { autor: string }): Promise<{ seguidores: number; siguiendo: boolean } | LicenciaError> => {
+      const rta: Result<{ seguidores: number; siguiendo: boolean } | LicenciaError> = await raw.comunidad.seguir(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    seguidores: async (args: { autor: string }): Promise<{ seguidores: number; yo_sigo: boolean } | LicenciaError> => {
+      const rta: Result<{ seguidores: number; yo_sigo: boolean } | LicenciaError> = await raw.comunidad.seguidores(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
     }
   },
   oracion: {
-    publicar: async (args: { nombre: string; pais: string; peticion: string }): Promise<{ publicado: true } | LicenciaError> => {
+    publicar: async (args: { nombre: string; pais: string; peticion: string; categoria?: string }): Promise<{ publicado: true } | LicenciaError> => {
       const rta: Result<{ publicado: true } | LicenciaError> = await raw.oracion.publicar(args)
       if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
       return rta.data
     },
-    lista: async (): Promise<OraciónResumen[] | LicenciaError> => {
-      const rta: Result<OraciónResumen[] | LicenciaError> = await raw.oracion.lista()
+    lista: async (args?: { categoria?: string; modo?: string }): Promise<OraciónResumen[] | LicenciaError> => {
+      const rta: Result<OraciónResumen[] | LicenciaError> = await raw.oracion.lista(args)
       if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
       return rta.data
     },

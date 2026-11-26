@@ -22,6 +22,9 @@ import {
   licenciaLoginSchema,
   comunidadPublicarSchema,
   comunidadObtenerSchema,
+  comunidadLikeSchema,
+  comunidadComentarSchema,
+  comunidadSeguirSchema,
   oracionPublicarSchema,
   oracionLlamitaSchema,
   oracionResponderSchema,
@@ -46,6 +49,7 @@ import { buscarCoalicion } from './coalicion'
 import { CHECKOUT_URL } from '@keryx/core/licencia'
 import { licencia } from './licencia-puente'
 import { comunidadPublicar, comunidadLista, comunidadObtener } from './comunidad'
+import { comunidadLike, comunidadComentar, comunidadComentarios, comunidadSeguir, comunidadSeguidores } from './comunidad'
 import { oracionPublicar, oracionLista, oracionLlamita, oracionResponder } from './oracion'
 
 type Handler = (args: unknown[]) => Promise<unknown> | unknown
@@ -276,12 +280,35 @@ export async function registerIpc(
     const { id } = comunidadObtenerSchema.parse(args[0])
     return comunidadObtener(id)
   })
+  register(IPC.comunidadLike, (args) => {
+    const { id } = comunidadLikeSchema.parse(args[0])
+    return comunidadLike(id)
+  })
+  register(IPC.comunidadComentar, (args) => {
+    const { id, nombre, texto } = comunidadComentarSchema.parse(args[0])
+    return comunidadComentar(id, nombre, texto)
+  })
+  register(IPC.comunidadComentarios, (args) => {
+    const { id } = comunidadLikeSchema.parse(args[0])
+    return comunidadComentarios(id)
+  })
+  register(IPC.comunidadSeguir, (args) => {
+    const { autor } = comunidadSeguirSchema.parse(args[0])
+    return comunidadSeguir(autor)
+  })
+  register(IPC.comunidadSeguidores, (args) => {
+    const { autor } = comunidadSeguirSchema.parse(args[0])
+    return comunidadSeguidores(autor)
+  })
 
   register(IPC.oracionPublicar, (args) => {
     const entrada = oracionPublicarSchema.parse(args[0])
     return oracionPublicar(entrada)
   })
-  register(IPC.oracionLista, () => oracionLista())
+  register(IPC.oracionLista, (args) => {
+    const { categoria, modo } = (args?.[0] ?? {}) as { categoria?: string; modo?: string }
+    return oracionLista({ categoria, modo })
+  })
   register(IPC.oracionLlamita, (args) => {
     const { id } = oracionLlamitaSchema.parse(args[0])
     return oracionLlamita(id)

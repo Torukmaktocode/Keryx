@@ -85,12 +85,17 @@ const api: KeryxApi = {
   },
   comunidad: {
     publicar: (args) => invoke(IPC.comunidadPublicar, args),
-    lista: () => invoke(IPC.comunidadLista),
-    obtener: (args) => invoke(IPC.comunidadObtener, args)
+    lista: (args) => invoke(IPC.comunidadLista, args),
+    obtener: (args) => invoke(IPC.comunidadObtener, args),
+    like: (args) => invoke(IPC.comunidadLike, args),
+    comentar: (args) => invoke(IPC.comunidadComentar, args),
+    comentarios: (args) => invoke(IPC.comunidadComentarios, args),
+    seguir: (args) => invoke(IPC.comunidadSeguir, args),
+    seguidores: (args) => invoke(IPC.comunidadSeguidores, args)
   },
   oracion: {
     publicar: (args) => invoke(IPC.oracionPublicar, args),
-    lista: () => invoke(IPC.oracionLista),
+    lista: (args) => invoke(IPC.oracionLista, args),
     llamita: (args) => invoke(IPC.oracionLlamita, args),
     responder: (args) => invoke(IPC.oracionResponder, args)
   }

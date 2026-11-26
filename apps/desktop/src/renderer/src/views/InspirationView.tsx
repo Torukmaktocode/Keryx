@@ -209,14 +209,22 @@ function FormularioComunidad({ alListo }: { alListo: () => void }): JSX.Element 
 function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.Element {
   const { t } = useI18n()
   const sendToWriting = useAppStore((s) => s.sendToWriting)
-  const [lista, setLista] = useState<SermónComunidadResumen[] | null>(null)
+  type ItemLista = SermónComunidadResumen & { email?: string; likes: number; comentarios: number; es_mio: boolean }
+  const [lista, setLista] = useState<ItemLista[] | null>(null)
   const [abierto, setAbierto] = useState<SermónComunidadCompleto | null>(null)
+  const [likesAbierto, setLikesAbierto] = useState(0)
+  const [yoLike, setYoLike] = useState(false)
+  const [comentarios, setComentarios] = useState<Array<{ nombre: string; texto: string; creado_at: string }>>([])
+  const [comentarioNuevo, setComentarioNuevo] = useState('')
+  const [seguimiento, setSeguimiento] = useState<{ seguidores: number; yo_sigo: boolean } | null>(null)
   const [formAbierto, setFormAbierto] = useState(false)
   const [cargando, setCargando] = useState(true)
+  const [autorFiltro, setAutorFiltro] = useState<{ email: string; nombre: string } | null>(null)
+  const [miEmail, setMiEmail] = useState('')
 
-  const cargar = async (): Promise<void> => {
+  const cargar = async (autor?: { email: string; nombre: string } | null): Promise<void> => {
     setCargando(true)
-    const rta = await api.comunidad.lista()
+    const rta = await api.comunidad.lista(autor ? { autor: autor.email } : undefined)
     setCargando(false)
     if ('error' in rta) {
       notify(rta.error)
@@ -227,16 +235,74 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
   }
 
   useEffect(() => {
-    void cargar()
+    void api.licencia.estado().then((estado) => {
+      if (estado.email) setMiEmail(estado.email)
+    })
+    void cargar(null)
   }, [])
 
-  const abrir = async (id: string): Promise<void> => {
-    const rta = await api.comunidad.obtener({ id })
+  const abrir = async (sermon: ItemLista): Promise<void> => {
+    const rta = await api.comunidad.obtener({ id: sermon.id })
     if ('error' in rta) {
       notify(rta.error)
       return
     }
     setAbierto(rta)
+    setLikesAbierto(sermon.likes)
+    setYoLike(false)
+    const rtaC = await api.comunidad.comentarios({ id: sermon.id })
+    if (!('error' in rtaC)) setComentarios(rtaC)
+    if (sermon.email && sermon.email !== miEmail) {
+      const rtaS = await api.comunidad.seguidores({ autor: sermon.email })
+      if (!('error' in rtaS)) setSeguimiento(rtaS)
+    } else {
+      setSeguimiento(null)
+    }
+  }
+
+  const darLike = async (): Promise<void> => {
+    if (!abierto) return
+    const rta = await api.comunidad.like({ id: abierto.id })
+    if ('error' in rta) {
+      notify(rta.error)
+      return
+    }
+    setLikesAbierto(rta.likes)
+    setYoLike(rta.yo_doy_like)
+  }
+
+  const comentar = async (): Promise<void> => {
+    if (!abierto || comentarioNuevo.trim().length < 2) return
+    const rta = await api.comunidad.comentar({ id: abierto.id, nombre: miEmail.split('@')[0] ?? 'Miembro', texto: comentarioNuevo.trim() })
+    if ('error' in rta) {
+      notify(rta.error)
+      return
+    }
+    setComentarioNuevo('')
+    const rtaC = await api.comunidad.comentarios({ id: abierto.id })
+    if (!('error' in rtaC)) setComentarios(rtaC)
+  }
+
+  const alternarSeguir = async (): Promise<void> => {
+    if (!abierto?.email) return
+    const rta = await api.comunidad.seguir({ autor: abierto.email })
+    if ('error' in rta) {
+      notify(rta.error)
+      return
+    }
+    setSeguimiento({ seguidores: rta.seguidores, yo_sigo: rta.siguiendo })
+  }
+
+  const verPerfil = (email: string, nombre: string): void => {
+    setAutorFiltro({ email, nombre })
+    setAbierto(null)
+    void cargar({ email, nombre })
+  }
+
+  const verTodos = (): void => {
+    setAutorFiltro(null)
+    setAbierto(null)
+    void cargar(null)
   }
 
   if (abierto) {
@@ -251,6 +317,9 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
             </p>
           </div>
           <div className="inspiration-detail-tools">
+            <button className={`btn ghost small ${yoLike ? 'primary' : ''}`} onClick={() => void darLike()}>
+              ❤ {likesAbierto}
+            </button>
             <button
               className="btn ghost small"
               onClick={() => {
@@ -272,6 +341,18 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
             </button>
           </div>
         </div>
+
+        {abierto.email && abierto.email !== miEmail && seguimiento && (
+          <div className="inspiration-results-meta">
+            <button className="btn ghost small" onClick={() => void alternarSeguir()}>
+              {seguimiento.yo_sigo
+                ? t('inspiration.comunidad.siguiendo')
+                : t('inspiration.comunidad.seguir', { nombre: abierto.nombre })}
+              <span className="badge">{t('inspiration.comunidad.seguidores', { count: seguimiento.seguidores })}</span>
+            </button>
+          </div>
+        )}
+
         <div className="inspiration-scene">
           <p>
             <strong>{t('inspiration.form.contexto')}:</strong> {abierto.contexto}
@@ -283,6 +364,31 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
           )}
         </div>
         <div className="inspiration-text" dangerouslySetInnerHTML={{ __html: renderMarkdown(abierto.texto) }} />
+
+        <section>
+          <h3>{t('inspiration.comunidad.comentarios')}</h3>
+          {comentarios.map((c, i) => (
+            <blockquote key={i} className="inspiration-quote">
+              <strong>{c.nombre}</strong> · {fechaCorta(c.creado_at)}
+              <br />
+              {c.texto}
+            </blockquote>
+          ))}
+          {comentarios.length === 0 && <p className="muted assistant-hint">{t('inspiration.comunidad.sinComentarios')}</p>}
+          <div className="oracion-acciones">
+            <textarea
+              className="input"
+              rows={2}
+              value={comentarioNuevo}
+              onChange={(e) => setComentarioNuevo(e.target.value)}
+              placeholder={t('inspiration.comunidad.comentarPlaceholder')}
+              maxLength={1000}
+            />
+            <button className="btn primary small" onClick={() => void comentar()}>
+              {t('inspiration.comunidad.comentar')}
+            </button>
+          </div>
+        </section>
       </article>
     )
   }
@@ -292,7 +398,7 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
       <FormularioComunidad
         alListo={() => {
           setFormAbierto(false)
-          void cargar()
+          void cargar(autorFiltro)
         }}
       />
     )
@@ -301,25 +407,57 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
   return (
     <>
       <div className="inspiration-results-meta">
-        <button className="btn primary small" onClick={() => setFormAbierto(true)}>
-          <Icon name="plus" size={14} /> {t('inspiration.comunidad.subir')}
-        </button>
+        {autorFiltro ? (
+          <>
+            <span className="badge">
+              {t('inspiration.comunidad.perfil', { nombre: autorFiltro.nombre })}
+            </span>
+            <button className="btn ghost small" onClick={verTodos}>
+              {t('inspiration.comunidad.verTodos')}
+            </button>
+          </>
+        ) : (
+          <button className="btn primary small" onClick={() => setFormAbierto(true)}>
+            <Icon name="plus" size={14} /> {t('inspiration.comunidad.subir')}
+          </button>
+        )}
       </div>
       {cargando && <p className="muted assistant-hint">{t('inspiration.comunidad.cargando')}</p>}
       <div className="inspiration-list">
         {(lista ?? []).map((sermon) => (
-          <button key={sermon.id}
-className="inspiration-item comunidad" onClick={() => void abrir(sermon.id)}>
+          <div
+            key={sermon.id}
+            className="inspiration-item comunidad"
+            onClick={() => void abrir(sermon)}
+            role="button"
+          >
             <div>
-              <h3>{sermon.titulo}</h3>
+              <h3>
+                {sermon.titulo}{' '}
+                {sermon.es_mio && <span className="veracity-badge">{t('inspiration.comunidad.mio')}</span>}
+              </h3>
               <p className="meta">
                 <strong>{sermon.nombre}</strong> · {sermon.iglesia} · {sermon.ciudad}, {sermon.pais} ·{' '}
                 {sermon.minutos} min · {fechaCorta(sermon.creado_at)}
               </p>
               <p className="inspiration-preview">{sermon.contexto}</p>
-              {sermon.experiencia && <p className="inspiration-preview">{sermon.experiencia}</p>}
+              <div className="inspiration-chips">
+                <span className="chip ghost">❤ {sermon.likes}</span>
+                <span className="chip ghost">💬 {sermon.comentarios}</span>
+                {!sermon.es_mio && sermon.email && (
+                  <button
+                    className="chip ghost"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      verPerfil(sermon.email as string, sermon.nombre)
+                    }}
+                  >
+                    {t('inspiration.comunidad.verPerfil')}
+                  </button>
+                )}
+              </div>
             </div>
-          </button>
+          </div>
         ))}
       </div>
       {!cargando && lista && lista.length === 0 && (
@@ -411,13 +549,13 @@ export function InspirationView() {
         <h1 className="view-title">{t('nav.inspiration')}</h1>
         <div className="spacer" />
         <button
-          className={`btn ghost small ${tab === 'clasicos' ? 'primary' : ''}`}
+          className={`tab-btn ${tab === 'clasicos' ? 'activa' : ''}`}
           onClick={() => setTab('clasicos')}
         >
           {t('inspiration.tabs.clasicos')}
         </button>
         <button
-          className={`btn ghost small ${tab === 'comunidad' ? 'primary' : ''}`}
+          className={`tab-btn ${tab === 'comunidad' ? 'activa' : ''}`}
           onClick={() => setTab('comunidad')}
         >
           {t('inspiration.tabs.comunidad')}

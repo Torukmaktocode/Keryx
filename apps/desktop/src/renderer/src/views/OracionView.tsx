@@ -10,9 +10,11 @@ function fechaCorta(iso: string): string {
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString()
 }
 
-type FormOracion = { nombre: string; pais: string; peticion: string }
+type FormOracion = { nombre: string; pais: string; peticion: string; categoria: string }
 
-const FORM_VACIO: FormOracion = { nombre: '', pais: '', peticion: '' }
+const FORM_VACIO: FormOracion = { nombre: '', pais: '', peticion: '', categoria: 'general' }
+
+const CATEGORIAS = ['general', 'salud', 'familia', 'trabajo', 'economia', 'gratitud'] as const
 
 export function OracionView(): JSX.Element {
   const { t } = useI18n()
@@ -20,6 +22,8 @@ export function OracionView(): JSX.Element {
 
   const [lista, setLista] = useState<OraciónResumen[] | null>(null)
   const [cargando, setCargando] = useState(true)
+  const [modo, setModo] = useState<'recientes' | 'ranking'>('recientes')
+  const [categoria, setCategoria] = useState('todas')
   const [formAbierto, setFormAbierto] = useState(false)
   const [form, setForm] = useState<FormOracion>(FORM_VACIO)
   const [publicando, setPublicando] = useState(false)
@@ -27,9 +31,12 @@ export function OracionView(): JSX.Element {
   const [respondiendo, setRespondiendo] = useState<string | null>(null)
   const [textoRespuesta, setTextoRespuesta] = useState('')
 
-  const cargar = async (): Promise<void> => {
+  const cargar = async (modoActual: 'recientes' | 'ranking', categoriaActual: string): Promise<void> => {
     setCargando(true)
-    const rta = await api.oracion.lista()
+    const rta = await api.oracion.lista({
+      modo: modoActual,
+      categoria: categoriaActual === 'todas' ? undefined : categoriaActual
+    })
     setCargando(false)
     if ('error' in rta) {
       notify(rta.error)
@@ -43,8 +50,11 @@ export function OracionView(): JSX.Element {
     void api.licencia.estado().then((estado) => {
       if (estado.email) setMiEmail(estado.email)
     })
-    void cargar()
   }, [])
+
+  useEffect(() => {
+    void cargar(modo, categoria)
+  }, [modo, categoria])
 
   const campo = (clave: keyof FormOracion) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [clave]: e.target.value }))
@@ -64,7 +74,7 @@ export function OracionView(): JSX.Element {
     notify(t('oracion.form.publicado'))
     setForm(FORM_VACIO)
     setFormAbierto(false)
-    void cargar()
+    void cargar(modo, categoria)
   }
 
   const llamita = async (id: string): Promise<void> => {
@@ -91,7 +101,7 @@ export function OracionView(): JSX.Element {
     notify(t('oracion.form.respondidaOk'))
     setRespondiendo(null)
     setTextoRespuesta('')
-    void cargar()
+    void cargar(modo, categoria)
   }
 
   return (
@@ -116,6 +126,16 @@ export function OracionView(): JSX.Element {
                   <input className="input" value={form.pais} onChange={campo('pais')} maxLength={80} />
                 </label>
               </div>
+              <label className="oracion-campo">
+                <span>{t('oracion.form.categoria')}</span>
+                <select className="input" value={form.categoria} onChange={campo('categoria')}>
+                  {CATEGORIAS.map((c) => (
+                    <option key={c} value={c}>
+                      {t(`oracion.cat.${c}` as never)}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <label className="oracion-campo">
                 <span>{t('oracion.form.peticion')}</span>
                 <textarea
@@ -145,6 +165,33 @@ export function OracionView(): JSX.Element {
                 <button className="btn primary oracion-hero-boton" onClick={() => setFormAbierto(true)}>
                   {t('oracion.pedir')}
                 </button>
+              </div>
+
+              <div className="inspiration-tabs">
+                <button
+                  className={`tab-btn ${modo === 'recientes' ? 'activa' : ''}`}
+                  onClick={() => setModo('recientes')}
+                >
+                  {t('oracion.tabs.recientes')}
+                </button>
+                <button
+                  className={`tab-btn ${modo === 'ranking' ? 'activa' : ''}`}
+                  onClick={() => setModo('ranking')}
+                >
+                  🔥 {t('oracion.tabs.ranking')}
+                </button>
+              </div>
+
+              <div className="inspiration-theme-chips">
+                {['todas', ...CATEGORIAS].map((c) => (
+                  <button
+                    key={c}
+                    className={`chip ${categoria === c ? 'active' : 'ghost'}`}
+                    onClick={() => setCategoria(categoria === c ? 'todas' : c)}
+                  >
+                    {t(`oracion.cat.${c}` as never)}
+                  </button>
+                ))}
               </div>
 
               {cargando && <p className="muted assistant-hint">{t('oracion.cargando')}</p>}

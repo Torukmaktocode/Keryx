@@ -38,10 +38,30 @@ export function comunidadPublicar(args: EntradaPublicar): Promise<{ publicado: t
   return post<{ publicado: true }>('/comunidad/publicar', { ...args })
 }
 
-export function comunidadLista(): Promise<SermónComunidadResumen[] | LicenciaError> {
-  return post<SermónComunidadResumen[]>('/comunidad/lista', {})
+export function comunidadLista(autor?: string): Promise<Array<SermónComunidadResumen & { email?: string }> | LicenciaError> {
+  return post<Array<SermónComunidadResumen & { email?: string }>>('/comunidad/lista', autor ? { autor } : {})
 }
 
 export function comunidadObtener(id: string): Promise<SermónComunidadCompleto | LicenciaError> {
   return post<SermónComunidadCompleto>('/comunidad/obtener', { id })
+}
+
+export function comunidadLike(id: string): Promise<{ likes: number; yo_doy_like: boolean } | LicenciaError> {
+  return post<{ likes: number; yo_doy_like: boolean }>('/comunidad/like', { id })
+}
+
+export function comunidadComentar(id: string, nombre: string, texto: string): Promise<{ comentado: true } | LicenciaError> {
+  return post<{ comentado: true }>('/comunidad/comentar', { id, nombre, texto })
+}
+
+export function comunidadComentarios(id: string): Promise<Array<{ nombre: string; texto: string; creado_at: string }> | LicenciaError> {
+  return post<Array<{ nombre: string; texto: string; creado_at: string }>>('/comunidad/comentarios', { id })
+}
+
+export function comunidadSeguir(autor: string): Promise<{ seguidores: number; siguiendo: boolean } | LicenciaError> {
+  return post<{ seguidores: number; siguiendo: boolean }>('/comunidad/seguir', { autor })
+}
+
+export function comunidadSeguidores(autor: string): Promise<{ seguidores: number; yo_sigo: boolean } | LicenciaError> {
+  return post<{ seguidores: number; yo_sigo: boolean }>('/comunidad/seguidores', { autor })
 }

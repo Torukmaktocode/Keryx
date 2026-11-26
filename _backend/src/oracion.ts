@@ -38,32 +38,43 @@ function cadena(cuerpo: Record<string, unknown>, clave: string, max: number): st
 export async function manejarPublicar(env: Env, req: Request, fetchFn: FetchFn = fetch): Promise<Response> {
   const cuerpo = (await req.json().catch(() => null)) as Record<string, unknown> | null
   if (!cuerpo?.licencia) return rtaError('faltan datos', 'formato', 400)
-  const email = await emailDeLicencia(env, String(cuerpo.licencia))
+  const email = await emailDeLicencia(env, cuerpo.licencia)
   if (!email) return rtaError('licencia invalida o vencida', 'sin_acceso', 401)
 
   const nombre = cadena(cuerpo, 'nombre', 80)
   const pais = cadena(cuerpo, 'pais', 80)
   const peticion = cadena(cuerpo, 'peticion', 3000)
+  const categoria = cadena(cuerpo, 'categoria', 40) || 'general'
+  const CATEGORIAS = ['general', 'salud', 'familia', 'trabajo', 'economia', 'gratitud']
   if (!nombre || !pais || !peticion) return rtaError('faltan campos obligatorios', 'formato', 400)
   if (peticion.length < 10) return rtaError('la petición es demasiado corta', 'formato', 400)
+  if (!CATEGORIAS.includes(categoria)) return rtaError('categoría invalida', 'formato', 400)
 
   const r = await sb(env, '/rest/v1/oraciones', {
     method: 'POST',
-    body: JSON.stringify({ email, nombre, pais, peticion })
+    body: JSON.stringify({ email, nombre, pais, peticion, categoria })
   }, fetchFn)
   if (!r.ok) return rtaError('no se pudo publicar', 'almacen', 502)
   return rtaOk({ publicado: true })
 }
 
 export async function manejarLista(env: Env, req: Request, fetchFn: FetchFn = fetch): Promise<Response> {
-  const cuerpo = (await req.json().catch(() => null)) as { licencia?: string } | null
+  const cuerpo = (await req.json().catch(() => null)) as {
+    licencia?: string
+    categoria?: string
+    modo?: string
+  } | null
   if (!cuerpo?.licencia) return rtaError('faltan datos', 'formato', 400)
   const email = await emailDeLicencia(env, cuerpo.licencia)
   if (!email) return rtaError('licencia invalida o vencida', 'sin_acceso', 401)
 
+  const filtroCategoria =
+    typeof cuerpo.categoria === 'string' && cuerpo.categoria && cuerpo.categoria !== 'todas'
+      ? `&categoria=eq.${encodeURIComponent(cuerpo.categoria)}`
+      : ''
   const r = await sb(
     env,
-    '/rest/v1/oraciones?select=id,email,nombre,pais,peticion,respondida,respuesta,respondido_at,creado_at&order=creado_at.desc&limit=100',
+    `/rest/v1/oraciones?select=id,email,nombre,pais,peticion,categoria,respondida,respuesta,respondido_at,creado_at&order=creado_at.desc&limit=100${filtroCategoria}`,
     {},
     fetchFn
   )
@@ -78,6 +89,9 @@ export async function manejarLista(env: Env, req: Request, fetchFn: FetchFn = fe
     orando: votos.filter((v) => v.oracion_id === fila.id).length,
     yo_oro: votos.some((v) => v.oracion_id === fila.id && v.email === email)
   }))
+  if (cuerpo.modo === 'ranking') {
+    lista.sort((a, b) => (b.orando as number) - (a.orando as number))
+  }
   return rtaOk(lista)
 }
 
