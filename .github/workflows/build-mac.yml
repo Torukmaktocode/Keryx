@@ -72,6 +72,7 @@ jobs:
         run: |
           set -e
           source "$RUNNER_TEMP/venv-daemon/bin/activate"
+          pip install argostranslate
           mkdir -p apps/desktop/argos-preload
           python3 - <<'PYEOF'
           from argostranslate import package
