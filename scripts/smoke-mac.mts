@@ -101,7 +101,8 @@ if (existsSync(congelado)) {
         ARGOS_PACKAGES_DIR: join(tempF, 'datos', 'argos-translate', 'packages'),
         KERYX_DIALECTOS_DIR: join(tempF, 'dialectos'),
         KERYX_CORPUS_DIR: tempF,
-        KERYX_ARGOS_PRELOAD: ''
+        KERYX_ARGOS_PRELOAD: '',
+        ARGOS_CHUNK_TYPE: 'STANZA'
       },
       stdio: ['pipe', 'pipe', 'pipe']
     })

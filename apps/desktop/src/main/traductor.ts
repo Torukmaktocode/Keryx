@@ -72,7 +72,10 @@ function envDaemon(): Record<string, string | undefined> {
     KERYX_CORPUS_DIR: dir,
     KERYX_ARGOS_PRELOAD: app.isPackaged
       ? join(process.resourcesPath, 'argos-preload')
-      : process.env['KERYX_ARGOS_PRELOAD'] ?? ''
+      : process.env['KERYX_ARGOS_PRELOAD'] ?? '',
+    /* SBD por stanza: jamas el camino de spaCy (su descargador relanza pip
+     * con sys.executable y en el binario congelado muere en silencio). */
+    ARGOS_CHUNK_TYPE: 'STANZA'
   }
 }
 
