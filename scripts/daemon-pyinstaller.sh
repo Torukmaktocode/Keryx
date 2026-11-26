@@ -16,7 +16,9 @@ python3 -m venv "$VENV"
 # shellcheck disable=SC1091
 source "$VENV/bin/activate"
 pip install --upgrade pip
-pip install "argostranslate==1.11.0" "pyinstaller"
+# torch fijado: 2.8+ exige macOS 14 y el objetivo es Big Sur (11.x). Los
+# wheels x64/arm64 de 2.7 cargan en macOS 11.
+pip install "torch==2.7.1" "argostranslate==1.11.0" "pyinstaller"
 
 cd "$RAIZ/scripts"
 # spacy queda FUERA del freeze: sbd.py lo importa en try/except (spacy=None)
