@@ -224,6 +224,23 @@ export interface AiStatus {
   error?: string
 }
 
+export interface SermónComunidadResumen {
+  id: string
+  nombre: string
+  iglesia: string
+  ciudad: string
+  pais: string
+  titulo: string
+  contexto: string
+  minutos: number
+  experiencia: string | null
+  creado_at: string
+}
+
+export interface SermónComunidadCompleto extends SermónComunidadResumen {
+  texto: string
+}
+
 export interface Result<T> {
   ok: boolean
   data?: T

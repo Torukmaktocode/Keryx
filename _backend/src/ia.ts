@@ -22,7 +22,7 @@ interface PayloadLicencia {
   estado?: string
 }
 
-async function emailDeLicencia(env: Env, jwt: string): Promise<string | null> {
+export async function emailDeLicencia(env: Env, jwt: string): Promise<string | null> {
   try {
     const { payload } = await jwtVerify(jwt, await importSPKI(env.LICENCIA_PUBLICA, 'EdDSA'))
     if (payload.tipo !== 'licencia') return null

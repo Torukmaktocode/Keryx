@@ -61,7 +61,11 @@ export const IPC = {
   licenciaLogin: 'licencia:login',
   licenciaSalir: 'licencia:salir',
   licenciaCheckout: 'licencia:checkout',
-  licenciaRefrescar: 'licencia:refrescar'
+  licenciaRefrescar: 'licencia:refrescar',
+
+  comunidadPublicar: 'comunidad:publicar',
+  comunidadLista: 'comunidad:lista',
+  comunidadObtener: 'comunidad:obtener'
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]

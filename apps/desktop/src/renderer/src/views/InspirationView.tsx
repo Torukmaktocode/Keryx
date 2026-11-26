@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { JSX } from 'react'
 import { useI18n } from '@keryx/i18n'
+import type { SermónComunidadCompleto, SermónComunidadResumen } from '@keryx/core'
 import { AUTHORS, THEMES } from '../lib/inspiration'
 import {
   ALL_SERMONS,
@@ -7,6 +9,8 @@ import {
   type InspirationHit,
   type InspirationSermon
 } from '../lib/inspiration'
+import { api } from '../lib/api'
+import { renderMarkdown } from '../lib/markdown'
 import { useAppStore } from '../store/appStore'
 import { Icon } from '../components/Icon'
 import { TextoTraducido } from '../components/TextoTraducido'
@@ -63,6 +67,267 @@ function sermonMarkdown(sermon: InspirationSermon): string {
 const escapeHtml = (value: string): string =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+function fechaCorta(iso: string): string {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString()
+}
+
+type FormComunidad = {
+  titulo: string
+  nombre: string
+  iglesia: string
+  ciudad: string
+  pais: string
+  contexto: string
+  minutos: number
+  experiencia: string
+  texto: string
+}
+
+const FORM_VACIO: FormComunidad = {
+  titulo: '',
+  nombre: '',
+  iglesia: '',
+  ciudad: '',
+  pais: '',
+  contexto: '',
+  minutos: 30,
+  experiencia: '',
+  texto: ''
+}
+
+function FormularioComunidad({ alListo }: { alListo: () => void }): JSX.Element {
+  const { t } = useI18n()
+  const notify = useAppStore((s) => s.notify)
+  const [form, setForm] = useState<FormComunidad>(FORM_VACIO)
+  const [publicando, setPublicando] = useState(false)
+
+  const campo = (clave: keyof FormComunidad) => (e: { target: { value: string } }) =>
+    setForm((f) => ({ ...f, [clave]: e.target.value }))
+
+  const usarActual = async (): Promise<void> => {
+    const id = useAppStore.getState().activeDocumentId
+    if (!id) {
+      notify(t('inspiration.comunidad.sinDocumento'))
+      return
+    }
+    const doc = await api.documents.get(id)
+    if (doc?.content) setForm((f) => ({ ...f, texto: doc.content }))
+    else notify(t('inspiration.comunidad.sinDocumento'))
+  }
+
+  const enviar = async (): Promise<void> => {
+    if (form.texto.trim().length < 200) {
+      notify(t('inspiration.form.faltaTexto'))
+      return
+    }
+    setPublicando(true)
+    const rta = await api.comunidad.publicar({ ...form, minutos: Number(form.minutos) || 30 })
+    setPublicando(false)
+    if ('error' in rta) {
+      notify(rta.error)
+      return
+    }
+    notify(t('inspiration.form.publicado'))
+    setForm(FORM_VACIO)
+    alListo()
+  }
+
+  return (
+    <div className="inspiration-form">
+      <h2>{t('inspiration.form.titulo')}</h2>
+      <label className="field">
+        <span>{t('inspiration.form.sermonTitulo')}</span>
+        <input className="input" value={form.titulo} onChange={campo('titulo')} maxLength={120} />
+      </label>
+      <div className="inspiration-grid">
+        <label className="field">
+          <span>{t('inspiration.form.nombre')}</span>
+          <input className="input" value={form.nombre} onChange={campo('nombre')} maxLength={80} />
+        </label>
+        <label className="field">
+          <span>{t('inspiration.form.iglesia')}</span>
+          <input className="input" value={form.iglesia} onChange={campo('iglesia')} maxLength={80} />
+        </label>
+        <label className="field">
+          <span>{t('inspiration.form.ciudad')}</span>
+          <input className="input" value={form.ciudad} onChange={campo('ciudad')} maxLength={80} />
+        </label>
+        <label className="field">
+          <span>{t('inspiration.form.pais')}</span>
+          <input className="input" value={form.pais} onChange={campo('pais')} maxLength={80} />
+        </label>
+      </div>
+      <label className="field">
+        <span>{t('inspiration.form.contexto')}</span>
+        <textarea
+          className="input"
+          rows={2}
+          value={form.contexto}
+          onChange={campo('contexto')}
+          placeholder={t('inspiration.form.contextoHint')}
+          maxLength={600}
+        />
+      </label>
+      <div className="inspiration-grid">
+        <label className="field">
+          <span>{t('inspiration.form.minutos')}</span>
+          <input
+            className="input"
+            type="number"
+            min={1}
+            max={300}
+            value={form.minutos}
+            onChange={(e) => setForm((f) => ({ ...f, minutos: Number(e.target.value) || 30 }))}
+          />
+        </label>
+        <label className="field">
+          <span>{t('inspiration.form.experiencia')}</span>
+          <input className="input" value={form.experiencia} onChange={campo('experiencia')} maxLength={600} />
+        </label>
+      </div>
+      <label className="field">
+        <span>{t('inspiration.form.texto')}</span>
+        <textarea className="input" rows={12} value={form.texto} onChange={campo('texto')} />
+      </label>
+      <div className="inspiration-detail-tools">
+        <button className="btn ghost small" onClick={() => void usarActual()}>
+          <Icon name="download" size={14} /> {t('inspiration.form.usarActual')}
+        </button>
+        <div className="spacer" />
+        <button className="btn ghost small" onClick={alListo}>
+          {t('inspiration.form.cancelar')}
+        </button>
+        <button className="btn primary small" disabled={publicando} onClick={() => void enviar()}>
+          {publicando ? t('inspiration.form.publicando') : t('inspiration.form.publicar')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.Element {
+  const { t } = useI18n()
+  const sendToWriting = useAppStore((s) => s.sendToWriting)
+  const [lista, setLista] = useState<SermónComunidadResumen[] | null>(null)
+  const [abierto, setAbierto] = useState<SermónComunidadCompleto | null>(null)
+  const [formAbierto, setFormAbierto] = useState(false)
+  const [cargando, setCargando] = useState(true)
+
+  const cargar = async (): Promise<void> => {
+    setCargando(true)
+    const rta = await api.comunidad.lista()
+    setCargando(false)
+    if ('error' in rta) {
+      notify(rta.error)
+      setLista([])
+      return
+    }
+    setLista(rta)
+  }
+
+  useEffect(() => {
+    void cargar()
+  }, [])
+
+  const abrir = async (id: string): Promise<void> => {
+    const rta = await api.comunidad.obtener({ id })
+    if ('error' in rta) {
+      notify(rta.error)
+      return
+    }
+    setAbierto(rta)
+  }
+
+  if (abierto) {
+    return (
+      <article className="inspiration-detail">
+        <div className="inspiration-detail-head">
+          <div>
+            <h2>{abierto.titulo || abierto.contexto.slice(0, 60)}</h2>
+            <p className="meta">
+              <strong>{abierto.nombre}</strong> · {abierto.iglesia} · {abierto.ciudad}, {abierto.pais} ·{' '}
+              {abierto.minutos} min · {fechaCorta(abierto.creado_at)}
+            </p>
+          </div>
+          <div className="inspiration-detail-tools">
+            <button
+              className="btn ghost small"
+              onClick={() => {
+                void sendToWriting(abierto.texto, abierto.nombre)
+              }}
+            >
+              {t('assistant.sendToEditor')}
+            </button>
+            <button
+              className="btn ghost small"
+              onClick={() => {
+                navigator.clipboard?.writeText(abierto.texto).then(() => notify(t('inspiration.copied')))
+              }}
+            >
+              {t('inspiration.copy')}
+            </button>
+            <button className="btn ghost small" onClick={() => setAbierto(null)}>
+              <Icon name="fullscreen-exit" size={14} /> {t('inspiration.comunidad.volver')}
+            </button>
+          </div>
+        </div>
+        <div className="inspiration-scene">
+          <p>
+            <strong>{t('inspiration.form.contexto')}:</strong> {abierto.contexto}
+          </p>
+          {abierto.experiencia && (
+            <p>
+              <strong>{t('inspiration.form.experiencia')}:</strong> {abierto.experiencia}
+            </p>
+          )}
+        </div>
+        <div className="inspiration-text" dangerouslySetInnerHTML={{ __html: renderMarkdown(abierto.texto) }} />
+      </article>
+    )
+  }
+
+  if (formAbierto) {
+    return (
+      <FormularioComunidad
+        alListo={() => {
+          setFormAbierto(false)
+          void cargar()
+        }}
+      />
+    )
+  }
+
+  return (
+    <>
+      <div className="inspiration-results-meta">
+        <button className="btn primary small" onClick={() => setFormAbierto(true)}>
+          <Icon name="plus" size={14} /> {t('inspiration.comunidad.subir')}
+        </button>
+      </div>
+      {cargando && <p className="muted assistant-hint">{t('inspiration.comunidad.cargando')}</p>}
+      <div className="inspiration-list">
+        {(lista ?? []).map((sermon) => (
+          <button key={sermon.id} className="inspiration-item" onClick={() => void abrir(sermon.id)}>
+            <div>
+              <h3>{sermon.titulo}</h3>
+              <p className="meta">
+                <strong>{sermon.nombre}</strong> · {sermon.iglesia} · {sermon.ciudad}, {sermon.pais} ·{' '}
+                {sermon.minutos} min · {fechaCorta(sermon.creado_at)}
+              </p>
+              <p className="inspiration-preview">{sermon.contexto}</p>
+              {sermon.experiencia && <p className="inspiration-preview">{sermon.experiencia}</p>}
+            </div>
+          </button>
+        ))}
+      </div>
+      {!cargando && lista && lista.length === 0 && (
+        <p className="muted assistant-hint">{t('inspiration.comunidad.vacio')}</p>
+      )}
+    </>
+  )
+}
+
 function highlight(snippet: string, query: string): string {
   const needle = query.trim()
   if (!needle) return escapeHtml(snippet)
@@ -83,6 +348,7 @@ export function InspirationView() {
   const sendToWriting = useAppStore((s) => s.sendToWriting)
   const notify = useAppStore((s) => s.notify)
 
+  const [tab, setTab] = useState<'clasicos' | 'comunidad'>('clasicos')
   const [openId, setOpenId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [author, setAuthor] = useState('')
@@ -143,10 +409,26 @@ export function InspirationView() {
       <header className="view-header">
         <h1 className="view-title">{t('nav.inspiration')}</h1>
         <div className="spacer" />
+        <button
+          className={`btn ghost small ${tab === 'clasicos' ? 'primary' : ''}`}
+          onClick={() => setTab('clasicos')}
+        >
+          {t('inspiration.tabs.clasicos')}
+        </button>
+        <button
+          className={`btn ghost small ${tab === 'comunidad' ? 'primary' : ''}`}
+          onClick={() => setTab('comunidad')}
+        >
+          {t('inspiration.tabs.comunidad')}
+        </button>
         <span className="badge">{t('inspiration.count', { count: ALL_SERMONS.length })}</span>
       </header>
       <div className="view-body">
         <div className="inspiration">
+          {tab === 'comunidad' ? (
+            <ComunidadPanel notify={notify} />
+          ) : (
+          <>
           <div className="inspiration-filters">
             <input
               className="input"
@@ -504,6 +786,8 @@ export function InspirationView() {
 
               {!hits.length && <p className="muted assistant-hint">{t('inspiration.empty')}</p>}
             </>
+            )}
+          </>
           )}
         </div>
       </div>

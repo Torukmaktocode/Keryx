@@ -82,6 +82,11 @@ const api: KeryxApi = {
     salir: () => invoke(IPC.licenciaSalir),
     checkout: () => invoke(IPC.licenciaCheckout),
     refrescar: () => invoke(IPC.licenciaRefrescar)
+  },
+  comunidad: {
+    publicar: (args) => invoke(IPC.comunidadPublicar, args),
+    lista: () => invoke(IPC.comunidadLista),
+    obtener: (args) => invoke(IPC.comunidadObtener, args)
   }
 }
 

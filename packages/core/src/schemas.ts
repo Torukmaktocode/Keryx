@@ -251,6 +251,22 @@ export const licenciaLoginSchema = z.object({
   password: z.string().min(6).max(200)
 })
 
+export const comunidadPublicarSchema = z.object({
+  titulo: z.string().min(3).max(120),
+  nombre: z.string().min(2).max(80),
+  iglesia: z.string().min(2).max(80),
+  ciudad: z.string().min(2).max(80),
+  pais: z.string().min(2).max(80),
+  contexto: z.string().min(3).max(600),
+  minutos: z.number().int().min(1).max(300),
+  experiencia: z.string().max(600).optional(),
+  texto: z.string().min(200).max(60000)
+})
+
+export const comunidadObtenerSchema = z.object({
+  id: z.string().uuid()
+})
+
 export const aiChatSchema = z.object({
   messages: z
     .array(

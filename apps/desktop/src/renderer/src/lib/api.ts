@@ -17,7 +17,9 @@ import type {
   SwordModule,
   DocumentMeta,
   LenguaEstado,
-  GlosarioPar
+  GlosarioPar,
+  SermónComunidadResumen,
+  SermónComunidadCompleto
 } from '@keryx/core'
 import type { EstadoActual, LicenciaError } from '@keryx/core/licencia'
 
@@ -165,5 +167,34 @@ export const api = {
     salir: (): Promise<null> => unwrap(raw.licencia.salir()),
     checkout: (): Promise<null> => unwrap(raw.licencia.checkout()),
     refrescar: (): Promise<EstadoActual> => unwrap(raw.licencia.refrescar())
+  },
+  comunidad: {
+    publicar: async (
+      args: {
+        titulo: string
+        nombre: string
+        iglesia: string
+        ciudad: string
+        pais: string
+        contexto: string
+        minutos: number
+        experiencia?: string
+        texto: string
+      }
+    ): Promise<{ publicado: true } | LicenciaError> => {
+      const rta: Result<{ publicado: true } | LicenciaError> = await raw.comunidad.publicar(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    lista: async (): Promise<SermónComunidadResumen[] | LicenciaError> => {
+      const rta: Result<SermónComunidadResumen[] | LicenciaError> = await raw.comunidad.lista()
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    obtener: async (args: { id: string }): Promise<SermónComunidadCompleto | LicenciaError> => {
+      const rta: Result<SermónComunidadCompleto | LicenciaError> = await raw.comunidad.obtener(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    }
   }
 }

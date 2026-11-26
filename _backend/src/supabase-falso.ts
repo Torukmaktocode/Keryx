@@ -4,6 +4,7 @@ export interface BaseFalsa {
   suscripciones: Suscripcion[]
   usuarios: Usuario[]
   dispositivos: Dispositivo[]
+  sermones_comunidad?: Record<string, unknown>[]
 }
 
 export interface FetchFalso {
@@ -39,7 +40,7 @@ export function supabaseFalso(
     }
 
     if (init?.method === 'POST') {
-      const lista = (base as unknown as Record<string, Record<string, unknown>[]>)[tabla]
+      const lista = (base as unknown as Record<string, Record<string, unknown>[]>)[tabla] ?? []
       lista.push(cuerpo as Record<string, unknown>)
       return new Response('[]', { status: 201 })
     }
@@ -58,7 +59,7 @@ export function supabaseFalso(
     const lista = (base as unknown as Record<string, Record<string, unknown>[]>)[tabla] ?? []
     let filtrada = lista
     for (const [clave, valor] of params.entries()) {
-      if (clave === 'select') continue
+      if (clave === 'select' || clave === 'order' || clave === 'limit') continue
       if (valor.startsWith('eq.')) filtrada = filtrada.filter((x) => x[clave] === valor.slice(3))
     }
     return Response.json(filtrada)

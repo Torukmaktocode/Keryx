@@ -16,6 +16,7 @@ import type {
   Verse
 } from './types'
 import type { EstadoActual, LicenciaError } from './licencia'
+import type { SermónComunidadCompleto, SermónComunidadResumen } from './types'
 import type {
   CoalicionItem,
   CoalicionRequest,
@@ -149,5 +150,20 @@ export interface KeryxApi {
     salir(): Promise<Result<null>>
     checkout(): Promise<Result<null>>
     refrescar(): Promise<Result<EstadoActual>>
+  }
+  comunidad: {
+    publicar(args: {
+      titulo: string
+      nombre: string
+      iglesia: string
+      ciudad: string
+      pais: string
+      contexto: string
+      minutos: number
+      experiencia?: string
+      texto: string
+    }): Promise<Result<{ publicado: true } | LicenciaError>>
+    lista(): Promise<Result<SermónComunidadResumen[] | LicenciaError>>
+    obtener(args: { id: string }): Promise<Result<SermónComunidadCompleto | LicenciaError>>
   }
 }

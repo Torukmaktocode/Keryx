@@ -20,6 +20,8 @@ import {
   fullscreenSchema,
   installModuleSchema,
   licenciaLoginSchema,
+  comunidadPublicarSchema,
+  comunidadObtenerSchema,
   presentationSaveSchema,
   detectAppLocale,
   searchRequestSchema,
@@ -40,6 +42,7 @@ import { registerTraductorIpc, precalentarPar } from './traductor'
 import { buscarCoalicion } from './coalicion'
 import { CHECKOUT_URL } from '@keryx/core/licencia'
 import { licencia } from './licencia-puente'
+import { comunidadPublicar, comunidadLista, comunidadObtener } from './comunidad'
 
 type Handler = (args: unknown[]) => Promise<unknown> | unknown
 
@@ -258,6 +261,16 @@ export async function registerIpc(
   register(IPC.licenciaCheckout, () => {
     if (CHECKOUT_URL) void shell.openExternal(CHECKOUT_URL)
     return null
+  })
+
+  register(IPC.comunidadPublicar, (args) => {
+    const entrada = comunidadPublicarSchema.parse(args[0])
+    return comunidadPublicar(entrada)
+  })
+  register(IPC.comunidadLista, () => comunidadLista())
+  register(IPC.comunidadObtener, (args) => {
+    const { id } = comunidadObtenerSchema.parse(args[0])
+    return comunidadObtener(id)
   })
 
   registerTraductorIpc(register, () => store.getSettings().translateLocale)
