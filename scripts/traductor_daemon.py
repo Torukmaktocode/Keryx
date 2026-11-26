@@ -30,6 +30,7 @@ Requiere: pip install argostranslate (una vez, en la máquina del usuario).
 
 from __future__ import annotations
 
+import faulthandler
 import json
 import os
 import re
@@ -38,6 +39,8 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from html import unescape as _html_unescape
 from typing import Any, Dict, Optional, Tuple
+
+faulthandler.enable()
 
 STDOUT_LOCK = threading.Lock()
 CANDADO_INIT = threading.RLock()
@@ -585,5 +588,12 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except KeyboardInterrupt:
-        pass
+    except SystemExit:
+        raise
+    except BaseException as exc:
+        import traceback
+
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.write(f"[daemon] fatal: {exc}\n")
+        sys.stderr.flush()
+        raise
