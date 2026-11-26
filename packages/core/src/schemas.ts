@@ -267,6 +267,21 @@ export const comunidadObtenerSchema = z.object({
   id: z.string().uuid()
 })
 
+export const oracionPublicarSchema = z.object({
+  nombre: z.string().min(2).max(80),
+  pais: z.string().min(2).max(80),
+  peticion: z.string().min(10).max(3000)
+})
+
+export const oracionLlamitaSchema = z.object({
+  id: z.string().uuid()
+})
+
+export const oracionResponderSchema = z.object({
+  id: z.string().uuid(),
+  respuesta: z.string().min(10).max(3000)
+})
+
 export const aiChatSchema = z.object({
   messages: z
     .array(

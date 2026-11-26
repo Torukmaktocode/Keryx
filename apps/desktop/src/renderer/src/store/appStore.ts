@@ -32,6 +32,7 @@ export type View =
   | 'templates'
   | 'assistant'
   | 'inspiration'
+  | 'oracion'
   | 'modules'
   | 'presentaciones'
   | 'settings'

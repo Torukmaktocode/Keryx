@@ -19,7 +19,8 @@ import type {
   LenguaEstado,
   GlosarioPar,
   SermónComunidadResumen,
-  SermónComunidadCompleto
+  SermónComunidadCompleto,
+  OraciónResumen
 } from '@keryx/core'
 import type { EstadoActual, LicenciaError } from '@keryx/core/licencia'
 
@@ -193,6 +194,28 @@ export const api = {
     },
     obtener: async (args: { id: string }): Promise<SermónComunidadCompleto | LicenciaError> => {
       const rta: Result<SermónComunidadCompleto | LicenciaError> = await raw.comunidad.obtener(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    }
+  },
+  oracion: {
+    publicar: async (args: { nombre: string; pais: string; peticion: string }): Promise<{ publicado: true } | LicenciaError> => {
+      const rta: Result<{ publicado: true } | LicenciaError> = await raw.oracion.publicar(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    lista: async (): Promise<OraciónResumen[] | LicenciaError> => {
+      const rta: Result<OraciónResumen[] | LicenciaError> = await raw.oracion.lista()
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    llamita: async (args: { id: string }): Promise<{ orando: number; yo_oro: boolean } | LicenciaError> => {
+      const rta: Result<{ orando: number; yo_oro: boolean } | LicenciaError> = await raw.oracion.llamita(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    responder: async (args: { id: string; respuesta: string }): Promise<{ respondida: true } | LicenciaError> => {
+      const rta: Result<{ respondida: true } | LicenciaError> = await raw.oracion.responder(args)
       if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
       return rta.data
     }

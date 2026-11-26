@@ -15,6 +15,7 @@ import { LibraryView } from './views/LibraryView'
 import { TemplatesView } from './views/TemplatesView'
 import { AssistantView } from './views/AssistantView'
 import { InspirationView } from './views/InspirationView'
+import { OracionView } from './views/OracionView'
 import { ModulesView } from './views/ModulesView'
 import { SettingsView } from './views/SettingsView'
 import { Icon } from './components/Icon'
@@ -129,6 +130,7 @@ function Shell({ estadoLicencia }: { estadoLicencia: EstadoActual | null }) {
               </Suspense>
             )}
             {view === 'inspiration' && <InspirationView />}
+            {view === 'oracion' && <OracionView />}
             {view === 'modules' && <ModulesView />}
             {view === 'settings' && <SettingsView />}
           </>

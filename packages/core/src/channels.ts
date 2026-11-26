@@ -65,7 +65,12 @@ export const IPC = {
 
   comunidadPublicar: 'comunidad:publicar',
   comunidadLista: 'comunidad:lista',
-  comunidadObtener: 'comunidad:obtener'
+  comunidadObtener: 'comunidad:obtener',
+
+  oracionPublicar: 'oracion:publicar',
+  oracionLista: 'oracion:lista',
+  oracionLlamita: 'oracion:llamita',
+  oracionResponder: 'oracion:responder'
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]

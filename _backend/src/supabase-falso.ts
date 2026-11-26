@@ -45,6 +45,17 @@ export function supabaseFalso(
       return new Response('[]', { status: 201 })
     }
 
+    if (init?.method === 'PATCH') {
+      const lista = (base as unknown as Record<string, Record<string, unknown>[]>)[tabla] ?? []
+      let tocadas = lista
+      for (const [clave, valor] of params.entries()) {
+        if (clave === 'select' || clave === 'order' || clave === 'limit') continue
+        if (valor.startsWith('eq.')) tocadas = tocadas.filter((x) => x[clave] === valor.slice(3))
+      }
+      for (const fila of tocadas) Object.assign(fila, cuerpo)
+      return Response.json(tocadas)
+    }
+
     if (init?.method === 'DELETE') {
       const lista = (base as unknown as Record<string, Record<string, unknown>[]>)[tabla]
       const email = params.get('email')?.replace(/^eq\./, '') ?? null

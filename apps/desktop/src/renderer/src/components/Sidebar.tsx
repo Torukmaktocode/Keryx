@@ -18,6 +18,7 @@ const ITEMS: { id: View; icon: IconName }[] = [
   { id: 'search', icon: 'search' },
   { id: 'assistant', icon: 'spark' },
   { id: 'inspiration', icon: 'star' },
+  { id: 'oracion', icon: 'spark' },
   { id: 'library', icon: 'library' },
   { id: 'write', icon: 'write' },
   { id: 'templates', icon: 'templates' },

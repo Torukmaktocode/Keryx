@@ -87,6 +87,12 @@ const api: KeryxApi = {
     publicar: (args) => invoke(IPC.comunidadPublicar, args),
     lista: () => invoke(IPC.comunidadLista),
     obtener: (args) => invoke(IPC.comunidadObtener, args)
+  },
+  oracion: {
+    publicar: (args) => invoke(IPC.oracionPublicar, args),
+    lista: () => invoke(IPC.oracionLista),
+    llamita: (args) => invoke(IPC.oracionLlamita, args),
+    responder: (args) => invoke(IPC.oracionResponder, args)
   }
 }
 

@@ -241,6 +241,20 @@ export interface SermónComunidadCompleto extends SermónComunidadResumen {
   texto: string
 }
 
+export interface OraciónResumen {
+  id: string
+  email: string
+  nombre: string
+  pais: string
+  peticion: string
+  respondida: boolean
+  respuesta: string | null
+  respondido_at: string | null
+  creado_at: string
+  orando: number
+  yo_oro: boolean
+}
+
 export interface Result<T> {
   ok: boolean
   data?: T

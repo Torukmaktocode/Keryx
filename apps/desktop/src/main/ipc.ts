@@ -22,6 +22,9 @@ import {
   licenciaLoginSchema,
   comunidadPublicarSchema,
   comunidadObtenerSchema,
+  oracionPublicarSchema,
+  oracionLlamitaSchema,
+  oracionResponderSchema,
   presentationSaveSchema,
   detectAppLocale,
   searchRequestSchema,
@@ -43,6 +46,7 @@ import { buscarCoalicion } from './coalicion'
 import { CHECKOUT_URL } from '@keryx/core/licencia'
 import { licencia } from './licencia-puente'
 import { comunidadPublicar, comunidadLista, comunidadObtener } from './comunidad'
+import { oracionPublicar, oracionLista, oracionLlamita, oracionResponder } from './oracion'
 
 type Handler = (args: unknown[]) => Promise<unknown> | unknown
 
@@ -271,6 +275,20 @@ export async function registerIpc(
   register(IPC.comunidadObtener, (args) => {
     const { id } = comunidadObtenerSchema.parse(args[0])
     return comunidadObtener(id)
+  })
+
+  register(IPC.oracionPublicar, (args) => {
+    const entrada = oracionPublicarSchema.parse(args[0])
+    return oracionPublicar(entrada)
+  })
+  register(IPC.oracionLista, () => oracionLista())
+  register(IPC.oracionLlamita, (args) => {
+    const { id } = oracionLlamitaSchema.parse(args[0])
+    return oracionLlamita(id)
+  })
+  register(IPC.oracionResponder, (args) => {
+    const { id, respuesta } = oracionResponderSchema.parse(args[0])
+    return oracionResponder(id, respuesta)
   })
 
   registerTraductorIpc(register, () => store.getSettings().translateLocale)
