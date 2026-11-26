@@ -3340,7 +3340,41 @@ input[type='range'] {
 
 .oracion-hero {
   text-align: center;
-  padding: 10px 0 6px;
+  padding: 14px 0 12px;
+}
+
+.oracion-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  width: fit-content;
+  margin: 0 auto 14px;
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 999px;
+  padding: 3px;
+  background: var(--glass);
+}
+
+.oracion-tabs .tab-btn {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 6px 20px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s ease;
+}
+
+.oracion-tabs .tab-btn.activa {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.oracion .inspiration-theme-chips {
+  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .oracion-hero-verso {

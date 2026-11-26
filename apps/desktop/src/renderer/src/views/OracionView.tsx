@@ -167,7 +167,7 @@ export function OracionView(): JSX.Element {
                 </button>
               </div>
 
-              <div className="inspiration-tabs">
+              <div className="oracion-tabs">
                 <button
                   className={`tab-btn ${modo === 'recientes' ? 'activa' : ''}`}
                   onClick={() => setModo('recientes')}
