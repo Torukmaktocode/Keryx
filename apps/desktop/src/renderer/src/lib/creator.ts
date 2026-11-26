@@ -1090,7 +1090,7 @@ export async function runCreator(
     try {
       const datosBrief = [...dossier.sections
         .filter((x) => ['geografia', 'caso', 'historico'].includes(x.kind))
-        .flatMap((x) => x.entries)].slice(0, 3).map((entry) => shortEntry(entry, 170))
+        .flatMap((x) => x.entries)].slice(0, 6).map((entry) => shortEntry(entry, 170))
       const skeletonForAi = renderSermon(doc)
       const ask = [
         personaPrompt(persona),
@@ -1112,7 +1112,7 @@ export async function runCreator(
         doc.ref,
         '',
         'ESQUELETO (estructura y evidencia ya garantizadas; no las reescribas):',
-        skeletonForAi.length > 7000 ? `${skeletonForAi.slice(0, 7000)}…[truncado]` : skeletonForAi,
+        skeletonForAi.length > 12000 ? `${skeletonForAi.slice(0, 12000)}…[truncado]` : skeletonForAi,
         '',
         'EXTENSION OBLIGATORIA: desarrolla cada pieza hasta su tamano indicado (gancho 70-100 palabras; introduccion 6-9 frases; CADA puente 3-5 frases entrelazando la cita anclada del punto con la vida real; meditacion 120-170 palabras; oracion 7-10 lineas). Nunca dos frases sueltas: si el esqueleto trae material, tejelo en tus puentes. Responde completo; si te acercas al limite, redacta denso y sin adornos, no acortes secciones.',
         '',
@@ -1126,7 +1126,7 @@ export async function runCreator(
           { role: 'user', content: ask }
         ],
         temperature: 0.6,
-        maxTokens: 2600
+        maxTokens: 4200
       })
       aiMs += performance.now() - t0
       const pieces = parseSnippets(result.text)
