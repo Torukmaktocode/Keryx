@@ -231,6 +231,7 @@ export interface SermónComunidadResumen {
   ciudad: string
   pais: string
   titulo: string
+  categoria: string
   contexto: string
   minutos: number
   experiencia: string | null

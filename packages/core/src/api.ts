@@ -158,6 +158,7 @@ export interface KeryxApi {
       iglesia: string
       ciudad: string
       pais: string
+      categoria?: string
       contexto: string
       minutos: number
       experiencia?: string

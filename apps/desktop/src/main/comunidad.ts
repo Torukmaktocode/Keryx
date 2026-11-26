@@ -11,6 +11,7 @@ interface EntradaPublicar {
   iglesia: string
   ciudad: string
   pais: string
+  categoria?: string
   contexto: string
   minutos: number
   experiencia?: string

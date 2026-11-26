@@ -257,6 +257,7 @@ export const comunidadPublicarSchema = z.object({
   iglesia: z.string().min(2).max(80),
   ciudad: z.string().min(2).max(80),
   pais: z.string().min(2).max(80),
+  categoria: z.string().max(40).optional(),
   contexto: z.string().min(3).max(600),
   minutos: z.number().int().min(1).max(300),
   experiencia: z.string().max(600).optional(),

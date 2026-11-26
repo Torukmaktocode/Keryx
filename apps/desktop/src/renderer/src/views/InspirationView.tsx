@@ -78,6 +78,7 @@ type FormComunidad = {
   iglesia: string
   ciudad: string
   pais: string
+  categoria: string
   contexto: string
   minutos: number
   experiencia: string
@@ -90,11 +91,14 @@ const FORM_VACIO: FormComunidad = {
   iglesia: '',
   ciudad: '',
   pais: '',
+  categoria: 'general',
   contexto: '',
   minutos: 30,
   experiencia: '',
   texto: ''
 }
+
+const CATEGORIAS_SERMON = ['general', 'salud', 'familia', 'trabajo', 'economia', 'gratitud'] as const
 
 function FormularioComunidad({ alListo }: { alListo: () => void }): JSX.Element {
   const { t } = useI18n()
@@ -171,6 +175,16 @@ function FormularioComunidad({ alListo }: { alListo: () => void }): JSX.Element 
       </label>
       <div className="oracion-form-grid">
         <label className="oracion-campo">
+          <span>{t('oracion.form.categoria')}</span>
+          <select className="input" value={form.categoria} onChange={campo('categoria')}>
+            {CATEGORIAS_SERMON.map((c) => (
+              <option key={c} value={c}>
+                {t(`oracion.cat.${c}` as never)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="oracion-campo">
           <span>{t('inspiration.form.minutos')}</span>
           <input
             className="input"
@@ -222,12 +236,14 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
   const [autorFiltro, setAutorFiltro] = useState<{ email: string; nombre: string } | null>(null)
   const [miEmail, setMiEmail] = useState('')
   const [modo, setModo] = useState<'recientes' | 'ranking'>('recientes')
+  const [catFiltro, setCatFiltro] = useState('todas')
 
   const listaOrdenada = useMemo(() => {
     if (!lista) return null
-    if (modo === 'ranking') return [...lista].sort((a, b) => b.likes - a.likes)
-    return lista
-  }, [lista, modo])
+    const base = catFiltro === 'todas' ? lista : lista.filter((s) => s.categoria === catFiltro)
+    if (modo === 'ranking') return [...base].sort((a, b) => b.likes - a.likes)
+    return base
+  }, [lista, modo, catFiltro])
 
   const cargar = async (autor?: { email: string; nombre: string } | null): Promise<void> => {
     setCargando(true)
@@ -320,7 +336,8 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
             <h2>{abierto.titulo || abierto.contexto.slice(0, 60)}</h2>
             <p className="meta">
               <strong>{abierto.nombre}</strong> · {abierto.iglesia} · {abierto.ciudad}, {abierto.pais} ·{' '}
-              {abierto.minutos} min · {fechaCorta(abierto.creado_at)}
+              {abierto.minutos} min · {fechaCorta(abierto.creado_at)} ·{' '}
+              {t(`oracion.cat.${abierto.categoria}` as never)}
             </p>
           </div>
           <div className="inspiration-detail-tools">
@@ -444,6 +461,17 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
           </button>
         )}
       </div>
+      <div className="inspiration-theme-chips">
+        {(['todas', ...CATEGORIAS_SERMON] as const).map((c) => (
+          <button
+            key={c}
+            className={`chip ${catFiltro === c ? 'active' : 'ghost'}`}
+            onClick={() => setCatFiltro(catFiltro === c ? 'todas' : c)}
+          >
+            {t(`oracion.cat.${c}` as never)}
+          </button>
+        ))}
+      </div>
       {cargando && <p className="muted assistant-hint">{t('inspiration.comunidad.cargando')}</p>}
       <div className="inspiration-list">
         {(listaOrdenada ?? []).map((sermon) => (
@@ -464,6 +492,7 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
               </p>
               <p className="inspiration-preview">{sermon.contexto}</p>
               <div className="inspiration-chips">
+                <span className="chip ghost">{t(`oracion.cat.${sermon.categoria}` as never)}</span>
                 <span className="chip ghost">❤ {sermon.likes}</span>
                 <span className="chip ghost">💬 {sermon.comentarios}</span>
                 {!sermon.es_mio && sermon.email && (

@@ -10,6 +10,7 @@ interface SermónComunidad {
   iglesia: string
   ciudad: string
   pais: string
+  categoria: string
   titulo: string
   contexto: string
   minutos: number
@@ -43,6 +44,7 @@ export async function manejarPublicar(env: Env, req: Request, fetchFn: FetchFn =
   if (!email) return rtaError('licencia invalida o vencida', 'sin_acceso', 401)
 
   const titulo = cadena(cuerpo, 'titulo', 120)
+  const categoria = ['general','salud','familia','trabajo','economia','gratitud'].includes(String(cuerpo.categoria ?? '')) ? String(cuerpo.categoria) : 'general'
   const nombre = cadena(cuerpo, 'nombre', 80)
   const iglesia = cadena(cuerpo, 'iglesia', 80)
   const ciudad = cadena(cuerpo, 'ciudad', 80)
@@ -59,7 +61,7 @@ export async function manejarPublicar(env: Env, req: Request, fetchFn: FetchFn =
 
   const r = await sb(env, '/rest/v1/sermones_comunidad', {
     method: 'POST',
-    body: JSON.stringify({ email, titulo, nombre, iglesia, ciudad, pais, contexto, minutos, experiencia, texto })
+    body: JSON.stringify({ email, categoria, titulo, nombre, iglesia, ciudad, pais, contexto, minutos, experiencia, texto })
   }, fetchFn)
   if (!r.ok) return rtaError('no se pudo publicar', 'almacen', 502)
   return rtaOk({ publicado: true })
@@ -74,7 +76,7 @@ export async function manejarLista(env: Env, req: Request, fetchFn: FetchFn = fe
   const filtroAutor = typeof cuerpo.autor === 'string' && cuerpo.autor ? `&email=eq.${encodeURIComponent(cuerpo.autor)}` : ''
   const r = await sb(
     env,
-    `/rest/v1/sermones_comunidad?select=titulo,id,email,nombre,iglesia,ciudad,pais,contexto,minutos,experiencia,creado_at&order=creado_at.desc&limit=100${filtroAutor}`,
+    `/rest/v1/sermones_comunidad?select=categoria,titulo,id,email,nombre,iglesia,ciudad,pais,contexto,minutos,experiencia,creado_at&order=creado_at.desc&limit=100${filtroAutor}`,
     {},
     fetchFn
   )
@@ -103,7 +105,7 @@ export async function manejarObtener(env: Env, req: Request, fetchFn: FetchFn = 
 
   const r = await sb(
     env,
-    `/rest/v1/sermones_comunidad?id=eq.${encodeURIComponent(cuerpo.id)}&select=titulo,id,nombre,iglesia,ciudad,pais,contexto,minutos,experiencia,texto,creado_at`,
+    `/rest/v1/sermones_comunidad?id=eq.${encodeURIComponent(cuerpo.id)}&select=categoria,titulo,id,email,nombre,iglesia,ciudad,pais,contexto,minutos,experiencia,texto,creado_at`,
     {},
     fetchFn
   )
