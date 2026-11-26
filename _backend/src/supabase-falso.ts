@@ -42,6 +42,7 @@ export function supabaseFalso(
     if (init?.method === 'POST') {
       const lista = (base as unknown as Record<string, Record<string, unknown>[]>)[tabla] ?? []
       lista.push(cuerpo as Record<string, unknown>)
+      ;(base as unknown as Record<string, Record<string, unknown>[]>)[tabla] = lista
       return new Response('[]', { status: 201 })
     }
 

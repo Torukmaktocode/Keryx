@@ -37,3 +37,11 @@ export function oracionLlamita(id: string): Promise<{ orando: number; yo_oro: bo
 export function oracionResponder(id: string, respuesta: string): Promise<{ respondida: true } | LicenciaError> {
   return post<{ respondida: true }>('/oracion/responder', { id, respuesta })
 }
+
+export function oracionComentar(id: string, texto: string, nombre?: string): Promise<{ comentado: true } | LicenciaError> {
+  return post<{ comentado: true }>('/oracion/comentar', { id, texto, ...(nombre ? { nombre } : {}) })
+}
+
+export function oracionComentarios(id: string): Promise<Array<{ nombre: string; texto: string; creado_at: string }> | LicenciaError> {
+  return post<Array<{ nombre: string; texto: string; creado_at: string }>>('/oracion/comentarios', { id })
+}

@@ -161,8 +161,7 @@ export const api = {
     status: (): Promise<AiStatus> => unwrap(raw.ai.status())
   },
   licencia: {
-    estado: (): Promise<EstadoActual> => unwrap(raw.licencia.estado()),
-    login: async (args: { email: string; password: string }): Promise<EstadoActual | LicenciaError> => {
+    estado: (): Promise<EstadoActual> => unwrap(raw.licencia.estado()),    login: async (args: { email: string; password: string }): Promise<EstadoActual | LicenciaError> => {
       const rta: Result<EstadoActual | LicenciaError> = await raw.licencia.login(args)
       if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
       if ('error' in rta.data) {
@@ -246,6 +245,18 @@ export const api = {
     },
     responder: async (args: { id: string; respuesta: string }): Promise<{ respondida: true } | LicenciaError> => {
       const rta: Result<{ respondida: true } | LicenciaError> = await raw.oracion.responder(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    comentar: async (args: { id: string; nombre?: string; texto: string }): Promise<{ comentado: true } | LicenciaError> => {
+      if (!raw.oracion.comentar) return { error: 'actualiza la app', codigo: 'red' }
+      const rta: Result<{ comentado: true } | LicenciaError> = await raw.oracion.comentar(args)
+      if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
+      return rta.data
+    },
+    comentarios: async (args: { id: string }): Promise<Array<{ nombre: string; texto: string; creado_at: string }> | LicenciaError> => {
+      if (!raw.oracion.comentarios) return { error: 'actualiza la app', codigo: 'red' }
+      const rta: Result<Array<{ nombre: string; texto: string; creado_at: string }> | LicenciaError> = await raw.oracion.comentarios(args)
       if (!rta.ok || !rta.data) return { error: rta.error ?? 'Error desconocido', codigo: 'red' }
       return rta.data
     }

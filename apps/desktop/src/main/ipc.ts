@@ -28,6 +28,8 @@ import {
   oracionPublicarSchema,
   oracionLlamitaSchema,
   oracionResponderSchema,
+  oracionComentarSchema,
+  oracionComentariosSchema,
   presentationSaveSchema,
   detectAppLocale,
   searchRequestSchema,
@@ -50,7 +52,7 @@ import { CHECKOUT_URL } from '@keryx/core/licencia'
 import { licencia } from './licencia-puente'
 import { comunidadPublicar, comunidadLista, comunidadObtener } from './comunidad'
 import { comunidadLike, comunidadComentar, comunidadComentarios, comunidadSeguir, comunidadSeguidores } from './comunidad'
-import { oracionPublicar, oracionLista, oracionLlamita, oracionResponder } from './oracion'
+import { oracionPublicar, oracionLista, oracionLlamita, oracionResponder, oracionComentar, oracionComentarios } from './oracion'
 
 type Handler = (args: unknown[]) => Promise<unknown> | unknown
 
@@ -316,6 +318,14 @@ export async function registerIpc(
   register(IPC.oracionResponder, (args) => {
     const { id, respuesta } = oracionResponderSchema.parse(args[0])
     return oracionResponder(id, respuesta)
+  })
+  register(IPC.oracionComentar, (args) => {
+    const { id, nombre, texto } = oracionComentarSchema.parse(args[0])
+    return oracionComentar(id, texto, nombre)
+  })
+  register(IPC.oracionComentarios, (args) => {
+    const { id } = oracionComentariosSchema.parse(args[0])
+    return oracionComentarios(id)
   })
 
   registerTraductorIpc(register, () => store.getSettings().translateLocale)

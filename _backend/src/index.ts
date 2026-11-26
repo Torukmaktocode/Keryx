@@ -4,7 +4,7 @@ import { manejarActivar, manejarRefrescar, manejarDesactivar } from './licencia'
 import { manejarIa } from './ia'
 import { manejarPublicar, manejarLista, manejarObtener } from './comunidad'
 import { manejarLike, manejarComentar, manejarComentarios, manejarSeguir, manejarSeguidores } from './comunidad'
-import { manejarPublicar as manejarOracionPublicar, manejarLista as manejarOracionLista, manejarLlamita, manejarResponder } from './oracion'
+import { manejarPublicar as manejarOracionPublicar, manejarLista as manejarOracionLista, manejarLlamita, manejarResponder, manejarComentar as manejarOracionComentar, manejarComentarios as manejarOracionComentarios } from './oracion'
 import { rtaError, type Env } from './tipos'
 
 const VENTANA_MS = 60000
@@ -48,6 +48,8 @@ export async function enrutador(req: Request, env: Env): Promise<Response> {
     if (metodo === 'POST' && ruta === '/oracion/lista') return await manejarOracionLista(env, req)
     if (metodo === 'POST' && ruta === '/oracion/llamita') return await manejarLlamita(env, req)
     if (metodo === 'POST' && ruta === '/oracion/responder') return await manejarResponder(env, req)
+    if (metodo === 'POST' && ruta === '/oracion/comentar') return await manejarOracionComentar(env, req)
+    if (metodo === 'POST' && ruta === '/oracion/comentarios') return await manejarOracionComentarios(env, req)
 
     return rtaError('ruta no encontrada', 'no_ruta', 404)
   } catch {

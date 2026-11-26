@@ -6,7 +6,9 @@ import {
   manejarPublicar,
   manejarLista,
   manejarLlamita,
-  manejarResponder
+  manejarResponder,
+  manejarComentar,
+  manejarComentarios
 } from './oracion'
 import type { Env } from './tipos'
 
@@ -140,5 +142,42 @@ describe('manejarLista (oracion)', () => {
     expect(cuerpo.data[0].pais).toBe('Argentina')
     expect(cuerpo.data[0].orando).toBe(1)
     expect(cuerpo.data[0].yo_oro).toBe(true)
+  })
+})
+
+describe('comentarios de oracion', () => {
+  it('cualquier usuario comenta y los comentarios se listan', async () => {
+    const falso = baseVacia()
+    const jwtAutor = await licenciaValida()
+    await publicar(falso, jwtAutor)
+    falso.base.oraciones![0]!.id = 'aaaaaaaa-0000-0000-0000-000000000004'
+    const id = falso.base.oraciones![0]!.id as string
+
+    const jwtOtro = await licenciaValida()
+    const rC = await manejarComentar(env, new Request('https://w.dev/oracion/comentar', {
+      method: 'POST',
+      body: JSON.stringify({ licencia: jwtOtro, id, nombre: 'Pedro', texto: 'Oro por la sanidad de tu padre' })
+    }), falso.fetch)
+    const cuerpoC = (await rC.json()) as { ok: boolean; data: { comentado: boolean } }
+    expect(cuerpoC.data.comentado).toBe(true)
+
+    const rL = await manejarComentarios(env, new Request('https://w.dev/oracion/comentarios', {
+      method: 'POST',
+      body: JSON.stringify({ licencia: jwtAutor, id })
+    }), falso.fetch)
+    const cuerpoL = (await rL.json()) as { ok: boolean; data: Array<{ nombre: string; texto: string }> }
+    expect(cuerpoL.ok).toBe(true)
+    expect(cuerpoL.data).toHaveLength(1)
+    expect(cuerpoL.data[0].nombre).toBe('Pedro')
+  })
+
+  it('comentario demasiado corto: 400', async () => {
+    const falso = baseVacia()
+    const jwt = await licenciaValida()
+    const r = await manejarComentar(env, new Request('https://w.dev/oracion/comentar', {
+      method: 'POST',
+      body: JSON.stringify({ licencia: jwt, id: 'aaaaaaaa-0000-0000-0000-000000000005', texto: 'x' })
+    }), falso.fetch)
+    expect(r.status).toBe(400)
   })
 })

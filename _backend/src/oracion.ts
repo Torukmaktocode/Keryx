@@ -162,3 +162,36 @@ export async function manejarResponder(env: Env, req: Request, fetchFn: FetchFn 
   if (filas.length === 0) return rtaError('solo el autor puede marcar la respuesta', 'no_autor', 403)
   return rtaOk({ respondida: true })
 }
+
+export async function manejarComentar(env: Env, req: Request, fetchFn: FetchFn = fetch): Promise<Response> {
+  const cuerpo = (await req.json().catch(() => null)) as { licencia?: string; id?: string; nombre?: string; texto?: string } | null
+  if (!cuerpo?.licencia || !cuerpo.id) return rtaError('faltan datos', 'formato', 400)
+  const email = await emailDeLicencia(env, cuerpo.licencia)
+  if (!email) return rtaError('licencia invalida o vencida', 'sin_acceso', 401)
+  const texto = cadena(cuerpo, 'texto', 1000)
+  const nombre = cadena(cuerpo, 'nombre', 80) || 'Miembro'
+  if (texto.length < 2) return rtaError('el comentario es demasiado corto', 'formato', 400)
+
+  const r = await sb(env, '/rest/v1/oraciones_comentarios', {
+    method: 'POST',
+    body: JSON.stringify({ oracion_id: cuerpo.id, email, nombre, texto })
+  }, fetchFn)
+  if (!r.ok) return rtaError('no se pudo comentar', 'almacen', 502)
+  return rtaOk({ comentado: true })
+}
+
+export async function manejarComentarios(env: Env, req: Request, fetchFn: FetchFn = fetch): Promise<Response> {
+  const cuerpo = (await req.json().catch(() => null)) as { licencia?: string; id?: string } | null
+  if (!cuerpo?.licencia || !cuerpo.id) return rtaError('faltan datos', 'formato', 400)
+  const email = await emailDeLicencia(env, cuerpo.licencia)
+  if (!email) return rtaError('licencia invalida o vencida', 'sin_acceso', 401)
+
+  const r = await sb(
+    env,
+    `/rest/v1/oraciones_comentarios?oracion_id=eq.${encodeURIComponent(cuerpo.id)}&select=nombre,texto,creado_at&order=creado_at.asc&limit=200`,
+    {},
+    fetchFn
+  )
+  if (!r.ok) return rtaError('no se pudo leer', 'almacen', 502)
+  return rtaOk(await r.json())
+}

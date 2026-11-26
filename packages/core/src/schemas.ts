@@ -298,6 +298,16 @@ export const oracionResponderSchema = z.object({
   respuesta: z.string().min(10).max(3000)
 })
 
+export const oracionComentarSchema = z.object({
+  id: z.string().uuid(),
+  nombre: z.string().max(80).optional(),
+  texto: z.string().min(2).max(1000)
+})
+
+export const oracionComentariosSchema = z.object({
+  id: z.string().uuid()
+})
+
 export const aiChatSchema = z.object({
   messages: z
     .array(

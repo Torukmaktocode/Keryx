@@ -43,6 +43,38 @@ export function OracionView(): JSX.Element {
   const [miEmail, setMiEmail] = useState('')
   const [respondiendo, setRespondiendo] = useState<string | null>(null)
   const [textoRespuesta, setTextoRespuesta] = useState('')
+  const [comentariosAbiertos, setComentariosAbiertos] = useState<string | null>(null)
+  const [comentarios, setComentarios] = useState<Record<string, Array<{ nombre: string; texto: string; creado_at: string }>>>({})
+  const [comentarioNuevo, setComentarioNuevo] = useState('')
+  const [comentando, setComentando] = useState(false)
+
+  const abrirComentarios = async (id: string): Promise<void> => {
+    if (comentariosAbiertos === id) {
+      setComentariosAbiertos(null)
+      return
+    }
+    setComentariosAbiertos(id)
+    if (!comentarios[id]) {
+      const rta = await api.oracion.comentarios({ id })
+      if (!('error' in rta)) setComentarios((prev) => ({ ...prev, [id]: rta }))
+    }
+  }
+
+  const comentar = async (id: string): Promise<void> => {
+    if (comentarioNuevo.trim().length < 2) return
+    setComentando(true)
+    const rta = await api.oracion.comentar({ id, nombre: miEmail.split('@')[0] ?? 'Miembro', texto: comentarioNuevo.trim() })
+    setComentando(false)
+    if ('error' in rta) {
+      notify(rta.error)
+      return
+    }
+    setComentarios((prev) => ({
+      ...prev,
+      [id]: [...(prev[id] ?? []), { nombre: miEmail.split('@')[0] ?? 'Miembro', texto: comentarioNuevo.trim(), creado_at: new Date().toISOString() }]
+    }))
+    setComentarioNuevo('')
+  }
 
   const cargar = async (modoActual: 'recientes' | 'ranking', categoriaActual: string): Promise<void> => {
     setCargando(true)
@@ -264,6 +296,41 @@ export function OracionView(): JSX.Element {
                         )}
                       </div>
                     )}
+
+                    <div className="oracion-comentarios">
+                      <button className="btn ghost small" onClick={() => void abrirComentarios(oracion.id)}>
+                        💬 {t('oracion.comentarios', { count: (comentarios[oracion.id] ?? []).length })}
+                      </button>
+                      {comentariosAbiertos === oracion.id && (
+                        <div className="oracion-comentarios-hilo">
+                          {(comentarios[oracion.id] ?? []).map((c, i) => (
+                            <div key={i} className="oracion-comentario">
+                              <strong>{c.nombre}</strong>
+                              <span className="oracion-fecha">{fechaCorta(c.creado_at)}</span>
+                              <p>{c.texto}</p>
+                            </div>
+                          ))}
+                          {(comentarios[oracion.id] ?? []).length === 0 && (
+                            <p className="muted">{t('oracion.comentariosVacio')}</p>
+                          )}
+                          <textarea
+                            className="input"
+                            rows={2}
+                            value={comentarioNuevo}
+                            onChange={(e) => setComentarioNuevo(e.target.value)}
+                            placeholder={t('oracion.comentarioPlaceholder')}
+                            maxLength={1000}
+                          />
+                          <button
+                            className="btn primary small"
+                            disabled={comentando || comentarioNuevo.trim().length < 2}
+                            onClick={() => void comentar(oracion.id)}
+                          >
+                            {t('oracion.enviarComentario')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </article>
                 ))}
               </div>

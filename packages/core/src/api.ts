@@ -177,7 +177,7 @@ export interface KeryxApi {
     obtener(args: { id: string }): Promise<Result<SermónComunidadCompleto | LicenciaError>>
     like(args: { id: string }): Promise<Result<{ likes: number; yo_doy_like: boolean } | LicenciaError>>
     comentar(args: { id: string; nombre: string; texto: string }): Promise<Result<{ comentado: true } | LicenciaError>>
-    comentarios(args: { id: string }): Promise<Result<ComentarioComunidad[] | LicenciaError>>
+    comentarios(args: { id: string }): Promise<Result<Array<ComentarioComunidad> | LicenciaError>>
     seguir(args: { autor: string }): Promise<Result<{ seguidores: number; siguiendo: boolean } | LicenciaError>>
     seguidores(args: { autor: string }): Promise<Result<{ seguidores: number; yo_sigo: boolean } | LicenciaError>>
   }
@@ -186,5 +186,7 @@ export interface KeryxApi {
     lista(args?: { categoria?: string; modo?: string }): Promise<Result<OraciónResumen[] | LicenciaError>>
     llamita(args: { id: string }): Promise<Result<{ orando: number; yo_oro: boolean } | LicenciaError>>
     responder(args: { id: string; respuesta: string }): Promise<Result<{ respondida: true } | LicenciaError>>
+    comentar(args: { id: string; nombre?: string; texto: string }): Promise<Result<{ comentado: true } | LicenciaError>>
+    comentarios(args: { id: string }): Promise<Result<Array<{ nombre: string; texto: string; creado_at: string }> | LicenciaError>>
   }
 }

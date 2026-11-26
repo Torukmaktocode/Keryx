@@ -3514,6 +3514,30 @@ input[type='range'] {
   border-color: var(--accent);
 }
 
+.oracion-comentarios {
+  margin-top: 8px;
+  border-top: 1px dashed var(--glass-border-soft);
+  padding-top: 6px;
+}
+
+.oracion-comentarios-hilo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.oracion-comentario {
+  background: var(--glass);
+  border-radius: var(--radius-sm, 8px);
+  padding: 6px 10px;
+}
+
+.oracion-comentario p {
+  margin: 3px 0 0;
+  font-size: 13px;
+}
+
 .oracion-llamita.activa {
   background: var(--glass-strong);
   border-color: var(--accent);
