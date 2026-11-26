@@ -546,6 +546,12 @@ export const pt: Record<TranslationKey, string> = {
 
   'nav.oracion': 'Oração',
   'oracion.pedir': 'Pedir oração',
+
+  'oracion.total': '{count} pedidos',
+
+  'oracion.hero.verso': 'Orai uns pelos outros — Tiago 5:16',
+
+  'oracion.llamita.titulo': 'Estou orando por este pedido',
   'oracion.cargando': 'Carregando pedidos…',
   'oracion.vacio': 'Ainda não há pedidos. Quer ser o primeiro a pedir oração?',
   'oracion.respondida': 'Oração respondida',

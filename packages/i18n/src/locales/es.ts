@@ -544,6 +544,12 @@ export const es = {
 
   'nav.oracion': 'Oración',
   'oracion.pedir': 'Pedir oración',
+
+  'oracion.total': '{count} peticiones',
+
+  'oracion.hero.verso': 'Orad unos por otros — Santiago 5:16',
+
+  'oracion.llamita.titulo': 'Estoy orando por esta petición',
   'oracion.cargando': 'Cargando peticiones…',
   'oracion.vacio': 'Aún no hay peticiones. ¿Puedes ser el primero en pedir oración?',
   'oracion.respondida': 'Oración respondida',

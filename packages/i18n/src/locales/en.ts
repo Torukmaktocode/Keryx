@@ -543,6 +543,12 @@ export const en: Record<TranslationKey, string> = {
 
   'nav.oracion': 'Prayer',
   'oracion.pedir': 'Request prayer',
+
+  'oracion.total': '{count} requests',
+
+  'oracion.hero.verso': 'Pray for one another — James 5:16',
+
+  'oracion.llamita.titulo': 'I am praying for this request',
   'oracion.cargando': 'Loading prayer requests…',
   'oracion.vacio': 'No prayer requests yet. Would you like to be the first to ask?',
   'oracion.respondida': 'Prayer answered',

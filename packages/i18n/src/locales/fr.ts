@@ -542,6 +542,12 @@ export const fr: Record<TranslationKey, string> = {
 
   'nav.oracion': 'Prière',
   'oracion.pedir': 'Demander une prière',
+
+  'oracion.total': '{count} requêtes',
+
+  'oracion.hero.verso': 'Priez les uns pour les autres — Jacques 5:16',
+
+  'oracion.llamita.titulo': 'Je prie pour cette requête',
   'oracion.cargando': 'Chargement des requêtes…',
   'oracion.vacio': 'Aucune requête pour l’instant. Voulez-vous être le premier à demander ?',
   'oracion.respondida': 'Prière exaucée',

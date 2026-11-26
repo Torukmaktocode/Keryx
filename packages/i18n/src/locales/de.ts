@@ -542,6 +542,12 @@ export const de: Record<TranslationKey, string> = {
 
   'nav.oracion': 'Gebet',
   'oracion.pedir': 'Gebet bitten',
+
+  'oracion.total': '{count} Anliegen',
+
+  'oracion.hero.verso': 'Betet füreinander — Jakobus 5:16',
+
+  'oracion.llamita.titulo': 'Ich bete für dieses Anliegen',
   'oracion.cargando': 'Gebetsanliegen werden geladen…',
   'oracion.vacio': 'Noch keine Anliegen. Möchtest du der Erste sein, der um Gebet bittet?',
   'oracion.respondida': 'Gebet erhört',

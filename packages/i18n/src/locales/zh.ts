@@ -541,6 +541,12 @@ export const zh: Record<TranslationKey, string> = {
 
   'nav.oracion': '祷告',
   'oracion.pedir': '请求代祷',
+
+  'oracion.total': '{count} 个请求',
+
+  'oracion.hero.verso': '互相代祷 — 雅各书 5:16',
+
+  'oracion.llamita.titulo': '我正在为这个请求祷告',
   'oracion.cargando': '正在加载祷告请求…',
   'oracion.vacio': '还没有祷告请求。你愿意做第一个吗？',
   'oracion.respondida': '祷告已蒙应允',

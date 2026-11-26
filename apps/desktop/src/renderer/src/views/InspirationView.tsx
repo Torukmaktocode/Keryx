@@ -134,31 +134,31 @@ function FormularioComunidad({ alListo }: { alListo: () => void }): JSX.Element 
   }
 
   return (
-    <div className="inspiration-form">
+    <div className="inspiration-form oracion-form-card">
       <h2>{t('inspiration.form.titulo')}</h2>
-      <label className="field">
+      <label className="oracion-campo">
         <span>{t('inspiration.form.sermonTitulo')}</span>
         <input className="input" value={form.titulo} onChange={campo('titulo')} maxLength={120} />
       </label>
-      <div className="inspiration-grid">
-        <label className="field">
+      <div className="oracion-form-grid">
+        <label className="oracion-campo">
           <span>{t('inspiration.form.nombre')}</span>
           <input className="input" value={form.nombre} onChange={campo('nombre')} maxLength={80} />
         </label>
-        <label className="field">
+        <label className="oracion-campo">
           <span>{t('inspiration.form.iglesia')}</span>
           <input className="input" value={form.iglesia} onChange={campo('iglesia')} maxLength={80} />
         </label>
-        <label className="field">
+        <label className="oracion-campo">
           <span>{t('inspiration.form.ciudad')}</span>
           <input className="input" value={form.ciudad} onChange={campo('ciudad')} maxLength={80} />
         </label>
-        <label className="field">
+        <label className="oracion-campo">
           <span>{t('inspiration.form.pais')}</span>
           <input className="input" value={form.pais} onChange={campo('pais')} maxLength={80} />
         </label>
       </div>
-      <label className="field">
+      <label className="oracion-campo">
         <span>{t('inspiration.form.contexto')}</span>
         <textarea
           className="input"
@@ -169,8 +169,8 @@ function FormularioComunidad({ alListo }: { alListo: () => void }): JSX.Element 
           maxLength={600}
         />
       </label>
-      <div className="inspiration-grid">
-        <label className="field">
+      <div className="oracion-form-grid">
+        <label className="oracion-campo">
           <span>{t('inspiration.form.minutos')}</span>
           <input
             className="input"
@@ -181,12 +181,12 @@ function FormularioComunidad({ alListo }: { alListo: () => void }): JSX.Element 
             onChange={(e) => setForm((f) => ({ ...f, minutos: Number(e.target.value) || 30 }))}
           />
         </label>
-        <label className="field">
+        <label className="oracion-campo">
           <span>{t('inspiration.form.experiencia')}</span>
           <input className="input" value={form.experiencia} onChange={campo('experiencia')} maxLength={600} />
         </label>
       </div>
-      <label className="field">
+      <label className="oracion-campo">
         <span>{t('inspiration.form.texto')}</span>
         <textarea className="input" rows={12} value={form.texto} onChange={campo('texto')} />
       </label>
@@ -308,7 +308,8 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
       {cargando && <p className="muted assistant-hint">{t('inspiration.comunidad.cargando')}</p>}
       <div className="inspiration-list">
         {(lista ?? []).map((sermon) => (
-          <button key={sermon.id} className="inspiration-item" onClick={() => void abrir(sermon.id)}>
+          <button key={sermon.id}
+className="inspiration-item comunidad" onClick={() => void abrir(sermon.id)}>
             <div>
               <h3>{sermon.titulo}</h3>
               <p className="meta">
@@ -666,7 +667,7 @@ export function InspirationView() {
                 </ol>
               </div>
 
-              <div className="inspiration-grid">
+              <div className="oracion-form-grid">
                 <div className="inspiration-card">
                   <h4>{t('inspiration.style')}</h4>
                   <p>{open.style}</p>

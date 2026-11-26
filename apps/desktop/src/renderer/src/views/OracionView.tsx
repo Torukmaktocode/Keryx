@@ -99,105 +99,119 @@ export function OracionView(): JSX.Element {
       <header className="view-header">
         <h1 className="view-title">{t('nav.oracion')}</h1>
         <div className="spacer" />
-        <button className="btn primary small" onClick={() => setFormAbierto(!formAbierto)}>
-          {formAbierto ? t('oracion.form.cancelar') : t('oracion.pedir')}
-        </button>
+        {lista && <span className="badge">{t('oracion.total', { count: lista.length })}</span>}
       </header>
       <div className="view-body">
-        <div className="inspiration">
-          {formAbierto && (
-            <div className="inspiration-form">
-              <h2>{t('oracion.form.titulo')}</h2>
-              <div className="inspiration-grid">
-                <label className="field">
+        <div className="oracion">
+          {formAbierto ? (
+            <div className="oracion-form-card">
+              <h2 className="oracion-form-titulo">{t('oracion.form.titulo')}</h2>
+              <div className="oracion-form-grid">
+                <label className="oracion-campo">
                   <span>{t('oracion.form.nombre')}</span>
                   <input className="input" value={form.nombre} onChange={campo('nombre')} maxLength={80} />
                 </label>
-                <label className="field">
+                <label className="oracion-campo">
                   <span>{t('oracion.form.pais')}</span>
                   <input className="input" value={form.pais} onChange={campo('pais')} maxLength={80} />
                 </label>
               </div>
-              <label className="field">
+              <label className="oracion-campo">
                 <span>{t('oracion.form.peticion')}</span>
                 <textarea
                   className="input"
-                  rows={5}
+                  rows={6}
                   value={form.peticion}
                   onChange={campo('peticion')}
                   maxLength={3000}
                   placeholder={t('oracion.form.peticionHint')}
                 />
               </label>
-              <div className="inspiration-detail-tools">
-                <div className="spacer" />
-                <button className="btn primary small" disabled={publicando} onClick={() => void enviar()}>
+              <div className="oracion-form-acciones">
+                <button className="btn ghost" onClick={() => setFormAbierto(false)}>
+                  {t('oracion.form.cancelar')}
+                </button>
+                <button className="btn primary" disabled={publicando} onClick={() => void enviar()}>
                   {publicando ? t('oracion.form.publicando') : t('oracion.form.publicar')}
                 </button>
               </div>
             </div>
-          )}
+          ) : (
+            <>
+              <div className="oracion-hero">
+                <p className="oracion-hero-verso">
+                  <em>{t('oracion.hero.verso')}</em>
+                </p>
+                <button className="btn primary oracion-hero-boton" onClick={() => setFormAbierto(true)}>
+                  {t('oracion.pedir')}
+                </button>
+              </div>
 
-          {cargando && <p className="muted assistant-hint">{t('oracion.cargando')}</p>}
+              {cargando && <p className="muted assistant-hint">{t('oracion.cargando')}</p>}
 
-          <div className="inspiration-list">
-            {(lista ?? []).map((oracion) => (
-              <div key={oracion.id} className={`inspiration-item oracion-item ${oracion.respondida ? 'oracion-respondida' : ''}`}>
-                <div>
-                  <h3>
-                    {oracion.respondida && <span className="veracity-badge">{t('oracion.respondida')}</span>}
-                    {oracion.peticion.slice(0, 80)}
-                  </h3>
-                  <p className="meta">
-                    <strong>{oracion.nombre}</strong> · {oracion.pais} · {fechaCorta(oracion.creado_at)}
-                  </p>
-                  <p className="inspiration-preview">{oracion.peticion}</p>
-
-                  {oracion.respondida && oracion.respuesta && (
-                    <blockquote className="inspiration-quote">
-                      <strong>{t('oracion.testimonio')}:</strong> {oracion.respuesta}
-                    </blockquote>
-                  )}
-
-                  <div className="inspiration-detail-tools">
-                    <button
-                      className={`btn ghost small ${oracion.yo_oro ? 'primary' : ''}`}
-                      onClick={() => void llamita(oracion.id)}
-                    >
-                      🔥 {t('oracion.orando', { count: oracion.orando })}
-                    </button>
-                    {miEmail && oracion.email === miEmail && !oracion.respondida && (
+              <div className="oracion-lista">
+                {(lista ?? []).map((oracion) => (
+                  <article
+                    key={oracion.id}
+                    className={`oracion-tarjeta ${oracion.respondida ? 'respondida' : ''}`}
+                  >
+                    <div className="oracion-tarjeta-cabecera">
+                      <div>
+                        <strong className="oracion-nombre">{oracion.nombre}</strong>
+                        <span className="oracion-pais">🌍 {oracion.pais}</span>
+                        <span className="oracion-fecha">{fechaCorta(oracion.creado_at)}</span>
+                      </div>
                       <button
-                        className="btn ghost small"
-                        onClick={() => setRespondiendo(respondiendo === oracion.id ? null : oracion.id)}
+                        className={`oracion-llamita ${oracion.yo_oro ? 'activa' : ''}`}
+                        onClick={() => void llamita(oracion.id)}
+                        title={t('oracion.llamita.titulo')}
                       >
-                        {t('oracion.marcarRespondida')}
-                      </button>
-                    )}
-                  </div>
-
-                  {respondiendo === oracion.id && (
-                    <div>
-                      <textarea
-                        className="input"
-                        rows={3}
-                        value={textoRespuesta}
-                        onChange={(e) => setTextoRespuesta(e.target.value)}
-                        placeholder={t('oracion.form.respuestaPlaceholder')}
-                        maxLength={3000}
-                      />
-                      <button className="btn primary small" onClick={() => void responder(oracion.id)}>
-                        {t('oracion.form.guardarTestimonio')}
+                        🔥 {oracion.orando}
                       </button>
                     </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+                    <p className="oracion-peticion">{oracion.peticion}</p>
 
-          {!cargando && lista && lista.length === 0 && (
-            <p className="muted assistant-hint">{t('oracion.vacio')}</p>
+                    {oracion.respondida && oracion.respuesta && (
+                      <div className="oracion-testimonio">
+                        <strong>✝ {t('oracion.testimonio')}</strong>
+                        <p>{oracion.respuesta}</p>
+                      </div>
+                    )}
+
+                    {miEmail === oracion.email && !oracion.respondida && (
+                      <div className="oracion-acciones">
+                        {respondiendo === oracion.id ? (
+                          <>
+                            <textarea
+                              className="input"
+                              rows={3}
+                              value={textoRespuesta}
+                              onChange={(e) => setTextoRespuesta(e.target.value)}
+                              placeholder={t('oracion.form.respuestaPlaceholder')}
+                              maxLength={3000}
+                            />
+                            <button className="btn primary small" onClick={() => void responder(oracion.id)}>
+                              {t('oracion.form.guardarTestimonio')}
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="btn ghost small"
+                            onClick={() => setRespondiendo(oracion.id)}
+                          >
+                            {t('oracion.marcarRespondida')}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+
+              {!cargando && lista && lista.length === 0 && (
+                <p className="muted assistant-hint">{t('oracion.vacio')}</p>
+              )}
+            </>
           )}
         </div>
       </div>
