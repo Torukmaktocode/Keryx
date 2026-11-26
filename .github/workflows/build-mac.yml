@@ -213,7 +213,9 @@ jobs:
         run: |
           chmod -R u+rwX apps/desktop/biblioteca apps/desktop/coalicion apps/desktop/dialectos apps/desktop/argos-preload 2>/dev/null || true
           rm -rf apps/desktop/biblioteca apps/desktop/coalicion apps/desktop/dialectos apps/desktop/argos-preload "$GITHUB_WORKSPACE/datos" || true
-          ls apps/desktop/dist/*.dmg || true      - name: Humo del paquete (escaneo + Python + corpus + daemon Argos E2E)
+          ls apps/desktop/dist/*.dmg || true
+
+      - name: Humo del paquete (escaneo + Python + corpus + daemon Argos E2E)
         run: |
           APP=$(ls -d apps/desktop/dist/mac/Keryx.app apps/desktop/dist/mac-arm64/Keryx.app 2>/dev/null | head -1)
           [ -d "$APP" ] || { echo "sin .app en dist"; exit 1; }
