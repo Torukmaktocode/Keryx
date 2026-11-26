@@ -149,12 +149,15 @@ export async function aiChat(
   request: AiChatRequest
 ): Promise<AiChatResult> {
   const ai = resolveAi(settings)
-  if (ai.apiKey) {
+  if (settings.aiApiKey?.trim() && ai.apiKey) {
     return aiChatDirecto(ai, request)
   }
   const jwt = licencia.jwtActual()
   if (jwt) {
     return aiChatProxy(jwt, ai, request)
+  }
+  if (ai.apiKey) {
+    return aiChatDirecto(ai, request)
   }
   throw new Error(
     'Sin clave de IA. Añade una en Ajustes o instala OpenCode con una sesión iniciada.'
