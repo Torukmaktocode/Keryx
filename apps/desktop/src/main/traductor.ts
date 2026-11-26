@@ -10,6 +10,7 @@ import { copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync, r
 import { cp as copiarAsync } from 'node:fs/promises'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { pythonBin } from './python-bin'
+import { instalarPythonPortatil } from './python-instalar'
 import { join } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import { Readable } from 'node:stream'
@@ -81,12 +82,29 @@ function userDataDir(): string {
 
 let instalandoPaquetes = false
 
+/** Garantiza pip en el interprete (el Python portatil puede venir sin el). */
+async function asegurarPip(python: string): Promise<void> {
+  const tienePip = await new Promise<boolean>((ok) => {
+    const p = spawn(python, ['-m', 'pip', '--version'], { windowsHide: true, stdio: 'ignore' })
+    p.on('exit', (code) => ok(code === 0))
+    p.on('error', () => ok(false))
+  })
+  if (tienePip) return
+  console.log('[traductor] sin pip; instalando con ensurepip...')
+  await new Promise<void>((ok) => {
+    const p = spawn(python, ['-m', 'ensurepip', '--upgrade'], { windowsHide: true, stdio: 'ignore' })
+    p.on('exit', () => ok())
+    p.on('error', () => ok())
+  })
+}
+
 /** pip instalador con escalera: sin flag â†’ --break-system-packages (pip de
  * Homebrew, PEP 668), si "--user" se niega cae a "--break-system-packages"
  * solo. Devuelve true si pip terminÃ³ bien (o ya estaba instalado). */
 async function pipInstalar(): Promise<boolean> {
   const python = pythonBin()
   if (!python) return false
+  await asegurarPip(python)
   const escalera: string[][] = [
     ['-m', 'pip', 'install', '--user', 'argostranslate'],
     ['-m', 'pip', 'install', '--user', '--break-system-packages', 'argostranslate'],
@@ -136,7 +154,16 @@ function launchDaemon(): Promise<void> {
   const congelado = daemonCongelado()
   const python = congelado ? null : pythonBin()
   if (!congelado && !python) {
-    console.log('[traductor] sin daemon congelado ni Python real; traduccion desactivada')
+    // Sin Python real (Mac con stub de Apple): la app se instala uno portatil.
+    console.log('[traductor] sin Python real; instalando el portatil de Keryx...')
+    return instalarPythonPortatil().then((instalado) => {
+      if (!instalado) throw new Error('sin python')
+      launching = null
+      return launchDaemon()
+    })
+  }
+  if (!congelado && !python) {
+    console.log('[traductor] sin daemon congelado ni Python; traduccion desactivada')
     return Promise.reject(new Error('sin python'))
   }
   launching = new Promise<void>((resolve, reject) => {

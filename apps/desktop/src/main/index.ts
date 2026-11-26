@@ -99,6 +99,8 @@ function createWindow(): void {
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('org.keryx.app')
 
+  process.env['KERYX_PYTHON_PORTATIL'] = join(app.getPath('userData'), 'python')
+
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })

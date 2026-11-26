@@ -5,6 +5,23 @@ import { join } from 'node:path'
 let pythonCache: string | null = null
 let sondeado = false
 
+/** Python portatil autoinstalado por Keryx (python-build-standalone) en userData. */
+export function pythonPortatil(): string | null {
+  const base = process.env['KERYX_PYTHON_PORTATIL']
+  if (!base) return null
+  const candidatos = [join(base, 'bin', 'python3'), join(base, 'python.exe')]
+  for (const bin of candidatos) {
+    if (existsSync(bin)) return bin
+  }
+  return null
+}
+
+/** Descarta el cache del sondeo (tras instalar el Python portatil). */
+export function reiniciarSondeoPython(): void {
+  sondeado = false
+  pythonCache = null
+}
+
 /** Python REAL de la maquina, multiplataforma. Devuelve null si no hay
  * interprete util — el llamador debe degradar con elegancia (sin daemon).
  * - Windows: `where python` y se descarta el stub del pymanager/WindowsApps.
@@ -16,6 +33,11 @@ export function pythonBin(): string | null {
   if (sondeado) return pythonCache
   sondeado = true
   pythonCache = null
+  const portatil = pythonPortatil()
+  if (portatil) {
+    pythonCache = portatil
+    return pythonCache
+  }
   if (process.platform === 'win32') {
     try {
       const salida = execFileSync('where.exe', ['python'], { encoding: 'utf8', timeout: 15_000 })

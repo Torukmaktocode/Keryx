@@ -70,6 +70,16 @@ export function Sidebar() {
     }
   }, [translateLocale])
 
+  /* Mientras el motor no esté listo (instalando Python portatil o Argos)
+   * el estado se revalida cada 10 s: el banner se quita solo. */
+  useEffect(() => {
+    if (motor?.available !== false) return
+    const timer = window.setInterval(() => {
+      void estadoTraduccion().then((status) => setMotor(status))
+    }, 10_000)
+    return () => window.clearInterval(timer)
+  }, [motor?.available])
+
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
