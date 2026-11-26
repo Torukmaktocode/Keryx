@@ -469,6 +469,8 @@ export const de: Record<TranslationKey, string> = {
   'inspiration.prepareChallenge': 'Letzte Herausforderung:',
   'inspiration.tabs.clasicos': 'Klassiker',
   'inspiration.tabs.comunidad': 'Gemeinschaft',
+  'inspiration.comunidad.recientes': 'Neu',
+  'inspiration.comunidad.ranking': 'Ranking der beliebtesten',
   'inspiration.comunidad.subir': 'Meine Predigt hochladen',
   'inspiration.comunidad.cargando': 'Gemeinschaftspredigten werden geladen…',
   'inspiration.comunidad.vacio': 'Noch keine Gemeinschaftspredigten. Sei der Erste, der teilt!',

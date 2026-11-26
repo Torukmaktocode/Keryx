@@ -471,6 +471,8 @@ export const es = {
 
   'inspiration.tabs.clasicos': 'Clásicos',
   'inspiration.tabs.comunidad': 'Comunidad',
+  'inspiration.comunidad.recientes': 'Recientes',
+  'inspiration.comunidad.ranking': 'Ranking de los más apreciados',
   'inspiration.comunidad.subir': 'Subir mi sermón',
   'inspiration.comunidad.cargando': 'Cargando sermones de la comunidad…',
   'inspiration.comunidad.vacio': 'Aún no hay sermones de la comunidad. ¡Sé el primero en compartir!',

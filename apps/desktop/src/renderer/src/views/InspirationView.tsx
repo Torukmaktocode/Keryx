@@ -221,6 +221,13 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
   const [cargando, setCargando] = useState(true)
   const [autorFiltro, setAutorFiltro] = useState<{ email: string; nombre: string } | null>(null)
   const [miEmail, setMiEmail] = useState('')
+  const [modo, setModo] = useState<'recientes' | 'ranking'>('recientes')
+
+  const listaOrdenada = useMemo(() => {
+    if (!lista) return null
+    if (modo === 'ranking') return [...lista].sort((a, b) => b.likes - a.likes)
+    return lista
+  }, [lista, modo])
 
   const cargar = async (autor?: { email: string; nombre: string } | null): Promise<void> => {
     setCargando(true)
@@ -407,6 +414,21 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
   return (
     <>
       <div className="inspiration-results-meta">
+        <div className="oracion-tabs">
+          <button
+            className={`tab-btn ${modo === 'recientes' ? 'activa' : ''}`}
+            onClick={() => setModo('recientes')}
+          >
+            {t('inspiration.comunidad.recientes')}
+          </button>
+          <button
+            className={`tab-btn ${modo === 'ranking' ? 'activa' : ''}`}
+            onClick={() => setModo('ranking')}
+          >
+            ❤ {t('inspiration.comunidad.ranking')}
+          </button>
+        </div>
+        <div className="spacer" />
         {autorFiltro ? (
           <>
             <span className="badge">
@@ -424,7 +446,7 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
       </div>
       {cargando && <p className="muted assistant-hint">{t('inspiration.comunidad.cargando')}</p>}
       <div className="inspiration-list">
-        {(lista ?? []).map((sermon) => (
+        {(listaOrdenada ?? []).map((sermon) => (
           <div
             key={sermon.id}
             className="inspiration-item comunidad"
@@ -460,7 +482,7 @@ function ComunidadPanel({ notify }: { notify: (mensaje: string) => void }): JSX.
           </div>
         ))}
       </div>
-      {!cargando && lista && lista.length === 0 && (
+      {!cargando && listaOrdenada && listaOrdenada.length === 0 && (
         <p className="muted assistant-hint">{t('inspiration.comunidad.vacio')}</p>
       )}
     </>

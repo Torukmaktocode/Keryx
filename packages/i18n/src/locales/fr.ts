@@ -469,6 +469,8 @@ export const fr: Record<TranslationKey, string> = {
   'inspiration.prepareChallenge': 'Défi final :',
   'inspiration.tabs.clasicos': 'Classiques',
   'inspiration.tabs.comunidad': 'Communauté',
+  'inspiration.comunidad.recientes': 'Récents',
+  'inspiration.comunidad.ranking': 'Classement des plus appréciés',
   'inspiration.comunidad.subir': 'Publier mon sermon',
   'inspiration.comunidad.cargando': 'Chargement des sermons de la communauté…',
   'inspiration.comunidad.vacio': 'Aucun sermon de la communauté pour l’instant. Soyez le premier à partager !',

@@ -468,6 +468,8 @@ export const zh: Record<TranslationKey, string> = {
   'inspiration.prepareChallenge': '最终挑战：',
   'inspiration.tabs.clasicos': '经典',
   'inspiration.tabs.comunidad': '社区',
+  'inspiration.comunidad.recientes': '最新',
+  'inspiration.comunidad.ranking': '最受欢迎排行',
   'inspiration.comunidad.subir': '上传我的讲道',
   'inspiration.comunidad.cargando': '正在加载社区讲道…',
   'inspiration.comunidad.vacio': '社区还没有讲道。快来做第一个分享的人！',
