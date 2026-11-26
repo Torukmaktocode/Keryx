@@ -68,9 +68,31 @@ jobs:
           source "$RUNNER_TEMP/venv-daemon/bin/activate"
           pip install --upgrade pip
           bash scripts/daemon-pyinstaller.sh
-          mkdir -p apps/desktop/build/daemon
-          cp -R scripts/dist/keryx-daemon apps/desktop/build/daemon/
-          du -sh apps/desktop/build/daemon
+          mkdir -p apps/desktop/build/daemon-arm64
+          cp -R scripts/dist/keryx-daemon apps/desktop/build/daemon-arm64/
+          du -sh apps/desktop/build/daemon-arm64
+          df -h /
+
+      - name: Compila daemon PyInstaller x64 (bajo Rosetta, para Macs Intel)
+        run: |
+          set -e
+          rm -rf "$RUNNER_TEMP/venv-x64"
+          setup-python-x64() { :; }
+          # actions/setup-python no permite dos versiones en PATH; se usa el
+          # instalador x64 directo del workflow: se baja CPython x64 y corre
+          # bajo Rosetta, con lo que PyInstaller produce un binario x64.
+          curl -L -o /tmp/python-x64.tgz \
+            "https://github.com/astral-sh/python-build-standalone/releases/download/20250106/cpython-3.12.8+20250106-x86_64-apple-darwin-install_only.tar.gz"
+          mkdir -p "$RUNNER_TEMP/python-x64"
+          tar -xzf /tmp/python-x64.tgz -C "$RUNNER_TEMP/python-x64"
+          arch -x86_64 "$RUNNER_TEMP/python-x64/python/bin/python3" --version
+          arch -x86_64 "$RUNNER_TEMP/python-x64/python/bin/python3" -m venv "$RUNNER_TEMP/venv-x64"
+          source "$RUNNER_TEMP/venv-x64/bin/activate"
+          pip install --upgrade pip
+          bash scripts/daemon-pyinstaller.sh
+          mkdir -p apps/desktop/build/daemon-x64
+          cp -R scripts/dist/keryx-daemon apps/desktop/build/daemon-x64/
+          du -sh apps/desktop/build/daemon-x64
           df -h /
       - name: Baja paquetes Argos de idiomas grandes (van dentro del DMG)
         run: |
@@ -208,8 +230,23 @@ jobs:
           rm -f "$GITHUB_WORKSPACE/datos"/coalicion.tar.gz*
           du -sh apps/desktop/coalicion || true
 
-      - name: Generar DMG (arm64 + x64)
-        run: npm run build:mac
+      - name: Generar DMG arm64 (con daemon arm64)
+        run: |
+          set -e
+          rm -rf apps/desktop/build/daemon
+          cp -R apps/desktop/build/daemon-arm64 apps/desktop/build/daemon
+          npx electron-vite build
+          npx electron-builder --mac --arm64
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Generar DMG x64 (con daemon x64)
+        run: |
+          set -e
+          rm -rf apps/desktop/dist/mac-arm64 apps/desktop/build/daemon
+          cp -R apps/desktop/build/daemon-x64 apps/desktop/build/daemon
+          npx electron-vite build
+          npx electron-builder --mac --x64
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
@@ -222,9 +259,14 @@ jobs:
 
       - name: Humo del paquete (escaneo + Python + corpus + daemon Argos E2E)
         run: |
-          APP=$(ls -d apps/desktop/dist/mac/Keryx.app apps/desktop/dist/mac-arm64/Keryx.app 2>/dev/null | head -1)
-          [ -d "$APP" ] || { echo "sin .app en dist"; exit 1; }
-          npx tsx scripts/smoke-mac.mts "$APP"
+          fallo=0
+          for APP in apps/desktop/dist/mac-arm64/Keryx.app apps/desktop/dist/mac/Keryx.app; do
+            if [ -d "$APP" ]; then
+              echo "=== humo: $APP ==="
+              npx tsx scripts/smoke-mac.mts "$APP" || fallo=1
+            fi
+          done
+          [ "$fallo" -eq 0 ] || exit 1
 
       - uses: actions/upload-artifact@v4
         with:

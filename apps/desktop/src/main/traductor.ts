@@ -50,10 +50,13 @@ function daemonPath(): string {
     : join(app.getAppPath(), '..', '..', 'scripts', 'traductor_daemon.py')
 }
 
+let congeladoFallido = false
+
 /** Binario congelado con PyInstaller (empaquetado en extraResources/daemon):
- * no exige Python en la máquina del usuario. Null en dev. */
+ * no exige Python en la máquina del usuario. Null en dev o si el binario
+ * ya demostró no arrancar (DMG x64 con binario arm64, p. ej.). */
 function daemonCongelado(): string | null {
-  if (!app.isPackaged) return null
+  if (!app.isPackaged || congeladoFallido) return null
   const nombre = process.platform === 'win32' ? 'keryx-daemon.exe' : 'keryx-daemon'
   const ruta = join(process.resourcesPath, 'daemon', 'keryx-daemon', nombre)
   return existsSync(ruta) ? ruta : null
@@ -219,6 +222,17 @@ function launchDaemon(): Promise<void> {
         console.log('[traductor] error de spawn:', error.message)
         child = null
         launching = null
+        if (congelado && !congeladoFallido) {
+          /* Binario congelado no arranca (arquitectura equivocada en un DMG
+           * x64, p. ej.): se descarta y cae al Python portatil automatico. */
+          congeladoFallido = true
+          console.log('[traductor] el binario congelado no sirve aqui; probando Python portatil...')
+          void instalarPythonPortatil()
+            .then(() => launchDaemon())
+            .catch(() => undefined)
+          resolve()
+          return
+        }
         reject(error)
       })
       // El daemon arranca en vivo aunque no haya paquetes aÃºn.
