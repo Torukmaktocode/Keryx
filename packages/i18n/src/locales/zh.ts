@@ -429,6 +429,7 @@ export const zh: Record<TranslationKey, string> = {
   'traduccion.descargando': '正在准备{idioma}…',
   'traduccion.traduciendo': '讲道翻译中…',
   'traduccion.noDisponible': '此电脑不支持翻译',
+  'traduccion.motoresDescargando': '正在下载翻译引擎… {pct}%',
   'traduccion.pendiente': '翻译器准备中',
   'traduccion.verificado': '已验证：圣经公会文本',
   'traduccion.experimental': '实验性翻译（本地引擎）',

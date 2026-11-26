@@ -6,10 +6,13 @@
  * todo corre offline en el dispositivo.
  */
 import { app } from 'electron'
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { cp as copiarAsync } from 'node:fs/promises'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { pythonBin } from './python-bin'
 import { join } from 'node:path'
+import { pipeline } from 'node:stream/promises'
+import { Readable } from 'node:stream'
 import { DatabaseSync } from 'node:sqlite'
 import { analizarCorpus } from './analizar_lengua'
 import {
@@ -19,6 +22,7 @@ import {
   translatePairSchema,
   translateRequestSchema,
   versoBatchSchema,
+  type EstadoModelosTraductor,
   type TranslateStatusResult
 } from '@keryx/core'
 
@@ -43,6 +47,32 @@ function daemonPath(): string {
   return app.isPackaged
     ? join(process.resourcesPath, 'scripts', 'traductor_daemon.py')
     : join(app.getAppPath(), '..', '..', 'scripts', 'traductor_daemon.py')
+}
+
+/** Binario congelado con PyInstaller (empaquetado en extraResources/daemon):
+ * no exige Python en la máquina del usuario. Null en dev. */
+function daemonCongelado(): string | null {
+  if (!app.isPackaged) return null
+  const nombre = process.platform === 'win32' ? 'keryx-daemon.exe' : 'keryx-daemon'
+  const ruta = join(process.resourcesPath, 'daemon', 'keryx-daemon', nombre)
+  return existsSync(ruta) ? ruta : null
+}
+
+function envDaemon(): Record<string, string | undefined> {
+  const dir = userDataDir()
+  return {
+    ...process.env,
+    PYTHONUTF8: '1',
+    XDG_DATA_HOME: join(dir, 'datos'),
+    XDG_CACHE_HOME: join(dir, 'cache'),
+    XDG_CONFIG_HOME: join(dir, 'config'),
+    ARGOS_PACKAGES_DIR: join(dir, 'datos', 'argos-translate', 'packages'),
+    KERYX_DIALECTOS_DIR: join(dir, 'dialectos'),
+    KERYX_CORPUS_DIR: dir,
+    KERYX_ARGOS_PRELOAD: app.isPackaged
+      ? join(process.resourcesPath, 'argos-preload')
+      : process.env['KERYX_ARGOS_PRELOAD'] ?? ''
+  }
 }
 
 function userDataDir(): string {
@@ -103,32 +133,21 @@ function prepararPaquetes(): void {
 function launchDaemon(): Promise<void> {
   if (child) return Promise.resolve()
   if (launching) return launching
-  const python = pythonBin()
-  if (!python) {
-    console.log('[traductor] sin Python real en el sistema; daemon de traduccion desactivado')
+  const congelado = daemonCongelado()
+  const python = congelado ? null : pythonBin()
+  if (!congelado && !python) {
+    console.log('[traductor] sin daemon congelado ni Python real; traduccion desactivada')
     return Promise.reject(new Error('sin python'))
   }
   launching = new Promise<void>((resolve, reject) => {
     try {
-      const dir = userDataDir()
-      const proc = spawn(python, [daemonPath()], {
-        env: {
-          ...process.env,
-          PYTHONUTF8: '1',
-          XDG_DATA_HOME: join(dir, 'datos'),
-          XDG_CACHE_HOME: join(dir, 'cache'),
-          XDG_CONFIG_HOME: join(dir, 'config'),
-          ARGOS_PACKAGES_DIR: join(dir, 'datos', 'argos-translate', 'packages'),
-          KERYX_DIALECTOS_DIR: join(dir, 'dialectos'),
-          KERYX_CORPUS_DIR: dir
-        },
-        windowsHide: true,
-        stdio: ['pipe', 'pipe', 'pipe']
-      })
+      const proc = congelado
+        ? spawn(congelado, [], { env: envDaemon(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] })
+        : spawn(python as string, [daemonPath()], { env: envDaemon(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] })
       child = proc
       buffer = ''
       console.log('[traductor] daemon lanzado:', proc.spawnargs.join(' '))
-      prepararPaquetes()
+      if (!congelado) prepararPaquetes()
       proc.stdout?.setEncoding('utf8')
       proc.stdout?.on('data', (chunk: string) => {
         buffer += chunk
@@ -252,6 +271,8 @@ export async function precalentarPar(target: string): Promise<void> {
           // modelo instalado pero fallo de inferencia: degrada al original
         }
       }
+      // sin Python o instalador fallido: la descarga del DMG/publica toma el relevo
+      void descargarModelosSiFalta().catch(() => undefined)
     }
     return
   }
@@ -544,6 +565,154 @@ export async function translateOnce(source: string, target: string, text: string
   return salida
 }
 
+/* ── Datos incluidos en el instalador (corpus verificado + glosarios) ──
+ * El DMG lleva resources/corpus con *.db y glosario_*.json; el primer
+ * arranque los copia a userData si faltan (la carpeta del usuario manda). */
+
+export function prepararDatosLocales(): void {
+  const origen = app.isPackaged
+    ? join(process.resourcesPath, 'corpus')
+    : join(app.getAppPath(), '..', '..', 'corpus-empaquetado')
+  if (!existsSync(origen)) return
+  const destinoCorpus = join(userDataDir(), 'corpus')
+  mkdirSync(destinoCorpus, { recursive: true })
+  try {
+    for (const archivo of readdirSync(origen)) {
+      const destino = archivo.startsWith('glosario_')
+        ? join(userDataDir(), archivo)
+        : join(destinoCorpus, archivo)
+      if (!existsSync(destino)) copyFileSync(join(origen, archivo), destino)
+    }
+  } catch {
+    // copia fallida: el usuario puede instalar corpus a mano
+  }
+  void prepararModelosLocales().catch(() => undefined)
+}
+
+/** Pack completo: modelos neuronales incluidos en Resources/dialectos se
+ * copian a userData una vez (el daemon apunta SIEMPRE a userData, y la
+ * carpeta del usuario manda sobre la del paquete). */
+async function prepararModelosLocales(): Promise<void> {
+  const origen = app.isPackaged
+    ? join(process.resourcesPath, 'dialectos')
+    : join(app.getAppPath(), '..', '..', 'dialectos-empaquetado')
+  if (!existsSync(origen)) return
+  const raiz = join(userDataDir(), 'dialectos')
+  mkdirSync(raiz, { recursive: true })
+  for (const spec of readdirSync(origen)) {
+    if (!existsSync(join(origen, spec, 'model.bin'))) continue
+    const destino = join(raiz, spec)
+    if (existsSync(join(destino, 'model.bin'))) continue
+    try {
+      await copiarAsync(join(origen, spec), destino, { recursive: true })
+      console.log('[modelos] pack incluido copiado a userData:', spec)
+    } catch (error) {
+      console.log(
+        '[modelos] copia del pack fallida',
+        spec,
+        ':',
+        error instanceof Error ? error.message : String(error)
+      )
+    }
+  }
+}
+
+/* ── Descarga de modelos neuronales (lenguas nativas) en el 1er arranque ──
+ * ~2,3 GB de CTranslate2 en un servidor publico (HF por defecto, URL
+ * sobreescrita con KERYX_MODELOS_URL). Descarga con reanudacion (Range),
+ * progreso consultable por IPC y reinicio del daemon al terminar. */
+
+const MODELOS_BASE = (): string =>
+  process.env['KERYX_MODELOS_URL'] ??
+  'https://huggingface.co/datasets/Torukmaktocode/keryx-traductor/resolve/main/'
+
+const SPECS_MODELOS = ['nllb-qu', 'm2m-es-arn', 'm2m-arn-es']
+
+let estadoModelosActual: EstadoModelosTraductor = {
+  estado: 'pendiente',
+  archivo: '',
+  descargado: 0,
+  total: 0
+}
+let descargaModelosIniciada = false
+
+export function estadoModelos(): EstadoModelosTraductor {
+  return estadoModelosActual
+}
+
+export async function descargarModelosSiFalta(): Promise<EstadoModelosTraductor> {
+  if (descargaModelosIniciada) return estadoModelosActual
+  descargaModelosIniciada = true
+  const raiz = join(userDataDir(), 'dialectos')
+  const faltantes = SPECS_MODELOS.filter(
+    (spec) => !existsSync(join(raiz, spec, 'model.bin'))
+  )
+  if (!faltantes.length) {
+    estadoModelosActual = { estado: 'completo', archivo: '', descargado: 1, total: 1 }
+    return estadoModelosActual
+  }
+  mkdirSync(raiz, { recursive: true })
+  for (const spec of faltantes) {
+    try {
+      await descargarModelo(spec, raiz)
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : String(error)
+      console.log('[modelos] fallo descargando', spec, ':', mensaje)
+      estadoModelosActual = {
+        estado: 'error',
+        archivo: spec,
+        descargado: 0,
+        total: 0,
+        error: mensaje
+      }
+      descargaModelosIniciada = false
+      return estadoModelosActual
+    }
+  }
+  estadoModelosActual = { estado: 'completo', archivo: '', descargado: 1, total: 1 }
+  console.log('[modelos] descarga completa; reiniciando daemon con modelos listos')
+  child?.kill()
+  return estadoModelosActual
+}
+
+async function descargarModelo(spec: string, raiz: string): Promise<void> {
+  const destino = join(raiz, `${spec}.tar.gz`)
+  const url = `${MODELOS_BASE()}${spec}.tar.gz`
+  const yaDescargado = existsSync(destino) ? statSync(destino).size : 0
+  const respuesta = await fetch(url, {
+    headers: yaDescargado > 0 ? { Range: `bytes=${yaDescargado}-` } : undefined,
+    redirect: 'follow'
+  })
+  if (!respuesta.ok && respuesta.status !== 206) {
+    throw new Error(`servidor respondio ${respuesta.status} para ${spec}.tar.gz`)
+  }
+  const total = Number(respuesta.headers.get('content-length') ?? 0) + (respuesta.status === 206 ? yaDescargado : 0)
+  estadoModelosActual = { estado: 'descargando', archivo: spec, descargado: yaDescargado, total }
+  const escritura = createWriteStream(destino, { flags: respuesta.status === 206 ? 'a' : 'w' })
+  let recibido = yaDescargado
+  if (!respuesta.body) throw new Error('servidor sin cuerpo de descarga')
+  const cuerpo = Readable.fromWeb(respuesta.body as never)
+  cuerpo.on('data', (trozo: Buffer) => {
+    recibido += trozo.length
+    if (recibido % (8 * 1024 * 1024) < trozo.length) {
+      estadoModelosActual = { estado: 'descargando', archivo: spec, descargado: recibido, total }
+    }
+  })
+  await pipeline(cuerpo, escritura)
+  estadoModelosActual = { estado: 'descargando', archivo: spec, descargado: recibido, total }
+  await new Promise<void>((ok, mal) => {
+    const proc = spawn('tar', ['-xzf', destino, '-C', raiz], { windowsHide: true })
+    let err = ''
+    proc.stderr?.on('data', (c: Buffer) => { err += c.toString() })
+    proc.on('exit', (code) => (code === 0 ? ok() : mal(new Error(err || `tar salio con ${code}`))))
+    proc.on('error', mal)
+  })
+  rmSync(destino, { force: true })
+  if (!existsSync(join(raiz, spec, 'model.bin'))) {
+    throw new Error(`el archivo de ${spec} no contenia model.bin`)
+  }
+}
+
 export interface VersoRef {
   lang: string
   code: string
@@ -755,6 +924,7 @@ export function registerTraductorIpc(
     return translateInstall(req.source, req.target)
   })
   register(IPC.translateLenguas, () => lenguasEstado())
+  register(IPC.modelosEstado, () => estadoModelos())
   register(IPC.translateGlosario, (args) => {
     const req = glosarioRequestSchema.parse(args[0])
     return { lang: req.lang, pares: glosarioDe(req.lang) }

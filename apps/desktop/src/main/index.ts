@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { registerIpc } from './ipc'
-import { cacheDescarga, prepararSalidaTraductor } from './traductor'
+import { cacheDescarga, descargarModelosSiFalta, prepararDatosLocales, prepararSalidaTraductor } from './traductor'
 
 if (is.dev) app.commandLine.appendSwitch('remote-debugging-port', '9222')
 
@@ -109,6 +109,13 @@ app.whenReady().then(async () => {
     cacheDescarga()
   }
   createWindow()
+
+  prepararDatosLocales()
+  /* Descarga de modelos nativos solo si hay servidor configurado
+   * (KERYX_MODELOS_URL); sin esa URL los nativos quedan pendientes. */
+  if (process.env['KERYX_MODELOS_URL']) {
+    void descargarModelosSiFalta().catch(() => undefined)
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

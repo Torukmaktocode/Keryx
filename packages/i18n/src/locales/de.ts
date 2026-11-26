@@ -430,6 +430,7 @@ export const de: Record<TranslationKey, string> = {
   'traduccion.descargando': 'Sprache {idioma} wird vorbereitet…',
   'traduccion.traduciendo': 'Predigt wird übersetzt…',
   'traduccion.noDisponible': 'Übersetzung auf diesem Computer nicht verfügbar',
+  'traduccion.motoresDescargando': 'Übersetzungsmotoren werden geladen… {pct} %',
   'traduccion.pendiente': 'Übersetzer in Vorbereitung',
   'traduccion.verificado': 'Verifiziert: Text der Bibelgesellschaften',
   'traduccion.experimental': 'Experimentelle Übersetzung (lokale Engine)',

@@ -431,6 +431,7 @@ export const es = {
   'traduccion.descargando': 'Preparando el idioma {idioma}…',
   'traduccion.traduciendo': 'Traduciendo el sermón…',
   'traduccion.noDisponible': 'Traducción no disponible en este equipo',
+  'traduccion.motoresDescargando': 'Descargando motores de traducción… {pct} %',
   'traduccion.pendiente': 'Traductor pendiente',
   'traduccion.verificado': 'Verificado: texto de Sociedades Bíblicas',
   'traduccion.experimental': 'Traducción experimental (motor local)',

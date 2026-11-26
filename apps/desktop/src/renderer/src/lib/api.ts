@@ -18,6 +18,7 @@ import type {
   DocumentMeta,
   LenguaEstado,
   GlosarioPar,
+  EstadoModelosTraductor,
   SermónComunidadResumen,
   SermónComunidadCompleto,
   OraciónResumen
@@ -149,7 +150,11 @@ export const api = {
     glosario: (req: { lang: string }): Promise<{ lang: string; pares: GlosarioPar[] }> =>
       raw.translate.glosario
         ? unwrap(raw.translate.glosario(req))
-        : Promise.resolve({ lang: req.lang, pares: [] })
+        : Promise.resolve({ lang: req.lang, pares: [] }),
+    modelos: (): Promise<EstadoModelosTraductor> =>
+      raw.translate.modelos
+        ? unwrap(raw.translate.modelos())
+        : Promise.resolve({ estado: 'pendiente', archivo: '', descargado: 0, total: 0 })
   },
   ai: {
     chat: (req: AiChatRequest): Promise<AiChatResult> => unwrap(raw.ai.chat(req)),

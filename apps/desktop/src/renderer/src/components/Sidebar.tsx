@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactElement } from 'react'
 import { LOCALES, useI18n, type TranslationKey } from '@keryx/i18n'
-import type { AppSettings, LenguaEstado } from '@keryx/core'
+import type { AppSettings, EstadoModelosTraductor, LenguaEstado } from '@keryx/core'
 import { useAppStore, type View } from '../store/appStore'
 import { Icon, type IconName } from './Icon'
 import { api } from '../lib/api'
@@ -37,10 +37,25 @@ export function Sidebar() {
   const toggleSidebar = useAppStore((s) => s.toggleSidebar)
   const [motor, setMotor] = useState<{ available: boolean } | null>(null)
   const [lenguas, setLenguas] = useState<LenguaEstado[]>([])
+  const [modelos, setModelos] = useState<EstadoModelosTraductor | null>(null)
 
   useEffect(() => {
     void estadoTraduccion().then((status) => setMotor(status))
     void api.translate.lenguas().then((lenguas) => setLenguas(lenguas))
+    let vivo = true
+    let timer: number | undefined
+    const sondear = (): void => {
+      void api.translate.modelos().then((m) => {
+        if (!vivo) return
+        setModelos(m)
+        if (m.estado === 'descargando') timer = window.setTimeout(sondear, 2000)
+      })
+    }
+    sondear()
+    return () => {
+      vivo = false
+      if (timer !== undefined) window.clearTimeout(timer)
+    }
   }, [])
 
   /* Revalidar el estado del motor cuando se cambia de idioma: el banner
@@ -80,7 +95,13 @@ export function Sidebar() {
       <div className="sidebar-footer">
         {locale !== 'es' && motor && !motor.available && (
           <small className="muted" style={{ display: 'block', padding: '2px 6px' }}>
-            {t('traduccion.noDisponible')}
+            {modelos?.estado === 'descargando'
+              ? t('traduccion.motoresDescargando', {
+                  pct: modelos.total
+                    ? Math.min(100, Math.round((modelos.descargado / modelos.total) * 100))
+                    : 0
+                })
+              : t('traduccion.noDisponible')}
           </small>
         )}
         <div className="lang-switch" title={t('settings.language')}>

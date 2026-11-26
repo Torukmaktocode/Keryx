@@ -53,6 +53,7 @@ export const IPC = {
   versoBatch: 'translate:verso-batch',
   translateLenguas: 'translate:lenguas',
   translateGlosario: 'translate:glosario',
+  modelosEstado: 'translate:modelos-estado',
 
   aiChat: 'ai:chat',
   aiStatus: 'ai:status',

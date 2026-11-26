@@ -50,6 +50,14 @@ export interface TranslateStatusResult {
   pairs: string[]
 }
 
+export interface EstadoModelosTraductor {
+  estado: 'completo' | 'descargando' | 'pendiente' | 'error'
+  archivo: string
+  descargado: number
+  total: number
+  error?: string
+}
+
 export interface KeryxApi {
   app: {
     version(): Promise<Result<string>>
@@ -139,6 +147,7 @@ export interface KeryxApi {
     }>>
     lenguas(): Promise<Result<LenguaEstado[]>>
     glosario(req: GlosarioRequest): Promise<Result<{ lang: string; pares: GlosarioPar[] }>>
+    modelos(): Promise<Result<EstadoModelosTraductor>>
   }
   ai: {
     chat(req: AiChatRequest): Promise<Result<AiChatResult>>

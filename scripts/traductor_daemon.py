@@ -524,8 +524,44 @@ def atender(motor: "Motor", req: Dict[str, Any]) -> None:
         respond({"id": req.get("id"), "ok": False, "error": str(exc)})
 
 
+def preinstalar_incluidos() -> None:
+    """Instala los paquetes .argosmodel que viajan dentro del app
+    (KERYX_ARGOS_PRELOAD): idiomas grandes listos OFFLINE en la primera
+    instalacion, sin descarga al primer uso. Idempotente: salta los pares
+    ya instalados. Log por stderr (stdout es protocolo JSON)."""
+    carpeta = os.environ.get("KERYX_ARGOS_PRELOAD", "")
+    if not carpeta or not os.path.isdir(carpeta):
+        return
+    try:
+        from argostranslate import package
+
+        instalados = {
+            (p.from_code, p.to_code) for p in package.get_installed_packages()
+        }
+        for nombre in sorted(os.listdir(carpeta)):
+            if not nombre.endswith(".argosmodel"):
+                continue
+            base = nombre[: -len(".argosmodel")]
+            par = base.split("_")[-2:]
+            if len(par) != 2:
+                continue
+            origen, destino = par
+            if (origen, destino) in instalados:
+                print(
+                    f"[preload] ya instalado {origen}>{destino}",
+                    file=sys.stderr,
+                )
+                continue
+            print(f"[preload] instalando {origen}>{destino}...", file=sys.stderr)
+            package.install_from_path(os.path.join(carpeta, nombre))
+            print(f"[preload] ok {origen}>{destino}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[preload] fallo: {exc}", file=sys.stderr)
+
+
 def main() -> None:
     configurar_velocidad()
+    preinstalar_incluidos()
     motor = Motor()
     pesado = ThreadPoolExecutor(max_workers=1)
     for line in sys.stdin:

@@ -86,7 +86,48 @@ try {
   dificil(`el python elegido (${binario}) no ejecuta nada`)
 }
 
-// 4) Daemon Argos E2E (advisorio: si la red falla, avisa y no corta)
+// 4) Daemon congelado (PyInstaller) dentro del paquete: E2E de pares
+const congelado = join(recursos, 'daemon', 'keryx-daemon', 'keryx-daemon')
+if (existsSync(congelado)) {
+  console.log(`[smoke] daemon congelado: ${congelado}`)
+  const tempF = mkdtempSync(join(tmpdir(), 'keryx-smoke-f-'))
+  const respuesta = await new Promise<boolean>((ok) => {
+    const f = spawn(congelado, [], {
+      env: {
+        ...process.env,
+        XDG_DATA_HOME: join(tempF, 'datos'),
+        XDG_CACHE_HOME: join(tempF, 'cache'),
+        XDG_CONFIG_HOME: join(tempF, 'config'),
+        ARGOS_PACKAGES_DIR: join(tempF, 'datos', 'argos-translate', 'packages'),
+        KERYX_DIALECTOS_DIR: join(tempF, 'dialectos'),
+        KERYX_CORPUS_DIR: tempF
+      },
+      stdio: ['pipe', 'pipe', 'pipe']
+    })
+    let salida = ''
+    f.stdout?.setEncoding('utf8')
+    f.stdout?.on('data', (c: string) => { salida += c })
+    f.on('exit', () => ok(salida.includes('"pairs"')))
+    f.on('error', () => ok(false))
+    const t0 = Date.now()
+    setTimeout(() => {
+      if (salida.includes('"pairs"')) ok(true)
+      else {
+        console.log(`[smoke-daemon-congelado] ${(salida.slice(-400))}`)
+        f.kill()
+        ok(false)
+      }
+    }, 90_000)
+    f.stdin?.write(JSON.stringify({ id: 991, op: 'pairs' }) + '\n')
+  })
+  rmSync(tempF, { recursive: true, force: true })
+  if (respuesta) console.log('[smoke] daemon congelado E2E OK (pairs respondio)')
+  else dificil('el daemon congelado del paquete no responde pairs')
+} else {
+  console.log('[smoke] Aviso: el paquete no trae daemon congelado (traduccion exigira Python en el usuario)')
+}
+
+// 5) Daemon Argos E2E (advisorio: si la red falla, avisa y no corta)
 interface Resp { ok?: boolean; error?: string; text?: string; pairs?: string[] }
 const temp = mkdtempSync(join(tmpdir(), 'keryx-smoke-'))
 let id = 0

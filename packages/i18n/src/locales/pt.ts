@@ -434,6 +434,7 @@ export const pt: Record<TranslationKey, string> = {
   'traduccion.descargando': 'Preparando {idioma}…',
   'traduccion.traduciendo': 'Traduzindo o sermão…',
   'traduccion.noDisponible': 'Tradução não disponível neste computador',
+  'traduccion.motoresDescargando': 'Baixando motores de tradução… {pct} %',
   'traduccion.pendiente': 'Tradutor pendente',
   'traduccion.verificado': 'Verificado: texto das Sociedades Bíblicas',
   'traduccion.experimental': 'Tradução experimental (motor local)',

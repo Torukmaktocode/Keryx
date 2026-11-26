@@ -16,6 +16,15 @@ const CARPETA = join(RAIZ, 'build', 'datos')
 const MAX_PARTE = 1_800_000_000
 const TAG = 'datos'
 
+/** userData de la app (fuente de dialectos/ + corpus/ instalados en esta maquina). */
+const FUENTE_TRADUCTOR =
+  process.env.KERYX_TRADUCTOR_FUENTE ??
+  (process.platform === 'win32'
+    ? join(process.env.APPDATA ?? '', '@keryx', 'desktop', 'traduccion')
+    : join(process.env.HOME ?? '', 'Library', 'Application Support', '@keryx', 'desktop', 'traduccion'))
+
+const SPECS_DIALECTOS = ['nllb-qu', 'm2m-es-arn', 'm2m-arn-es']
+
 const ghBin = () => {
   if (process.env.GH_CLI) return process.env.GH_CLI
   for (const c of ['gh', join(process.env['ProgramFiles'] ?? '', 'GitHub CLI', 'gh.exe')]) {
@@ -92,6 +101,30 @@ if (modo === 'preparar') {
   await partir(join(RAIZ, 'coalicion.tar.gz'), 'coalicion.tar.gz')
   rmSync(join(RAIZ, 'coalicion.tar.gz'), { force: true })
   console.log('Listo en build/datos — sube con: node scripts/datos-macos.mjs subir')
+} else if (modo === 'preparar-traductor') {
+  if (!existsSync(FUENTE_TRADUCTOR)) {
+    console.error(`No hay datos del traductor en ${FUENTE_TRADUCTOR} (usa KERYX_TRADUCTOR_FUENTE para otra ruta).`)
+    process.exit(1)
+  }
+  rmSync(CARPETA, { recursive: true, force: true })
+  mkdirSync(CARPETA, { recursive: true })
+  let modelos = 0
+  for (const spec of SPECS_DIALECTOS) {
+    const dir = join(FUENTE_TRADUCTOR, 'dialectos', spec)
+    if (!existsSync(join(dir, 'model.bin'))) {
+      console.log(`[omitido] ${spec}: sin model.bin`)
+      continue
+    }
+    await tarGz(['-C', join(FUENTE_TRADUCTOR, 'dialectos'), spec], join(CARPETA, `${spec}.tar.gz`))
+    modelos += 1
+  }
+  const corpus = join(FUENTE_TRADUCTOR, 'corpus')
+  if (existsSync(corpus)) {
+    const glosarios = readdirSync(FUENTE_TRADUCTOR)
+      .filter((f) => f.startsWith('glosario_') && f.endsWith('.json'))
+    await tarGz(['-C', FUENTE_TRADUCTOR, 'corpus', ...glosarios], join(CARPETA, 'traductor-corpus.tar.gz'))
+  }
+  console.log(`Listo en build/datos (${modelos} modelos de dialectos + corpus) — sube con: node scripts/datos-macos.mjs subir`)
 } else if (modo === 'subir') {
   if (!existsSync(CARPETA)) {
     console.error('No hay build/datos; corre primero: node scripts/datos-macos.mjs preparar')
@@ -113,5 +146,5 @@ if (modo === 'preparar') {
 } else if (modo === 'limpiar') {
   rmSync(CARPETA, { recursive: true, force: true })
 } else {
-  console.log('uso: node scripts/datos-macos.mjs preparar | subir | limpiar')
+  console.log('uso: node scripts/datos-macos.mjs preparar | preparar-traductor | subir | limpiar')
 }

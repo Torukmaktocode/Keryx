@@ -17,6 +17,11 @@ on:
         description: 'Tag del release donde publicar los DMG'
         required: false
         default: 'mac-dmg'
+      pack_completo:
+        description: 'Pack completo: modelos de lenguas nativas dentro del DMG (una sola descarga, DMG ~4,5 GB: publicar aparte, no entra en GitHub Releases)'
+        required: false
+        default: 'false'
+        type: boolean
 
 permissions:
   contents: write
@@ -50,6 +55,107 @@ jobs:
 
       - name: Tests del motor
         run: npm test
+
+      - name: Compila daemon PyInstaller (traduccion sin Python)
+        run: |
+          set -e
+          python3 -m venv "$RUNNER_TEMP/venv-daemon"
+          source "$RUNNER_TEMP/venv-daemon/bin/activate"
+          pip install --upgrade pip
+          bash scripts/daemon-pyinstaller.sh
+          mkdir -p apps/desktop/build/daemon
+          cp -R scripts/dist/keryx-daemon apps/desktop/build/daemon/
+          du -sh apps/desktop/build/daemon
+          df -h /
+
+      - name: Baja paquetes Argos de idiomas grandes (van dentro del DMG)
+        run: |
+          set -e
+          source "$RUNNER_TEMP/venv-daemon/bin/activate"
+          mkdir -p apps/desktop/argos-preload
+          python3 - <<'PYEOF'
+          from argostranslate import package
+          import os, shutil
+
+          # Prioridad: los idiomas de la interfaz, ambos sentidos donde exista.
+          QUIERO = [
+              ("es", "en"), ("en", "es"),
+              ("es", "pt"), ("pt", "es"),
+              ("es", "it"), ("it", "es"),
+              ("es", "fr"), ("fr", "es"),
+              ("es", "de"), ("de", "es"),
+              ("es", "zh"), ("zh", "es"),
+          ]
+          PRESUPUESTO = 850 * 1024 * 1024  # deja aire bajo el limite de 2 GB por asset
+          total = 0
+          package.update_package_index()
+          disponibles = package.get_available_packages()
+          for f, t in QUIERO:
+              if total >= PRESUPUESTO:
+                  print(f"presupuesto agotado ({total/1e6:.0f} MB); el resto baja al primer uso")
+                  break
+              for pkg in disponibles:
+                  if pkg.from_code != f or pkg.to_code != t:
+                      continue
+                  try:
+                      ruta = pkg.download()
+                      peso = os.path.getsize(ruta)
+                      if total + peso > PRESUPUESTO:
+                          print(f"{f}>{t}: {peso/1e6:.0f} MB no cabe en presupuesto")
+                          continue
+                      destino = f"apps/desktop/argos-preload/argos-{f}_{t}.argosmodel"
+                      shutil.move(ruta, destino)
+                      total += peso
+                      print(f"{f}>{t}: {peso/1e6:.0f} MB ok")
+                  except Exception as e:
+                      print(f"{f}>{t}: fallo ({e})")
+                  break
+          print(f"total embarcado: {total/1e6:.0f} MB")
+          PYEOF
+          du -sh apps/desktop/argos-preload
+
+      - name: Restaura corpus traductor desde el release `datos`
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          mkdir -p "$GITHUB_WORKSPACE/datos"
+          if gh release view datos --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release download datos --repo "$GITHUB_REPOSITORY" --pattern 'traductor-corpus.tar.gz*' --dir "$GITHUB_WORKSPACE/datos" --clobber || true
+          fi
+          if [ -f "$GITHUB_WORKSPACE/datos/traductor-corpus.tar.gz" ]; then
+            mkdir -p apps/desktop/corpus
+            tar -xzf "$GITHUB_WORKSPACE/datos/traductor-corpus.tar.gz" -C apps/desktop/corpus
+            rm -f "$GITHUB_WORKSPACE/datos"/traductor-corpus.tar.gz*
+            du -sh apps/desktop/corpus
+          else
+            echo "AVISO: sin corpus traductor en el release datos; DMG sin corpus nativo (lo baja la app)."
+          fi
+
+      - name: Restaura modelos de lenguas nativas (pack completo)
+        if: ${{ inputs.pack_completo }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          mkdir -p "$GITHUB_WORKSPACE/datos"
+          if gh release view datos --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release download datos --repo "$GITHUB_REPOSITORY" --pattern 'nllb-qu.tar.gz' --pattern 'm2m-es-arn.tar.gz' --pattern 'm2m-arn-es.tar.gz' --dir "$GITHUB_WORKSPACE/datos" --clobber || true
+          fi
+          mkdir -p apps/desktop/dialectos
+          para=0
+          for spec in nllb-qu m2m-es-arn m2m-arn-es; do
+            if [ -f "$GITHUB_WORKSPACE/datos/$spec.tar.gz" ]; then
+              tar -xzf "$GITHUB_WORKSPACE/datos/$spec.tar.gz" -C apps/desktop/dialectos
+              para=$((para+1))
+            else
+              echo "AVISO: falta $spec.tar.gz en el release datos"
+            fi
+          done
+          rm -f "$GITHUB_WORKSPACE/datos"/*.tar.gz
+          du -sh apps/desktop/dialectos
+          df -h /
+          [ "$para" -gt 0 ] || { echo "sin modelos; pack completo quedaria igual al estandar"; }
 
       - name: Restaura biblioteca desde el release `datos`
         if: ${{ inputs.incluir_biblioteca }}
@@ -105,11 +211,9 @@ jobs:
       - name: Limpieza de datos (libera disco)
         if: ${{ always() }}
         run: |
-          chmod -R u+rwX apps/desktop/biblioteca apps/desktop/coalicion 2>/dev/null || true
-          rm -rf apps/desktop/biblioteca apps/desktop/coalicion "$GITHUB_WORKSPACE/datos" || true
-          ls apps/desktop/dist/*.dmg || true
-
-      - name: Humo del paquete (escaneo + Python + corpus + daemon Argos E2E)
+          chmod -R u+rwX apps/desktop/biblioteca apps/desktop/coalicion apps/desktop/dialectos apps/desktop/argos-preload 2>/dev/null || true
+          rm -rf apps/desktop/biblioteca apps/desktop/coalicion apps/desktop/dialectos apps/desktop/argos-preload "$GITHUB_WORKSPACE/datos" || true
+          ls apps/desktop/dist/*.dmg || true      - name: Humo del paquete (escaneo + Python + corpus + daemon Argos E2E)
         run: |
           APP=$(ls -d apps/desktop/dist/mac/Keryx.app apps/desktop/dist/mac-arm64/Keryx.app 2>/dev/null | head -1)
           [ -d "$APP" ] || { echo "sin .app en dist"; exit 1; }
@@ -132,9 +236,58 @@ jobs:
           path: dist
 
       - name: Publica DMG en Release ${{ inputs.etiqueta_release }}
+        if: ${{ !inputs.pack_completo }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.etiqueta_release }}
           name: Keryx para macOS
           files: dist/*.dmg
           overwrite_files: true
+
+      - name: Parte el pack completo y lo publica por partes
+        if: ${{ inputs.pack_completo }}
+        run: |
+          set -e
+          DMG=$(ls dist/*.dmg | head -1)
+          echo "partiendo: $DMG ($(du -h "$DMG" | cut -f1))"
+          split -d -a 3 -b 1900M --numeric-suffixes=1 "$DMG" dist/Keryx-full.dmg.
+          cat > dist/Instalar-Keryx.command <<'EOF'
+          #!/bin/bash
+          # Instalador Keryx (pack completo por partes).
+          # 1. Pon este archivo y TODAS las partes Keryx-full.dmg.001, .002... en la MISMA carpeta.
+          # 2. Clic derecho sobre este archivo -> Abrir -> Abrir (la primera vez).
+          # Junta las partes, abre el DMG y limpia.
+          cd "$(dirname "$0")"
+          echo "Juntando partes de Keryx..."
+          cat Keryx-full.dmg.* > Keryx-full.dmg
+          echo "Abriendo instalador..."
+          open Keryx-full.dmg
+          echo "Listo: arrastra Keryx a Aplicaciones. Puedes borrar las partes despues."
+          EOF
+          chmod +x dist/Instalar-Keryx.command
+          cat > dist/LEEME.txt <<'EOF'
+          KERYX PARA MAC — PACK COMPLETO
+          Descarga TODAS las partes (Keryx-full.dmg.001, .002, ...) mas
+          Instalar-Keryx.command en la misma carpeta. Despues: clic derecho
+          sobre Instalar-Keryx.command -> Abrir -> Abrir.
+          EOF
+          ls -lh dist/
+          du -sh dist/
+
+      - name: Publica partes del pack en Release ${{ inputs.etiqueta_release }}
+        if: ${{ inputs.pack_completo }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.etiqueta_release }}
+          name: Keryx para macOS
+          files: |
+            dist/Keryx-full.dmg.*
+            dist/Instalar-Keryx.command
+            dist/LEEME.txt
+          overwrite_files: true
+
+      - name: Pack completo — nota
+        if: ${{ inputs.pack_completo }}
+        run: |
+          echo "Pack completo publicado por partes en el release ${{ inputs.etiqueta_release }}"
+          echo "(cada parte queda bajo el limite de 2 GB por asset de GitHub)."
