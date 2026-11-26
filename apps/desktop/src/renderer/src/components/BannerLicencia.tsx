@@ -7,5 +7,10 @@ export function BannerLicencia({ estado }: { estado: EstadoActual | null }): JSX
   const { t } = useI18n()
   if (!estado || !necesitaBanner(estado)) return null
   const mensaje = mensajeDeEstado(estado)
-  return <div className="licencia-banner">{t(mensaje.clave as never, mensaje.vars as never)}</div>
+  return (
+    <div className="licencia-banner">
+      <span className="licencia-banner-icono">✦</span>
+      {t(mensaje.clave as never, mensaje.vars as never)}
+    </div>
+  )
 }
