@@ -56,6 +56,11 @@ jobs:
       - name: Tests del motor
         run: npm test
 
+      - name: Python 3.12 para el daemon (las ruedas de Argos no soportan 3.15)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Compila daemon PyInstaller (traduccion sin Python)
         run: |
           set -e
@@ -67,7 +72,6 @@ jobs:
           cp -R scripts/dist/keryx-daemon apps/desktop/build/daemon/
           du -sh apps/desktop/build/daemon
           df -h /
-
       - name: Baja paquetes Argos de idiomas grandes (van dentro del DMG)
         run: |
           set -e
