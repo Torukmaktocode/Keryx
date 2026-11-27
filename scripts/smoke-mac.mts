@@ -118,13 +118,15 @@ if (existsSync(congelado)) {
       ok({ ok: false, salida, err, code: null })
     })
     const t0 = Date.now()
+    /* Arranque en frio del binario congelado: importa torch y prepara Argos;
+     * en el runner puede pasar de un minuto — margen 5 min. */
     setTimeout(() => {
       if (salida.includes('"pairs"')) ok({ ok: true, salida, err, code: null })
       else {
         f.kill()
         ok({ ok: false, salida, err, code: null })
       }
-    }, 90_000)
+    }, 300_000)
     f.stdin?.write(JSON.stringify({ id: 991, op: 'pairs' }) + '\n')
   })
   rmSync(tempF, { recursive: true, force: true })
