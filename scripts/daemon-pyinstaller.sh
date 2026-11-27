@@ -12,9 +12,13 @@ RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
 DIST="$RAIZ/scripts/dist"
 VENV="$RAIZ/build/daemon-venv"
 
-python3 -m venv "$VENV"
-# shellcheck disable=SC1091
-source "$VENV/bin/activate"
+# Si el caller ya activo un venv (p. ej. el x64 bajo Rosetta del CI), se
+# respeta: PyInstaller debe usar el interprete del caller tal cual.
+if [ -z "${VIRTUAL_ENV:-}" ]; then
+  python3 -m venv "$VENV"
+  # shellcheck disable=SC1091
+  source "$VENV/bin/activate"
+fi
 pip install --upgrade pip
 # torch fijado: 2.8+ exige macOS 14 y el objetivo es Big Sur (11.x). Los
 # wheels x64/arm64 de 2.7 cargan en macOS 11.
