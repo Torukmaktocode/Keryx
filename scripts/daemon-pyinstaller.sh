@@ -20,9 +20,15 @@ if [ -z "${VIRTUAL_ENV:-}" ]; then
   source "$VENV/bin/activate"
 fi
 pip install --upgrade pip
-# torch fijado: 2.8+ exige macOS 14 y el objetivo es Big Sur (11.x). Los
-# wheels x64/arm64 de 2.7 cargan en macOS 11.
-pip install "torch==2.7.1" "argostranslate==1.11.0" "pyinstaller"
+# torch por arquitectura: PyTorch dejo de publicar wheels x64 de mac desde
+# 2.3, y 2.8+ exige macOS 14. x64 (Mac Intel) usa 2.2.2; arm64 usa 2.7.1.
+PYTHON_ARCH="$(python -c 'import platform; print(platform.machine())')"
+if [ "$PYTHON_ARCH" = "x86_64" ]; then
+  TORCH_PIN="torch==2.2.2"
+else
+  TORCH_PIN="torch==2.7.1"
+fi
+pip install "$TORCH_PIN" "argostranslate==1.11.0" "pyinstaller"
 
 cd "$RAIZ/scripts"
 # spacy queda FUERA del freeze: sbd.py lo importa en try/except (spacy=None)
