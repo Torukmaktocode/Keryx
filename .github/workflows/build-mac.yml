@@ -302,28 +302,38 @@ jobs:
         if: ${{ inputs.pack_completo }}
         run: |
           set -e
-          DMG=$(ls dist/*.dmg | head -1)
-          echo "partiendo: $DMG ($(du -h "$DMG" | cut -f1))"
-          split -d -a 3 -b 1900M --numeric-suffixes=1 "$DMG" dist/Keryx-full.dmg.
-          cat > dist/Instalar-Keryx.command <<'EOF'
+          # Cada DMG se parte con SU arquitectura en el nombre: el x64 es para
+          # Mac Intel y el arm64 para Apple Silicon. El script "head -1" viejo
+          # empaquetaba siempre el arm64 — inutil en Macs Intel.
+          if [ -f dist/Keryx-1.0.0.dmg ]; then
+            split -d -a 3 -b 1900M --numeric-suffixes=1 dist/Keryx-1.0.0.dmg dist/Keryx-full-x64.dmg.
+          fi
+          if [ -f dist/Keryx-1.0.0-arm64.dmg ]; then
+            split -d -a 3 -b 1900M --numeric-suffixes=1 dist/Keryx-1.0.0-arm64.dmg dist/Keryx-full-arm64.dmg.
+          fi
+          for ARCH in x64 arm64; do
+            [ -f "dist/Keryx-full-$ARCH.dmg.001" ] || continue
+            cat > "dist/Instalar-Keryx-$ARCH.command" <<EOF
           #!/bin/bash
-          # Instalador Keryx (pack completo por partes).
-          # 1. Pon este archivo y TODAS las partes Keryx-full.dmg.001, .002... en la MISMA carpeta.
-          # 2. Clic derecho sobre este archivo -> Abrir -> Abrir (la primera vez).
-          # Junta las partes, abre el DMG y limpia.
-          cd "$(dirname "$0")"
-          echo "Juntando partes de Keryx..."
-          cat Keryx-full.dmg.* > Keryx-full.dmg
+          # Instalador Keryx ($ARCH). Pon este archivo y TODAS las partes
+          # Keryx-full-$ARCH.dmg.001, .002... en la MISMA carpeta, clic derecho
+          # -> Abrir -> Abrir. Junta las partes, abre el DMG y limpia.
+          cd "\$(dirname "\$0")"
+          echo "Juntando partes de Keryx ($ARCH)..."
+          cat Keryx-full-$ARCH.dmg.* > Keryx-$ARCH.dmg
           echo "Abriendo instalador..."
-          open Keryx-full.dmg
+          open Keryx-$ARCH.dmg
           echo "Listo: arrastra Keryx a Aplicaciones. Puedes borrar las partes despues."
           EOF
-          chmod +x dist/Instalar-Keryx.command
+            chmod +x "dist/Instalar-Keryx-$ARCH.command"
+          done
           cat > dist/LEEME.txt <<'EOF'
           KERYX PARA MAC — PACK COMPLETO
-          Descarga TODAS las partes (Keryx-full.dmg.001, .002, ...) mas
-          Instalar-Keryx.command en la misma carpeta. Despues: clic derecho
-          sobre Instalar-Keryx.command -> Abrir -> Abrir.
+          Dos versiones: x64 (Mac Intel) y arm64 (Mac M1/M2/M3/M4).
+          Descarga TODAS las partes de TU version (Keryx-full-x64.dmg.001,
+          .002, ... o Keryx-full-arm64.dmg.001, ...) mas su Instalar-Keryx
+          correspondiente en la misma carpeta. Despues: clic derecho sobre
+          Instalar-Keryx -> Abrir -> Abrir.
           EOF
           ls -lh dist/
           du -sh dist/
@@ -335,8 +345,8 @@ jobs:
           tag_name: ${{ inputs.etiqueta_release }}
           name: Keryx para macOS
           files: |
-            dist/Keryx-full.dmg.*
-            dist/Instalar-Keryx.command
+            dist/Keryx-full-*.dmg.*
+            dist/Instalar-Keryx-*.command
             dist/LEEME.txt
           overwrite_files: true
 
