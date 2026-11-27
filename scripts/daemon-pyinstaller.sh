@@ -20,6 +20,11 @@ if [ -z "${VIRTUAL_ENV:-}" ]; then
   source "$VENV/bin/activate"
 fi
 pip install --upgrade pip
+# Big Sur (11) es el minimo soportado de la app (minimumSystemVersion 11.0.0):
+# el deployment target garantiza que todo lo compilado aqui use los simbolos
+# viejos de libc++ (los wheels de Xcode nuevo referencian simbolos que solo
+# existen en /usr/lib/libc++.1.dylib de macOS 12+ y mueren con dlopen).
+export MACOSX_DEPLOYMENT_TARGET=11.0
 # torch por arquitectura: PyTorch dejo de publicar wheels x64 de mac desde
 # 2.3, y 2.8+ exige macOS 14. x64 (Mac Intel) usa 2.2.2; arm64 usa 2.7.1.
 PYTHON_ARCH="$(python -c 'import platform; print(platform.machine())')"
@@ -28,6 +33,11 @@ if [ "$PYTHON_ARCH" = "x86_64" ]; then
 else
   TORCH_PIN="torch==2.7.1"
 fi
+# sentencepiece 0.2.2 compila su .so con Xcode 15+ y en Big Sur muere al
+# hacer dlopen ("Symbol not found __ZTTNSt3__114basic_ifstream..."); el wheel
+# 0.2.0 (macosx_10_9) es compatible. Compilacion desde fuente como salvaguarda
+# si el wheel no existiera: con el deployment target 11.0 sale correcto.
+pip install --no-binary sentencepiece "sentencepiece==0.2.0" || pip install "sentencepiece==0.2.0"
 pip install "$TORCH_PIN" "argostranslate==1.11.0" "pyinstaller"
 
 cd "$RAIZ/scripts"

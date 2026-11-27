@@ -39,6 +39,8 @@ let quitting = false
 const pending = new Map<number, Pending>()
 let nextId = 1
 let buffer = ''
+/** true cuando el hijo actual es el binario congelado (para el rescate libc++). */
+let motorCongelado = false
 
 export function prepararSalidaTraductor(): void {
   quitting = true
@@ -111,10 +113,15 @@ async function pipInstalar(): Promise<boolean> {
   const python = pythonBin()
   if (!python) return false
   await asegurarPip(python)
+  /* En Mac, sentencepiece 0.2.2 compila su .so con Xcode 15+ y muere al
+   * hacer dlopen en Big Sur ("Symbol not found ... libc++.1.dylib"): se fija
+   * 0.2.0, cuyo wheel macosx_10_9 es compatible. En Windows no se toca. */
+  const pinSentencepiece =
+    process.platform === 'darwin' ? ['sentencepiece==0.2.0'] : []
   const escalera: string[][] = [
-    ['-m', 'pip', 'install', '--user', 'argostranslate'],
-    ['-m', 'pip', 'install', '--user', '--break-system-packages', 'argostranslate'],
-    ['-m', 'pip', 'install', '--break-system-packages', 'argostranslate']
+    ['-m', 'pip', 'install', '--user', 'argostranslate', ...pinSentencepiece],
+    ['-m', 'pip', 'install', '--user', '--break-system-packages', 'argostranslate', ...pinSentencepiece],
+    ['-m', 'pip', 'install', '--break-system-packages', 'argostranslate', ...pinSentencepiece]
   ]
   for (const args of escalera) {
     const r = await new Promise<{ code: number; salida: string }>((ok) => {
@@ -177,6 +184,7 @@ function launchDaemon(): Promise<void> {
       const proc = congelado
         ? spawn(congelado, [], { env: envDaemon(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] })
         : spawn(python as string, [daemonPath()], { env: envDaemon(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] })
+      motorCongelado = Boolean(congelado)
       child = proc
       buffer = ''
       console.log('[traductor] daemon lanzado:', proc.spawnargs.join(' '))
@@ -258,6 +266,22 @@ function handleLine(line: string): void {
   clearTimeout(entry.timer)
   pending.delete(id)
   if (message.ok === false) {
+    const error = String(message.error ?? '')
+    /* Rescate libc++ (Big Sur): el daemon congelado compila sus .so en el CI
+     * con Xcode nuevo; en macOS 11 el dlopen de sentencepiece/ctranslate2
+     * muere con "Symbol not found ... Expected in: /usr/lib/libc++.1.dylib".
+     * El binario arranca pero NINGUNA op sirve — se descarta el congelado y
+     * el watchdog relanza con el Python portatil (sentencepiece fijado 0.2.0). */
+    if (
+      motorCongelado &&
+      !congeladoFallido &&
+      /Expected in: \/usr\/lib\/libc\+\+|Symbol not found: __ZTT/.test(error)
+    ) {
+      console.log('[traductor] binario congelado incompatible con este macOS (libc++); cayendo a Python portatil...')
+      congeladoFallido = true
+      child?.kill()
+      return
+    }
     entry.reject(new Error(String(message.error ?? 'Error de traducciÃ³n')))
     return
   }
