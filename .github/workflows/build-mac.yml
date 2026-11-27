@@ -242,9 +242,15 @@ jobs:
       - name: Generar DMG x64 (con daemon x64)
         run: |
           set -e
+          # libera disco: el .app arm64 ya se convirtio en .dmg, y los venvs
+          # y temporales de PyInstaller ya no hacen falta
           rm -rf apps/desktop/dist/mac-arm64
+          rm -rf apps/desktop/build/daemon-venv apps/desktop/build/pyi-build
+          rm -rf "$RUNNER_TEMP/venv-daemon" "$RUNNER_TEMP/venv-x64" "$RUNNER_TEMP/python-x64"
+          rm -rf scripts/dist
           rm -rf apps/desktop/build/daemon
           cp -R apps/desktop/build/daemon-x64 apps/desktop/build/daemon
+          df -h /
           npm run build:mac -- --x64
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
