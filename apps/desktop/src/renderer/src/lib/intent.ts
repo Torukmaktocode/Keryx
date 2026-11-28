@@ -20,6 +20,12 @@ export interface IntentProfile {
   frase: string
   /** Palabras útiles para ubicar el pasaje (sin ruido de cortesía). */
   searchTerms: string[]
+  /** TODOS los temas detectados en la frase, del más fuerte al más leve. */
+  temas: string[]
+  /** Público que la frase declara ('' si no lo declara). */
+  audiencia: string
+  /** Palabras plenas de la frase entera (sin ruido): rankean evidencia y minado. */
+  keywords: string[]
 }
 
 interface Llave {
@@ -155,6 +161,23 @@ const RUIDO = new Set([
   'pasaje', 'texto', 'frase', 'hablar', 'dijo', 'quiere', 'detalle'
 ])
 
+/** Audiencia declarada en la frase: "para los jóvenes", "a los matrimonios"… */
+const AUDIENCIAS: Array<{ stems: string[]; nombre: string }> = [
+  { stems: ['joven'], nombre: 'los jóvenes' },
+  { stems: ['adolesc'], nombre: 'los adolescentes' },
+  { stems: ['nino', 'nina', 'infanc'], nombre: 'los niños' },
+  { stems: ['matrimon', 'pareja', 'espos'], nombre: 'los matrimonios' },
+  { stems: ['madre', 'mama'], nombre: 'las madres' },
+  { stems: ['padre'], nombre: 'los padres' },
+  { stems: ['mujer'], nombre: 'las mujeres' },
+  { stems: ['familia', 'hogar'], nombre: 'las familias' },
+  { stems: ['ancian', 'abuel'], nombre: 'los mayores' },
+  { stems: ['lider', 'obrero'], nombre: 'los líderes' },
+  { stems: ['visitante'], nombre: 'los visitantes' },
+  { stems: ['solter'], nombre: 'los solteros' },
+  { stems: ['viud'], nombre: 'las viudas' }
+]
+
 /** Temas reconocibles (para validación de la red léxica en tests/evals). */
 export const TEMAS_INTENT: readonly string[] = LEXICO.map((entry) => entry.tema)
 
@@ -240,9 +263,26 @@ export function buildIntent(query: string, kind: string): IntentProfile {
     }
   }
   const enfoque = tema ? (enfoques.get(tema) ?? '') : ''
+  const temas = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([key]) => key)
+
+  const audiencia = (() => {
+    for (const word of words) {
+      const norm = deacc(word)
+      for (const entry of AUDIENCIAS) {
+        if (entry.stems.some((stem) => (stem.length < 5 ? norm === stem : norm.startsWith(stem)))) {
+          return entry.nombre
+        }
+      }
+    }
+    return ''
+  })()
 
   const label = KIND_LABEL[kind] ?? 'tu mensaje'
-  const frase = tema ? `${label} sobre ${tema}, para ${enfoque}` : ''
+  const frase = tema
+    ? `${label} sobre ${tema}${audiencia ? ` dirigido a ${audiencia}` : ''}, para ${enfoque}`
+    : ''
 
   const terms = [...new Set(
     words
@@ -250,7 +290,7 @@ export function buildIntent(query: string, kind: string): IntentProfile {
       .flatMap((w) => (w.length >= 5 && w.endsWith('s') ? [w, w.slice(0, -1)] : [w]))
   )].sort((a, b) => b.length - a.length)
 
-  return { raw, tema, enfoque, palabras, frase, searchTerms: terms }
+  return { raw, tema, enfoque, palabras, frase, searchTerms: terms, temas, audiencia, keywords: terms }
 }
 
 /** Bloque amable "conexión con la petición" para prompts y documentos. */
@@ -259,6 +299,12 @@ export function intentBlock(intent: IntentProfile): string[] {
   if (intent.tema) {
     lines.push(`> 💬 **Tu petición:** «${intent.raw}»`)
     lines.push(`> La entendí como ${intent.frase}.`)
+    if (intent.temas.length > 1) {
+      lines.push(`> *Temas conexos:* ${intent.temas.slice(1, 4).join(' · ')}.`)
+    }
+    if (intent.audiencia) {
+      lines.push(`> *Audiencia:* ${intent.audiencia}.`)
+    }
     if (intent.palabras.length) {
       lines.push(
         `> *Conexión por palabra:* ${intent.palabras

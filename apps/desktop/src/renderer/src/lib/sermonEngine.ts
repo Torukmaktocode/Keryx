@@ -27,6 +27,8 @@ export interface Punto {
   signal: string
   title: string
   evidence: string
+  /** Segunda pasada del comentario anclado: profundidad exegética del punto. */
+  profundidad: string
   bridge: Slot
 }
 
@@ -111,11 +113,16 @@ function foldAccents(value: string): string {
   return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
-/** Reordena los comentarios por afinidad al TEMA pedido (estable, 0 tokens):
- * cambiar el tema cambia la evidencia de los puntos en vez de repetir
- * siempre el primer comentario del pasaje. */
-function rankearPorTema(lineas: string[], tema: string): string[] {
-  const palabras = foldAccents(tema).split(/\s+/).filter((w) => w.length > 3)
+/** Reordena los comentarios por afinidad a TODA la frase del usuario (estable,
+ * 0 tokens): temas conexos + palabras plenas. Cambiar una sola palabra de la
+ * petición ya reordena la evidencia de los puntos en vez de repetir siempre
+ * el primer comentario del pasaje. */
+function rankearPorTema(lineas: string[], claves: string[]): string[] {
+  const palabras = [
+    ...claves.flatMap((clave) => foldAccents(clave).split(/\s+/)),
+    ...claves
+  ]
+    .filter((w) => w.length > 3)
   if (!palabras.length) return lineas
   const score = (line: string): number => {
     const folded = foldAccents(line)
@@ -155,7 +162,7 @@ export function buildSermonDocument(
   const textLines = entriesOf(dossier, 'texto')
   const commentLines = rankearPorTema(
     entriesOf(dossier, 'comentario'),
-    peticion?.tema ?? ''
+    [...(peticion?.temas ?? []), ...(peticion?.keywords ?? [])]
   )
   const outlineLines = entriesOf(dossier, 'bosquejo')
   const strongLines = entriesOf(dossier, 'strongs')
@@ -172,26 +179,33 @@ export function buildSermonDocument(
     ? `Lleva contigo esta semana: «${shortEntry(textoPlano.replace(/^\s*\d+\s*/, ''), 110)}» — ${ref}`
     : `Lleva contigo esta semana el nucleo de ${ref}.`
 
-  const puntos = pointTitles(outlineLines, commentLines).map((title, index) => {
+  const titulos = pointTitles(outlineLines, commentLines)
+  const puntos = titulos.map((title, index) => {
     const line = commentLines[index] ?? ''
-    let evidence = shortEntry(line, 560)
+    let evidence = shortEntry(line, 1500)
     if (title.length >= 40 && !title.endsWith('…')) {
       const inicio = evidence.indexOf(title)
       if (inicio !== -1) {
         const restante = evidence.slice(inicio + title.length).replace(/^[\s.—–:;,]+/, '')
-        if (restante.length > 30) evidence = shortEntry(restante, 340)
+        if (restante.length > 30) evidence = shortEntry(restante, 900)
         else evidence = ''
       }
     }
+    const profundidad = shortEntry(commentLines[titulos.length + index] ?? '', 1100)
     return {
       signal: SEÑALES[index] ?? `Para el punto ${index + 1}…`,
       title,
       evidence,
+      profundidad,
       bridge: slot('', undefined)
     }
   })
-  const temaVoz = peticion?.tema ?? ''
-  const aperturas = patronLineas(temaVoz)
+  const temasVoz = peticion?.temas.length ? peticion.temas : peticion?.tema ? [peticion.tema] : []
+  let aperturas: string[] = []
+  for (const tema of temasVoz) {
+    aperturas = patronLineas(tema)
+    if (aperturas.length) break
+  }
   const ecoPeticion = peticion
     ? peticion.frase || `Escuché tu frase tal cual: «${peticion.raw}».`
     : ''
@@ -215,22 +229,22 @@ export function buildSermonDocument(
     peticion,
     gancho: slot(ganchoFallback, undefined),
     intro: slot(introFallback, undefined),
-    texto: textLines.map((line) => shortEntry(line, 400)),
+    texto: textLines.map((line) => shortEntry(line, 800)),
     granIdea: gran || `Escucha ${ref} con calma: busca la frase que resuma el mensaje y sostiene la semana.`,
     contexto: [
-      { label: 'Histórico', text: depthShort(entriesOf(dossier, 'historico'), 600) },
-      { label: 'Cultural', text: depthShort(entriesOf(dossier, 'cultural'), 600) },
-      { label: 'Teológico', text: depthShort(entriesOf(dossier, 'teologico'), 600) },
-      { label: 'Cristológico', text: depthShort(entriesOf(dossier, 'cristologico'), 600) }
+      { label: 'Histórico', text: depthShort(entriesOf(dossier, 'historico'), 1300) },
+      { label: 'Cultural', text: depthShort(entriesOf(dossier, 'cultural'), 1300) },
+      { label: 'Teológico', text: depthShort(entriesOf(dossier, 'teologico'), 1300) },
+      { label: 'Cristológico', text: depthShort(entriesOf(dossier, 'cristologico'), 1300) }
     ].filter((line) => line.text.length > 2),
-    palabras: strongLines.slice(0, 2).map((entry) => shortEntry(entry, 240)),
+    palabras: strongLines.slice(0, 4).map((entry) => shortEntry(entry, 340)),
     forma: personaShapeOf(persona),
     puntos,
-    citas: entriesOf(dossier, 'cita').slice(0, 2).map((entry) => shortEntry(entry, 320)),
-    casoReal: entriesOf(dossier, 'caso').map((entry) => shortEntry(entry, 560)),
-    ilustracion: entriesOf(dossier, 'ilustracion').slice(0, 2).map((entry) => shortEntry(entry, 420)),
-    consenso: entriesOf(dossier, 'consenso').slice(0, 3),
-    aplicacion: [...entriesOf(dossier, 'aplicacion').slice(0, 2).map((entry) => shortEntry(entry, 260))],
+    citas: entriesOf(dossier, 'cita').slice(0, 4).map((entry) => shortEntry(entry, 500)),
+    casoReal: entriesOf(dossier, 'caso').map((entry) => shortEntry(entry, 950)),
+    ilustracion: entriesOf(dossier, 'ilustracion').slice(0, 3).map((entry) => shortEntry(entry, 750)),
+    consenso: entriesOf(dossier, 'consenso').slice(0, 5),
+    aplicacion: [...entriesOf(dossier, 'aplicacion').slice(0, 4).map((entry) => shortEntry(entry, 460))],
     meditacion: slot(meditationFallback, undefined),
     aperturas,
     cierre: {
@@ -293,6 +307,12 @@ export function renderSermon(doc: SermonDocument): string {
 
   if (doc.peticion && (doc.peticion.tema || doc.peticion.palabras.length)) {
     push(`> 💬 **Tu petición:** «${doc.peticion.raw}» — la entendí como ${doc.peticion.frase || 'tu frase, tomada tal cual'}.`)
+    if (doc.peticion.temas.length > 1) {
+      push(`> *Temas conexos:* ${doc.peticion.temas.slice(1, 4).join(' · ')}.`)
+    }
+    if (doc.peticion.audiencia) {
+      push(`> *Audiencia:* ${doc.peticion.audiencia}.`)
+    }
     if (doc.peticion.palabras.length) {
       push(
         `> *Conexión por palabra:* ${doc.peticion.palabras

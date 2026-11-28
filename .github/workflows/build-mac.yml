@@ -305,11 +305,11 @@ jobs:
           # Cada DMG se parte con SU arquitectura en el nombre: el x64 es para
           # Mac Intel y el arm64 para Apple Silicon. El script "head -1" viejo
           # empaquetaba siempre el arm64 — inutil en Macs Intel.
-          if [ -f dist/Keryx-1.0.0.dmg ]; then
-            split -d -a 3 -b 1900M --numeric-suffixes=1 dist/Keryx-1.0.0.dmg dist/Keryx-full-x64.dmg.
+          if [ -f dist/Keryx-1.1.0.dmg ]; then
+            split -d -a 3 -b 1900M --numeric-suffixes=1 dist/Keryx-1.1.0.dmg dist/Keryx-full-x64.dmg.
           fi
-          if [ -f dist/Keryx-1.0.0-arm64.dmg ]; then
-            split -d -a 3 -b 1900M --numeric-suffixes=1 dist/Keryx-1.0.0-arm64.dmg dist/Keryx-full-arm64.dmg.
+          if [ -f dist/Keryx-1.1.0-arm64.dmg ]; then
+            split -d -a 3 -b 1900M --numeric-suffixes=1 dist/Keryx-1.1.0-arm64.dmg dist/Keryx-full-arm64.dmg.
           fi
           for ARCH in x64 arm64; do
             [ -f "dist/Keryx-full-$ARCH.dmg.001" ] || continue

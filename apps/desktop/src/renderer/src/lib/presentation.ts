@@ -89,6 +89,7 @@ export function documentDesdeTexto(ref: string, markdown: string, kicker: string
     signal: senales[index] ?? '',
     title: truncate(parrafo, 60),
     evidence: '',
+    profundidad: '',
     bridge: { text: parrafo } as Slot
   }))
   const contexto: SermonDocument['contexto'] = []

@@ -203,6 +203,16 @@ const PERSONA_PROFILE: Record<PersonaId, PersonaProfile> = {
   g.__personaLente = (id: string) => PERSONA_PROFILE[id as PersonaId]?.application ?? ''
 })()
 
+/** Patrón Cristo/apostólico del primer tema de la frase que lo tenga. */
+function patronesDeTemas(intent: IntentProfile): string[] {
+  const temas = intent.temas.length ? intent.temas : intent.tema ? [intent.tema] : []
+  for (const tema of temas) {
+    const lineas = patronLineas(tema)
+    if (lineas.length) return lineas
+  }
+  return ['(sin patrón citado para este tema)']
+}
+
 function personaDirective(persona: Persona): string {
   return PERSONA_PROFILE[persona.id]?.directive ?? ''
 }
@@ -1100,6 +1110,8 @@ export async function runCreator(
         'CONEXIÓN CON LA PETICIÓN (atendida de verdad: es lo que pidió el usuario):',
         ...intentBlock(intent),
         '',
+        'LECTURA DE LA FRASE COMPLETA: tu frase no es solo una palabra o un versículo: cada tema conexo, la audiencia declarada y cada palabra plena de la petición deben notarse en el sermón. Atiende TODOS los temas listados (el primero manda, los conexos se tejen en puentes e ilustraciones); si hay audiencia, háblale a ella de tú a tú.',
+        '',
         'TONO OBLIGATORIO: cálido, pastoral y cercano, de tú a tú. En el gancho e intro reconoce la emoción o la necesidad de quien escucha; en cada puente acércalo a su semana real; meditación y oración con ternura. Cercanía concreta, sin frases infladas.',
         '',
         'PATRONES CITADOS (cómo lo abrió Jesús y lo hablaron Sus apóstoles; citas textuales verificadas — úsalas tal cual, con su referencia, si sirven a la voz):',
@@ -1112,9 +1124,9 @@ export async function runCreator(
         doc.ref,
         '',
         'ESQUELETO (estructura y evidencia ya garantizadas; no las reescribas):',
-        skeletonForAi.length > 12000 ? `${skeletonForAi.slice(0, 12000)}…[truncado]` : skeletonForAi,
+        skeletonForAi.length > 22000 ? `${skeletonForAi.slice(0, 22000)}…[truncado]` : skeletonForAi,
         '',
-        'EXTENSION OBLIGATORIA: desarrolla cada pieza hasta su tamano indicado (gancho 70-100 palabras; introduccion 6-9 frases; CADA puente 3-5 frases entrelazando la cita anclada del punto con la vida real; meditacion 120-170 palabras; oracion 7-10 lineas). Nunca dos frases sueltas: si el esqueleto trae material, tejelo en tus puentes. Responde completo; si te acercas al limite, redacta denso y sin adornos, no acortes secciones.',
+        'EXTENSION Y PROFUNDIDAD OBLIGATORIAS: desarrolla cada pieza hasta su tamano indicado (gancho 90-120 palabras; introduccion 8-12 frases; en CADA punto respira la evidencia anclada: de donde sale, que dice el texto, por que importa hoy; CADA puente 4-6 frases entrelazando la evidencia del punto, los temas conexos y la vida real de la audiencia; meditacion 150-220 palabras; oracion 8-12 lineas). Nunca resumas una seccion del esqueleto: si trae contexto, palabras originales, consenso o ilustraciones, NO LAS QUITES; tu voz se suma, no reemplaza. Responde completo; si te acercas al limite, redacta denso y sin adornos, no acortes secciones.',
         '',
         'Devuelve EXACTAMENTE el formato de marcadores del sistema.'
       ].join('\n')
@@ -1126,7 +1138,7 @@ export async function runCreator(
           { role: 'user', content: ask }
         ],
         temperature: 0.6,
-        maxTokens: 4200
+        maxTokens: 8000
       })
       aiMs += performance.now() - t0
       const pieces = parseSnippets(result.text)
@@ -1183,7 +1195,7 @@ export async function runCreator(
       ...intentBlock(intent),
       'TONO: cálido, pastoral y cercano; acércate con ternura a la necesidad detectada, sin inventar datos.',
       'PATRONES CITADOS (cómo lo abrió Jesús y lo hablaron Sus apóstoles; citas textuales verificadas — úsalas tal cual, con su referencia, si sirven a la voz):',
-      ...(patronLineas(intent.tema).length ? patronLineas(intent.tema).map((line) => line.replace(/^> /, '')) : ['(sin patrón citado para este tema)']),
+      ...patronesDeTemas(intent).map((line) => line.replace(/^> /, '')),
       '',
       'AUTOCHQUE antes de responder: cada numero Strong citado debe figurar en el DOSIER y cada cita biblica Libro C:V debe estar en el DOSIER o en el texto anclado; corrige o elimina lo que no conste.',
       '',
@@ -1263,12 +1275,12 @@ export async function runCreator(
         messages: [
           {
             role: 'system',
-            content: `${MASTER_PROMPT}\n\nResponde en ${language}. Tu trabajo es reescribir el borrador desarrollando profundamente el material sin usar y aplicando el pulido; secciones completas, nunca una frase suelta. No quites secciones ni reduzcas las citas ancladas. El resultado debe superar al borrador en profundidad y extension.`
+            content: `${MASTER_PROMPT}\n\nResponde en ${language}. Tu trabajo es reescribir el borrador desarrollando profundamente el material sin usar y aplicando el pulido; secciones completas, nunca una frase suelta. No quites secciones ni reduzcas las citas ancladas. Atiende la frase completa del usuario: todos sus temas, su audiencia y sus palabras plenas se notan en el resultado. El resultado debe superar al borrador en profundidad y extension.`
           },
           { role: 'user', content: finalParts.join('\n\n') }
         ],
         temperature: 0.5,
-        maxTokens: 8000
+        maxTokens: 12000
       })
       aiMs += performance.now() - t2
       markdown = final.text

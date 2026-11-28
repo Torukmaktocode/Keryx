@@ -43,9 +43,9 @@ function mkDoc(overrides: Partial<SermonDocument> = {}): SermonDocument {
     palabras: ['**G25**: agapao (amar): el texto lo ancla con el número Strong.'],
     forma: 'narrativa',
     puntos: [
-      { signal: 'Primeramente…', title: 'La fuente del amor', evidence: 'Dios amó primero y el texto lo declara con claridad.', bridge: slot('') },
-      { signal: 'En segundo lugar…', title: 'La entrega del amor', evidence: 'La medida del amor es la cruz, no el discurso.', bridge: slot('El puente de la entrega concreta.') },
-      { signal: 'Y para concluir…', title: 'La vida del amor', evidence: 'Vida eterna para todo aquel que en él cree.', bridge: slot('') }
+      { signal: 'Primeramente…', title: 'La fuente del amor', evidence: 'Dios amó primero y el texto lo declara con claridad.', profundidad: '', bridge: slot('') },
+      { signal: 'En segundo lugar…', title: 'La entrega del amor', evidence: 'La medida del amor es la cruz, no el discurso.', profundidad: '', bridge: slot('El puente de la entrega concreta.') },
+      { signal: 'Y para concluir…', title: 'La vida del amor', evidence: 'Vida eterna para todo aquel que en él cree.', profundidad: '', bridge: slot('') }
     ],
     citas: ['«El amor no es una teoría, es una entrega.» — Anónimo'],
     casoReal: ['El discípulo que amó hasta el final dejó escrito este pasaje.'],
@@ -134,6 +134,7 @@ describe('sub-agente de presentación (buildSlides, 0 tokens)', () => {
         signal: `Señal ${index}`,
         title: `Punto ${letter}`,
         evidence: `Evidencia del punto ${letter}.`,
+        profundidad: '',
         bridge: slot('')
       }))
     })
@@ -176,6 +177,7 @@ describe('limpieza proyectable y no repeticion', () => {
           signal: 'Primeramente…',
           title: 'Punto con cita',
           evidence: '',
+          profundidad: '',
           bridge: slot('[Bovinck - Dogmatica Reformada · 07. La Providencia] La obra de Dios preserva al hombre.')
         }
       ],
